@@ -1,0 +1,121 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CardType {
+  MONSTER
+  SPELL
+  TRAP
+}
+
+enum SummonType {
+  NORMAL
+  RITUAL
+  FUSION
+  SYNCHRO
+  XYZ
+  LINK
+}
+
+enum MonsterEffectType {
+  NORMAL
+  EFFECT
+  FLIP
+}
+
+enum SpellTrapSubType {
+  NORMAL
+  CONTINUOUS
+  QUICK_PLAY
+  EQUIP
+  FIELD
+  RITUAL
+  COUNTER
+}
+
+enum CardFrameType {
+  NORMAL
+  EFFECT
+  RITUAL
+  FUSION
+  SYNCHRO
+  XYZ
+  PENDULUM
+  LINK
+  TOKEN
+}
+
+enum BanStatus {
+  FORBIDDEN
+  LIMITED
+  SEMI_LIMITED
+  UNLIMITED
+}
+
+model Card {
+  id                 Int      @id @default(autoincrement())
+  ygoId              Int      @unique // YGOProDeck ID
+  name               String   @unique
+  cardType           CardType
+  frameType          CardFrameType
+  description        String
+  archetype          String?
+  ygoprodeckUrl      String?
+  banStatusTcg       BanStatus?
+  banStatusOcg       BanStatus?
+
+  // Monster exclusive properties
+  atk                Int?
+  def                Int?
+  level              Int?
+  linkVal            Int?
+  scale              Int?
+  attribute          String?
+  race               String?
+
+  summonType         SummonType?
+  monsterEffectType  MonsterEffectType?
+  spellTrapSubType   SpellTrapSubType?
+
+  // Boolean orthogonal properties (can be combined freely)
+  isEffect           Boolean  @default(false)
+  isFlip             Boolean  @default(false)
+  isTuner            Boolean  @default(false)
+  isPendulum         Boolean  @default(false)
+  isToken            Boolean  @default(false)
+
+  aiTags             Json?
+  aiLabeledAt        DateTime?
+
+  cardSets           CardSet[]
+  cardImages         CardImage[]
+}
+
+model CardSet {
+  id              Int     @id @default(autoincrement())
+  setName         String
+  setCode         String
+  setRarity       String
+  setRarityCode   String
+  card            Card?   @relation(fields: [cardId], references: [id])
+  cardId          Int?
+}
+
+model CardImage {
+  id                Int     @id @default(autoincrement())
+  imageUrl          String
+  imageUrlSmall     String
+  imageUrlCropped   String
+  card              Card?   @relation(fields: [cardId], references: [id])
+  cardId            Int?
+}
