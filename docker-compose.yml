@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: deck_builder_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: deckbuilder
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - deck_builder_pgdata:/var/lib/postgresql/data
+
+volumes:
+  deck_builder_pgdata:

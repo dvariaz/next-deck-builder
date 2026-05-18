@@ -106,3 +106,8 @@ jspm_packages/
 
 # Serverless directories
 .serverless/
+
+# Agent Skills
+.agents/
+.agents/*
+skills-lock.json
