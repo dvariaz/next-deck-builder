@@ -102,20 +102,20 @@ model Card {
 }
 
 model CardSet {
-  id              Int     @id @default(autoincrement())
+  id              Int    @id @default(autoincrement())
   setName         String
   setCode         String
   setRarity       String
   setRarityCode   String
-  card            Card?   @relation(fields: [cardId], references: [id])
-  cardId          Int?
+  card            Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId          Int
 }
 
 model CardImage {
-  id                Int     @id @default(autoincrement())
+  id                Int    @id @default(autoincrement())
   imageUrl          String
   imageUrlSmall     String
   imageUrlCropped   String
-  card              Card?   @relation(fields: [cardId], references: [id])
-  cardId            Int?
+  card              Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId            Int
 }

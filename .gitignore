@@ -111,3 +111,5 @@ jspm_packages/
 .agents/
 .agents/*
 skills-lock.json
+.claude/
+.claude/*
