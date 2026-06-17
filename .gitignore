@@ -107,6 +107,9 @@ jspm_packages/
 # Serverless directories
 .serverless/
 
+# Generated API client (orval output)
+apps/deck-builder-web/src/generated/
+
 # Agent Skills
 .agents/
 .agents/*
