@@ -1,5 +1,15 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## What is this application?
+
+This is a knowledge base for Yu-Gi-Oh!, designed to help build better decks and refine gameplay strategies. The app works as an advanced card search engine with highly specialized filters.
+
+The card catalog is sourced from the YGOProDeck public database (the most complete and up-to-date available), but instead of relying on their endpoints directly, the app builds and maintains its own local database to deliver faster searches, richer filters, and a user experience the original API cannot provide.
+
+## What problem does it solve?
+
+Existing YGO card search tools are too generic or too slow for the needs of a competitive player who requires quick answers and complex filter combinations. This app puts a dedicated tool in the player's hands — free from third-party limitations, and built exactly around how a deck is constructed and thought through.
+
 ## Getting Started
 
 First, run the development server:
