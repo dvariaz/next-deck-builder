@@ -7,15 +7,19 @@ import { FindCardsDto } from './dto/find-cards.dto';
 export class CardsService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(dto: FindCardsDto) {
+  async findAll(dto: FindCardsDto) {
     const where = this.buildWhere(dto);
-    return this.prisma.card.findMany({
-      where,
-      include: { cardImages: true },
-      skip: dto.skip,
-      take: dto.take,
-      orderBy: { name: 'asc' },
-    });
+    const [results, total] = await Promise.all([
+      this.prisma.card.findMany({
+        where,
+        include: { cardImages: true },
+        skip: dto.skip,
+        take: dto.take,
+        orderBy: { name: 'asc' },
+      }),
+      this.prisma.card.count({ where }),
+    ]);
+    return { results, pagination: { total, skip: dto.skip ?? 0, take: dto.take ?? 20 } };
   }
 
   private buildWhere(dto: FindCardsDto): Prisma.CardWhereInput {

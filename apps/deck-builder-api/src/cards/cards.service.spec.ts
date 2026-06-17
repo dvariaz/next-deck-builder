@@ -3,11 +3,13 @@ import { CardsService } from './cards.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindCardsDto } from './dto/find-cards.dto';
 
-const mockFindMany = jest.fn();
+const mockFindMany = jest.fn().mockResolvedValue([]);
+const mockCount = jest.fn().mockResolvedValue(0);
 
 const mockPrismaService = {
   card: {
     findMany: mockFindMany,
+    count: mockCount,
   },
 };
 
