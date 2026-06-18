@@ -10,7 +10,7 @@ const CardsPage: React.FC<IProps> = async ({ searchParams }) => {
   const data = await CardsRepository.search(await searchParams);
 
   return (
-    <div className="bg-gradient-to-t from-[#1c1c2f] to-[#1f1f39] min-h-screen">
+    <div className="bg-linear-to-t from-[#1c1c2f] to-[#1f1f39] min-h-screen">
       <CardsFinder cards={data.results} />
     </div>
   )
