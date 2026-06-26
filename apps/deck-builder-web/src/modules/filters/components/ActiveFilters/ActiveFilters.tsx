@@ -25,7 +25,7 @@ export function ActiveFilters() {
   const cardTypes = useFilterStore.use.cardTypes()
   const frameTypes = useFilterStore.use.frameTypes()
   const attributes = useFilterStore.use.attributes()
-  const banStatus = useFilterStore.use.banStatus()
+  const banStatuses = useFilterStore.use.banStatuses()
   const levelMin = useFilterStore.use.levelMin()
   const levelMax = useFilterStore.use.levelMax()
   const atkMin = useFilterStore.use.atkMin()
@@ -59,9 +59,9 @@ export function ActiveFilters() {
         <FilterChip key={attr} label="Attribute" value={attr} onRemove={() => removeFilter('attribute', attr)} />
       ))}
 
-      {banStatus && (
-        <FilterChip label="Banlist" value={banStatus} onRemove={() => removeFilter('banStatus')} />
-      )}
+      {banStatuses.map((status) => (
+        <FilterChip key={status} label="Banlist" value={status} onRemove={() => removeFilter('banStatus', status)} />
+      ))}
 
       {(levelMin !== undefined || levelMax !== undefined) && (
         <FilterChip

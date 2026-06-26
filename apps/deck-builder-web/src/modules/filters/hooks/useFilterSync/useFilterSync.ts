@@ -5,18 +5,18 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { useFilterStoreBase } from '@/modules/filters/hooks/useFilterStore/useFilterStore'
 import type { FilterState, SortField, SortDirection } from '@/modules/filters/hooks/useFilterStore/useFilterStore'
 import type {
-  CardsControllerFindAllCardType,
-  CardsControllerFindAllFrameType,
-  CardsControllerFindAllBanStatusTcg,
+  CardsControllerFindAllCardTypeItem,
+  CardsControllerFindAllFrameTypeItem,
+  CardsControllerFindAllBanStatusTcgItem,
 } from '@/generated/model'
 
 function toURLParams(state: FilterState): URLSearchParams {
   const params = new URLSearchParams()
-  if (state.search) params.set('name', state.search)
-  if (state.cardTypes.length === 1) params.set('cardType', state.cardTypes[0])
-  if (state.frameTypes.length === 1) params.set('frameType', state.frameTypes[0])
-  if (state.attributes.length === 1) params.set('attribute', state.attributes[0])
-  if (state.banStatus) params.set('banStatusTcg', state.banStatus)
+  if (state.search) params.set('q', state.search)
+  state.cardTypes.forEach((t) => params.append('cardType', t))
+  state.frameTypes.forEach((t) => params.append('frameType', t))
+  state.attributes.forEach((a) => params.append('attribute', a))
+  state.banStatuses.forEach((b) => params.append('banStatusTcg', b))
   if (state.levelMin !== undefined) params.set('levelMin', String(state.levelMin))
   if (state.levelMax !== undefined) params.set('levelMax', String(state.levelMax))
   if (state.atkMin !== undefined) params.set('atkMin', String(state.atkMin))
@@ -37,11 +37,11 @@ export function useFilterSync() {
     const store = useFilterStoreBase.getState()
 
     // Hydrate store from URL params (runs once on mount, before subscribe)
-    const name = searchParams.get('name')
-    const cardType = searchParams.get('cardType') as CardsControllerFindAllCardType | null
-    const frameType = searchParams.get('frameType') as CardsControllerFindAllFrameType | null
-    const attribute = searchParams.get('attribute')
-    const banStatusTcg = searchParams.get('banStatusTcg') as CardsControllerFindAllBanStatusTcg | null
+    const q = searchParams.get('q')
+    const cardTypes = searchParams.getAll('cardType') as CardsControllerFindAllCardTypeItem[]
+    const frameTypes = searchParams.getAll('frameType') as CardsControllerFindAllFrameTypeItem[]
+    const attributes = searchParams.getAll('attribute')
+    const banStatuses = searchParams.getAll('banStatusTcg') as CardsControllerFindAllBanStatusTcgItem[]
     const levelMin = searchParams.get('levelMin')
     const levelMax = searchParams.get('levelMax')
     const atkMin = searchParams.get('atkMin')
@@ -51,11 +51,11 @@ export function useFilterSync() {
     const sortField = searchParams.get('sortField') as SortField | null
     const sortDirection = searchParams.get('sortDirection') as SortDirection | null
 
-    if (name) store.updateSearch(name)
-    if (cardType) store.toggleCardType(cardType)
-    if (frameType) store.toggleFrameType(frameType)
-    if (attribute) store.toggleAttribute(attribute)
-    if (banStatusTcg) store.setBanStatus(banStatusTcg)
+    if (q) store.updateSearch(q)
+    cardTypes.forEach((t) => store.toggleCardType(t))
+    frameTypes.forEach((t) => store.toggleFrameType(t))
+    attributes.forEach((a) => store.toggleAttribute(a))
+    banStatuses.forEach((b) => store.toggleBanStatus(b))
     if (levelMin !== null || levelMax !== null)
       store.setLevelRange(
         levelMin !== null ? Number(levelMin) : undefined,

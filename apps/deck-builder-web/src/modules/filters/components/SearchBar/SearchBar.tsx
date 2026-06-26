@@ -30,7 +30,7 @@ export function SearchBar() {
         <input
           ref={inputRef}
           type="text"
-          placeholder="Search cards by name..."
+          placeholder="Search cards by name or description..."
           value={search}
           onChange={(e) => updateSearch(e.target.value)}
           onFocus={() => setIsFocused(true)}

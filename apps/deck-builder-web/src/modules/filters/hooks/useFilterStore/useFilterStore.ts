@@ -2,9 +2,9 @@ import { create } from 'zustand'
 import { createSelectors } from '@/modules/common/utils/store'
 import type {
   CardsControllerFindAllParams,
-  CardsControllerFindAllCardType,
-  CardsControllerFindAllFrameType,
-  CardsControllerFindAllBanStatusTcg,
+  CardsControllerFindAllCardTypeItem,
+  CardsControllerFindAllFrameTypeItem,
+  CardsControllerFindAllBanStatusTcgItem,
 } from '@/generated/model'
 
 type SortField = 'name' | 'atk' | 'def' | 'level'
@@ -12,10 +12,10 @@ type SortDirection = 'asc' | 'desc'
 
 interface FilterState {
   search: string
-  cardTypes: CardsControllerFindAllCardType[]
-  frameTypes: CardsControllerFindAllFrameType[]
+  cardTypes: CardsControllerFindAllCardTypeItem[]
+  frameTypes: CardsControllerFindAllFrameTypeItem[]
   attributes: string[]
-  banStatus: CardsControllerFindAllBanStatusTcg | undefined
+  banStatuses: CardsControllerFindAllBanStatusTcgItem[]
   levelMin: number | undefined
   levelMax: number | undefined
   atkMin: number | undefined
@@ -26,10 +26,10 @@ interface FilterState {
   sortDirection: SortDirection
 
   updateSearch: (search: string) => void
-  toggleCardType: (type: CardsControllerFindAllCardType) => void
-  toggleFrameType: (type: CardsControllerFindAllFrameType) => void
+  toggleCardType: (type: CardsControllerFindAllCardTypeItem) => void
+  toggleFrameType: (type: CardsControllerFindAllFrameTypeItem) => void
   toggleAttribute: (attr: string) => void
-  setBanStatus: (status: CardsControllerFindAllBanStatusTcg | undefined) => void
+  toggleBanStatus: (status: CardsControllerFindAllBanStatusTcgItem) => void
   setLevelRange: (min: number | undefined, max: number | undefined) => void
   setAtkRange: (min: number | undefined, max: number | undefined) => void
   setDefRange: (min: number | undefined, max: number | undefined) => void
@@ -42,10 +42,10 @@ interface FilterState {
 
 const initialState = {
   search: '',
-  cardTypes: [] as CardsControllerFindAllCardType[],
-  frameTypes: [] as CardsControllerFindAllFrameType[],
+  cardTypes: [] as CardsControllerFindAllCardTypeItem[],
+  frameTypes: [] as CardsControllerFindAllFrameTypeItem[],
   attributes: [] as string[],
-  banStatus: undefined as CardsControllerFindAllBanStatusTcg | undefined,
+  banStatuses: [] as CardsControllerFindAllBanStatusTcgItem[],
   levelMin: undefined as number | undefined,
   levelMax: undefined as number | undefined,
   atkMin: undefined as number | undefined,
@@ -82,7 +82,12 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
         : [...s.attributes, attr],
     })),
 
-  setBanStatus: (status) => set({ banStatus: status }),
+  toggleBanStatus: (status) =>
+    set((s) => ({
+      banStatuses: s.banStatuses.includes(status)
+        ? s.banStatuses.filter((b) => b !== status)
+        : [...s.banStatuses, status],
+    })),
 
   setLevelRange: (min, max) => set({ levelMin: min, levelMax: max }),
   setAtkRange: (min, max) => set({ atkMin: min, atkMax: max }),
@@ -97,7 +102,7 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
         case 'cardType': return { cardTypes: s.cardTypes.filter((t) => t !== value) }
         case 'frameType': return { frameTypes: s.frameTypes.filter((t) => t !== value) }
         case 'attribute': return { attributes: s.attributes.filter((a) => a !== value) }
-        case 'banStatus': return { banStatus: undefined }
+        case 'banStatus': return { banStatuses: s.banStatuses.filter((b) => b !== value) }
         case 'levelRange': return { levelMin: undefined, levelMax: undefined }
         case 'atkRange': return { atkMin: undefined, atkMax: undefined }
         case 'defRange': return { defMin: undefined, defMax: undefined }
@@ -114,7 +119,7 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
     count += s.cardTypes.length
     count += s.frameTypes.length
     count += s.attributes.length
-    if (s.banStatus) count++
+    count += s.banStatuses.length
     if (s.levelMin !== undefined || s.levelMax !== undefined) count++
     if (s.atkMin !== undefined || s.atkMax !== undefined) count++
     if (s.defMin !== undefined || s.defMax !== undefined) count++
@@ -124,11 +129,11 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
   toQueryParams: (): CardsControllerFindAllParams => {
     const s = get()
     const params: CardsControllerFindAllParams = {}
-    if (s.search) params.name = s.search
-    if (s.cardTypes.length === 1) params.cardType = s.cardTypes[0]
-    if (s.frameTypes.length === 1) params.frameType = s.frameTypes[0]
-    if (s.attributes.length === 1) params.attribute = s.attributes[0]
-    if (s.banStatus) params.banStatusTcg = s.banStatus
+    if (s.search) params.q = s.search
+    if (s.cardTypes.length) params.cardType = s.cardTypes
+    if (s.frameTypes.length) params.frameType = s.frameTypes
+    if (s.attributes.length) params.attribute = s.attributes
+    if (s.banStatuses.length) params.banStatusTcg = s.banStatuses
     if (s.levelMin !== undefined) params.levelMin = s.levelMin
     if (s.levelMax !== undefined) params.levelMax = s.levelMax
     if (s.atkMin !== undefined) params.atkMin = s.atkMin

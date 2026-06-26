@@ -13,9 +13,9 @@ import { BanlistStatusIcon } from '@/modules/common/components/BanlistStatusIcon
 import { formatBanlistLabel } from '@/modules/common/utils/formatBanlistLabel'
 import { useFilterStore } from '@/modules/filters/hooks/useFilterStore/useFilterStore'
 import {
-  CardsControllerFindAllCardType,
-  CardsControllerFindAllFrameType,
-  CardsControllerFindAllBanStatusTcg,
+  CardsControllerFindAllCardTypeItem,
+  CardsControllerFindAllFrameTypeItem,
+  CardsControllerFindAllBanStatusTcgItem,
 } from '@/generated/model'
 import { cn } from '@/lib/utils'
 
@@ -23,14 +23,14 @@ const ATTRIBUTES = ['DARK', 'LIGHT', 'FIRE', 'WATER', 'EARTH', 'WIND', 'DIVINE']
 type Attribute = typeof ATTRIBUTES[number]
 
 const FRAME_TYPES = [
-  CardsControllerFindAllFrameType.NORMAL,
-  CardsControllerFindAllFrameType.EFFECT,
-  CardsControllerFindAllFrameType.FUSION,
-  CardsControllerFindAllFrameType.SYNCHRO,
-  CardsControllerFindAllFrameType.XYZ,
-  CardsControllerFindAllFrameType.LINK,
-  CardsControllerFindAllFrameType.RITUAL,
-  CardsControllerFindAllFrameType.PENDULUM,
+  CardsControllerFindAllFrameTypeItem.NORMAL,
+  CardsControllerFindAllFrameTypeItem.EFFECT,
+  CardsControllerFindAllFrameTypeItem.FUSION,
+  CardsControllerFindAllFrameTypeItem.SYNCHRO,
+  CardsControllerFindAllFrameTypeItem.XYZ,
+  CardsControllerFindAllFrameTypeItem.LINK,
+  CardsControllerFindAllFrameTypeItem.RITUAL,
+  CardsControllerFindAllFrameTypeItem.PENDULUM,
 ] as const
 
 const attributeIcons: Record<Attribute, React.ReactNode> = {
@@ -53,7 +53,7 @@ const attributeColors: Record<Attribute, string> = {
   DIVINE: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
 }
 
-const banlistColors: Record<CardsControllerFindAllBanStatusTcg, string> = {
+const banlistColors: Record<CardsControllerFindAllBanStatusTcgItem, string> = {
   FORBIDDEN: 'text-red-400',
   LIMITED: 'text-orange-400',
   SEMI_LIMITED: 'text-yellow-400',
@@ -64,7 +64,7 @@ export function FilterPanel() {
   const cardTypes = useFilterStore.use.cardTypes()
   const frameTypes = useFilterStore.use.frameTypes()
   const attributes = useFilterStore.use.attributes()
-  const banStatus = useFilterStore.use.banStatus()
+  const banStatuses = useFilterStore.use.banStatuses()
   const levelMin = useFilterStore.use.levelMin()
   const levelMax = useFilterStore.use.levelMax()
   const atkMin = useFilterStore.use.atkMin()
@@ -74,7 +74,7 @@ export function FilterPanel() {
   const toggleCardType = useFilterStore.use.toggleCardType()
   const toggleFrameType = useFilterStore.use.toggleFrameType()
   const toggleAttribute = useFilterStore.use.toggleAttribute()
-  const setBanStatus = useFilterStore.use.setBanStatus()
+  const toggleBanStatus = useFilterStore.use.toggleBanStatus()
   const setLevelRange = useFilterStore.use.setLevelRange()
   const setAtkRange = useFilterStore.use.setAtkRange()
   const setDefRange = useFilterStore.use.setDefRange()
@@ -101,7 +101,7 @@ export function FilterPanel() {
       {/* Card Type */}
       <FilterSection title="Card Type" badge={cardTypes.length}>
         <div className="grid grid-cols-3 gap-2">
-          {([CardsControllerFindAllCardType.MONSTER, CardsControllerFindAllCardType.SPELL, CardsControllerFindAllCardType.TRAP] as const).map((type) => {
+          {([CardsControllerFindAllCardTypeItem.MONSTER, CardsControllerFindAllCardTypeItem.SPELL, CardsControllerFindAllCardTypeItem.TRAP] as const).map((type) => {
             const isSelected = cardTypes.includes(type)
             return (
               <button
@@ -242,17 +242,17 @@ export function FilterPanel() {
       </FilterSection>
 
       {/* Banlist Status (TCG) */}
-      <FilterSection title="Banlist (TCG)" badge={banStatus ? 1 : 0}>
+      <FilterSection title="Banlist (TCG)" badge={banStatuses.length}>
         <div className="space-y-2">
-          {([CardsControllerFindAllBanStatusTcg.FORBIDDEN, CardsControllerFindAllBanStatusTcg.LIMITED, CardsControllerFindAllBanStatusTcg.SEMI_LIMITED] as const).map((status) => (
+          {([CardsControllerFindAllBanStatusTcgItem.FORBIDDEN, CardsControllerFindAllBanStatusTcgItem.LIMITED, CardsControllerFindAllBanStatusTcgItem.SEMI_LIMITED] as const).map((status) => (
             <label key={status} className="flex items-center gap-2 cursor-pointer group">
               <Checkbox
-                checked={banStatus === status}
-                onCheckedChange={() => setBanStatus(banStatus === status ? undefined : status)}
+                checked={banStatuses.includes(status)}
+                onCheckedChange={() => toggleBanStatus(status)}
               />
               <span className={cn(
                 'flex items-center gap-2 text-sm transition-colors',
-                banStatus === status ? banlistColors[status] : 'text-muted-foreground group-hover:text-foreground',
+                banStatuses.includes(status) ? banlistColors[status] : 'text-muted-foreground group-hover:text-foreground',
               )}>
                 <BanlistStatusIcon status={status} size="sm" />
                 {formatBanlistLabel(status)}
