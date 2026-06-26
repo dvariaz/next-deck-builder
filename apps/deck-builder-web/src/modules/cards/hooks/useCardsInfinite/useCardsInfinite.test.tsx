@@ -86,38 +86,38 @@ describe('useCardsInfinite', () => {
     )
   })
 
-  it('debounces the name param, refetching only after the debounce window', async () => {
+  it('debounces the q param, refetching only after the debounce window', async () => {
     vi.useFakeTimers()
     cardsControllerFindAll.mockResolvedValue(makePaginatedResponse([makeCard()], { total: 1 }))
 
     const { rerender } = renderHook((props) => useCardsInfinite(props), {
       wrapper: createQueryWrapper(),
-      initialProps: { name: 'a' },
+      initialProps: { q: 'a' },
     })
 
-    // Initial fetch uses the starting name.
+    // Initial fetch uses the starting query.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0)
     })
     expect(cardsControllerFindAll).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'a' }),
+      expect.objectContaining({ q: 'a' }),
     )
 
-    // Changing the name does not refetch before the debounce elapses.
-    rerender({ name: 'ab' })
+    // Changing q does not refetch before the debounce elapses.
+    rerender({ q: 'ab' })
     await act(async () => {
       await vi.advanceTimersByTimeAsync(399)
     })
     expect(cardsControllerFindAll).not.toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'ab' }),
+      expect.objectContaining({ q: 'ab' }),
     )
 
-    // Once the window passes, the new name is used.
+    // Once the window passes, the new query is used.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1)
     })
     expect(cardsControllerFindAll).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'ab' }),
+      expect.objectContaining({ q: 'ab' }),
     )
   })
 })

@@ -7,14 +7,14 @@ const PAGE_SIZE = 30
 const SEARCH_DEBOUNCE_MS = 400
 
 function useSearchDebounce(params: CardsControllerFindAllParams): CardsControllerFindAllParams {
-  const [debouncedName, setDebouncedName] = useState(params.name)
+  const [debouncedQ, setDebouncedQ] = useState(params.q)
 
   useEffect(() => {
-    const timer = setTimeout(() => setDebouncedName(params.name), SEARCH_DEBOUNCE_MS)
+    const timer = setTimeout(() => setDebouncedQ(params.q), SEARCH_DEBOUNCE_MS)
     return () => clearTimeout(timer)
-  }, [params.name])
+  }, [params.q])
 
-  return { ...params, name: debouncedName }
+  return { ...params, q: debouncedQ }
 }
 
 export function useCardsInfinite(params: CardsControllerFindAllParams) {
