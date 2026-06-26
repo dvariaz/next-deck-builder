@@ -70,7 +70,20 @@ yarn dev                  # Next.js + Turbopack
 yarn test                 # Vitest (single run)
 yarn test:watch           # Vitest watch mode
 yarn cypress:open         # Cypress component/e2e tests
+yarn generate             # Regenerate the orval API client from openapi.json
 ```
+
+#### Regenerating the API client
+
+The web app talks to the API through an **orval-generated** React Query client in `src/generated/` (`api/` + `model/`). It is generated from `apps/deck-builder-api/openapi.json`, which is the running API's Swagger JSON. After changing any API DTO/controller, regenerate so the web types match:
+
+```bash
+# 1. API must be running (NestJS watch mode picks up source changes automatically)
+cd apps/deck-builder-api && yarn spec:export   # curls /api-docs-json -> openapi.json
+cd apps/deck-builder-web  && yarn generate      # orval --config ../../orval.config.ts
+```
+
+orval does **not** clean up renamed/removed schemas — it leaves stale, un-exported files on disk (e.g. when an enum query param `Foo` becomes an array it emits `FooItem` and leaves the old `Foo.ts`). Delete the stale files manually after regenerating.
 
 ## Infrastructure
 
@@ -99,13 +112,14 @@ Database seeding (`prisma/seed.ts`) pulls card data from the YGOProDeck API via 
 Next.js App Router. Source is organized into:
 
 - `src/app/` — Next.js pages/layouts. Pages are thin: they fetch via the repository layer and pass data to client containers.
-- `src/modules/<domain>/` — Feature modules (currently only `cards` and `common`):
+- `src/modules/<domain>/` — Feature modules (currently `cards`, `filters`, `common`):
   - `components/` — Pure presentational React components
   - `containers/` — Client components that wire state + components together
-  - `hooks/` — Zustand stores (via `useFinderStore`)
-  - `repositories/` — Data-fetching classes (e.g. `CardsRepository.search`)
-  - `types/` — TypeScript interfaces for the domain
+  - `hooks/` — Zustand stores and React Query data hooks (e.g. `useFilterStore`, `useCardsInfinite`)
+  - `utils/` — Domain helpers (e.g. `sortCards`, `formatCardType`)
 
 **State management:** Zustand with a `createSelectors` utility (`modules/common/utils/store.ts`) that auto-generates per-key selectors as `store.use.<key>()` — use this pattern for all new stores.
 
-**API calls:** `CardsRepository` uses Next.js `fetch` with cache tags for ISR. The `SearchQueryBuilder` class converts a typed query object to a `URLSearchParams` string. API responses come back in snake_case and are camelized via `ts-case-convert`.
+**API calls:** Data fetching goes through the orval-generated React Query client (`src/generated/api/`), typically wrapped in a hook such as `useCardsInfinite`. Filter state lives in `useFilterStore`; `toQueryParams()` maps it to the generated `*Params` type, and `useFilterSync` mirrors it to the URL. See `#### Regenerating the API client` for the generation workflow.
+
+> **Array query params:** the generated URL builder serializes arrays with `String(value)`, producing a comma-joined value (`attribute=DARK,LIGHT`) rather than repeated params. `useFilterSync`, however, writes repeated params (`attribute=DARK&attribute=LIGHT`). So the API's `toArray` transform (`apps/deck-builder-api/src/common/transforms.ts`) accepts both: scalar, repeated, and comma-joined. New multi-value filters should pair `@Transform(toArray)` with `@IsEnum(X, { each: true })` / `@IsString({ each: true })`.
