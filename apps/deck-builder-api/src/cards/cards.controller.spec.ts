@@ -45,7 +45,7 @@ describe('CardsController', () => {
     });
 
     it('passes enum filters through', () => {
-      const dto: FindCardsDto = { cardType: 'MONSTER', summonType: 'FUSION', skip: 0, take: 20 };
+      const dto: FindCardsDto = { cardType: ['MONSTER'], summonType: ['FUSION'], skip: 0, take: 20 };
       controller.findAll(dto);
       expect(service.findAll).toHaveBeenCalledWith(dto);
     });

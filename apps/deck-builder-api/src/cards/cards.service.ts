@@ -24,24 +24,34 @@ export class CardsService {
 
   private buildWhere(dto: FindCardsDto): Prisma.CardWhereInput {
     const where: Prisma.CardWhereInput = {};
+    const insensitive = Prisma.QueryMode.insensitive;
+
+    if (dto.q) {
+      where.OR = [
+        { name: { contains: dto.q, mode: insensitive } },
+        { description: { contains: dto.q, mode: insensitive } },
+      ];
+    }
 
     if (dto.name) {
-      where.name = { contains: dto.name, mode: Prisma.QueryMode.insensitive };
+      where.name = { contains: dto.name, mode: insensitive };
     }
 
     if (dto.archetype) {
-      where.archetype = { contains: dto.archetype, mode: Prisma.QueryMode.insensitive };
+      where.archetype = { contains: dto.archetype, mode: insensitive };
     }
 
-    if (dto.attribute) where.attribute = dto.attribute;
-    if (dto.race) where.race = dto.race;
-    if (dto.cardType) where.cardType = dto.cardType;
-    if (dto.frameType) where.frameType = dto.frameType;
-    if (dto.summonType) where.summonType = dto.summonType;
-    if (dto.monsterEffectType) where.monsterEffectType = dto.monsterEffectType;
-    if (dto.spellTrapSubType) where.spellTrapSubType = dto.spellTrapSubType;
-    if (dto.banStatusTcg) where.banStatusTcg = dto.banStatusTcg;
-    if (dto.banStatusOcg) where.banStatusOcg = dto.banStatusOcg;
+    if (dto.attribute?.length) where.attribute = { in: dto.attribute };
+    if (dto.race?.length) where.race = { in: dto.race };
+    if (dto.cardType?.length) where.cardType = { in: dto.cardType };
+    if (dto.frameType?.length) where.frameType = { in: dto.frameType };
+    if (dto.summonType?.length) where.summonType = { in: dto.summonType };
+    if (dto.monsterEffectType?.length)
+      where.monsterEffectType = { in: dto.monsterEffectType };
+    if (dto.spellTrapSubType?.length)
+      where.spellTrapSubType = { in: dto.spellTrapSubType };
+    if (dto.banStatusTcg?.length) where.banStatusTcg = { in: dto.banStatusTcg };
+    if (dto.banStatusOcg?.length) where.banStatusOcg = { in: dto.banStatusOcg };
 
     if (dto.atkMin !== undefined || dto.atkMax !== undefined) {
       where.atk = {

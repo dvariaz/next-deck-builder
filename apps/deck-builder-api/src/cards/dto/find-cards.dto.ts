@@ -17,9 +17,16 @@ import {
   SpellTrapSubType,
   SummonType,
 } from '../../../generated/prisma/enums';
-import { toBoolean } from '../../common/transforms';
+import { toArray, toBoolean } from '../../common/transforms';
 
 export class FindCardsDto {
+  @ApiPropertyOptional({
+    description: 'Full-text search across card name and description',
+  })
+  @IsOptional()
+  @IsString()
+  q?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -30,50 +37,59 @@ export class FindCardsDto {
   @IsString()
   archetype?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
-  @IsString()
-  attribute?: string;
+  @Transform(toArray)
+  @IsString({ each: true })
+  attribute?: string[];
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
-  @IsString()
-  race?: string;
+  @Transform(toArray)
+  @IsString({ each: true })
+  race?: string[];
 
-  @ApiPropertyOptional({ enum: CardType })
+  @ApiPropertyOptional({ enum: CardType, isArray: true })
   @IsOptional()
-  @IsEnum(CardType)
-  cardType?: CardType;
+  @Transform(toArray)
+  @IsEnum(CardType, { each: true })
+  cardType?: CardType[];
 
-  @ApiPropertyOptional({ enum: CardFrameType })
+  @ApiPropertyOptional({ enum: CardFrameType, isArray: true })
   @IsOptional()
-  @IsEnum(CardFrameType)
-  frameType?: CardFrameType;
+  @Transform(toArray)
+  @IsEnum(CardFrameType, { each: true })
+  frameType?: CardFrameType[];
 
-  @ApiPropertyOptional({ enum: SummonType })
+  @ApiPropertyOptional({ enum: SummonType, isArray: true })
   @IsOptional()
-  @IsEnum(SummonType)
-  summonType?: SummonType;
+  @Transform(toArray)
+  @IsEnum(SummonType, { each: true })
+  summonType?: SummonType[];
 
-  @ApiPropertyOptional({ enum: MonsterEffectType })
+  @ApiPropertyOptional({ enum: MonsterEffectType, isArray: true })
   @IsOptional()
-  @IsEnum(MonsterEffectType)
-  monsterEffectType?: MonsterEffectType;
+  @Transform(toArray)
+  @IsEnum(MonsterEffectType, { each: true })
+  monsterEffectType?: MonsterEffectType[];
 
-  @ApiPropertyOptional({ enum: SpellTrapSubType })
+  @ApiPropertyOptional({ enum: SpellTrapSubType, isArray: true })
   @IsOptional()
-  @IsEnum(SpellTrapSubType)
-  spellTrapSubType?: SpellTrapSubType;
+  @Transform(toArray)
+  @IsEnum(SpellTrapSubType, { each: true })
+  spellTrapSubType?: SpellTrapSubType[];
 
-  @ApiPropertyOptional({ enum: BanStatus })
+  @ApiPropertyOptional({ enum: BanStatus, isArray: true })
   @IsOptional()
-  @IsEnum(BanStatus)
-  banStatusTcg?: BanStatus;
+  @Transform(toArray)
+  @IsEnum(BanStatus, { each: true })
+  banStatusTcg?: BanStatus[];
 
-  @ApiPropertyOptional({ enum: BanStatus })
+  @ApiPropertyOptional({ enum: BanStatus, isArray: true })
   @IsOptional()
-  @IsEnum(BanStatus)
-  banStatusOcg?: BanStatus;
+  @Transform(toArray)
+  @IsEnum(BanStatus, { each: true })
+  banStatusOcg?: BanStatus[];
 
   @ApiPropertyOptional({ minimum: 0 })
   @IsOptional()

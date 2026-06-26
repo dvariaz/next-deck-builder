@@ -77,62 +77,93 @@ describe('CardsService', () => {
         expect(where.archetype).toEqual({ contains: 'Blue-Eyes', mode: 'insensitive' });
       });
 
-      it('builds exact match for attribute', () => {
-        service.findAll({ attribute: 'DARK', skip: 0, take: 20 });
+      it('omits the q filter when q is not provided', () => {
+        service.findAll({ skip: 0, take: 20 });
 
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.attribute).toBe('DARK');
+        expect(where).not.toHaveProperty('OR');
       });
 
-      it('builds exact match for race', () => {
-        service.findAll({ race: 'Dragon', skip: 0, take: 20 });
+      it('searches name and description for the q query string', () => {
+        service.findAll({ q: 'destroy', skip: 0, take: 20 });
 
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.race).toBe('Dragon');
+        expect(where.OR).toEqual([
+          { name: { contains: 'destroy', mode: 'insensitive' } },
+          { description: { contains: 'destroy', mode: 'insensitive' } },
+        ]);
+      });
+
+      it('builds an `in` filter for a single attribute value', () => {
+        service.findAll({ attribute: ['DARK'], skip: 0, take: 20 });
+
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where.attribute).toEqual({ in: ['DARK'] });
+      });
+
+      it('builds an `in` filter for multiple attribute values', () => {
+        service.findAll({ attribute: ['DARK', 'LIGHT'], skip: 0, take: 20 });
+
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where.attribute).toEqual({ in: ['DARK', 'LIGHT'] });
+      });
+
+      it('omits the attribute filter when an empty array is provided', () => {
+        service.findAll({ attribute: [], skip: 0, take: 20 });
+
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where).not.toHaveProperty('attribute');
+      });
+
+      it('builds an `in` filter for race', () => {
+        service.findAll({ race: ['Dragon', 'Spellcaster'], skip: 0, take: 20 });
+
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where.race).toEqual({ in: ['Dragon', 'Spellcaster'] });
       });
     });
 
     describe('buildWhere — enum filters', () => {
       it('filters by cardType', () => {
-        service.findAll({ cardType: 'MONSTER', skip: 0, take: 20 });
+        service.findAll({ cardType: ['MONSTER'], skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.cardType).toBe('MONSTER');
+        expect(where.cardType).toEqual({ in: ['MONSTER'] });
       });
 
-      it('filters by frameType', () => {
-        service.findAll({ frameType: 'FUSION', skip: 0, take: 20 });
+      it('filters by multiple frameTypes', () => {
+        service.findAll({ frameType: ['FUSION', 'SYNCHRO'], skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.frameType).toBe('FUSION');
+        expect(where.frameType).toEqual({ in: ['FUSION', 'SYNCHRO'] });
       });
 
       it('filters by summonType', () => {
-        service.findAll({ summonType: 'SYNCHRO', skip: 0, take: 20 });
+        service.findAll({ summonType: ['SYNCHRO'], skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.summonType).toBe('SYNCHRO');
+        expect(where.summonType).toEqual({ in: ['SYNCHRO'] });
       });
 
       it('filters by monsterEffectType', () => {
-        service.findAll({ monsterEffectType: 'EFFECT', skip: 0, take: 20 });
+        service.findAll({ monsterEffectType: ['EFFECT'], skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.monsterEffectType).toBe('EFFECT');
+        expect(where.monsterEffectType).toEqual({ in: ['EFFECT'] });
       });
 
       it('filters by spellTrapSubType', () => {
-        service.findAll({ spellTrapSubType: 'QUICK_PLAY', skip: 0, take: 20 });
+        service.findAll({ spellTrapSubType: ['QUICK_PLAY'], skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.spellTrapSubType).toBe('QUICK_PLAY');
+        expect(where.spellTrapSubType).toEqual({ in: ['QUICK_PLAY'] });
       });
 
       it('filters by banStatusTcg', () => {
-        service.findAll({ banStatusTcg: 'FORBIDDEN', skip: 0, take: 20 });
+        service.findAll({ banStatusTcg: ['FORBIDDEN'], skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.banStatusTcg).toBe('FORBIDDEN');
+        expect(where.banStatusTcg).toEqual({ in: ['FORBIDDEN'] });
       });
 
       it('filters by banStatusOcg', () => {
-        service.findAll({ banStatusOcg: 'LIMITED', skip: 0, take: 20 });
+        service.findAll({ banStatusOcg: ['LIMITED'], skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.banStatusOcg).toBe('LIMITED');
+        expect(where.banStatusOcg).toEqual({ in: ['LIMITED'] });
       });
     });
 
@@ -209,21 +240,24 @@ describe('CardsService', () => {
     describe('buildWhere — combined filters', () => {
       it('combines multiple filters into a single where clause', () => {
         service.findAll({
-          cardType: 'MONSTER',
-          attribute: 'DARK',
+          cardType: ['MONSTER'],
+          attribute: ['DARK', 'LIGHT'],
           atkMin: 2000,
           isTuner: true,
-          name: 'dragon',
+          q: 'dragon',
           skip: 0,
           take: 20,
         });
 
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.cardType).toBe('MONSTER');
-        expect(where.attribute).toBe('DARK');
+        expect(where.cardType).toEqual({ in: ['MONSTER'] });
+        expect(where.attribute).toEqual({ in: ['DARK', 'LIGHT'] });
         expect(where.atk).toEqual({ gte: 2000 });
         expect(where.isTuner).toBe(true);
-        expect(where.name).toEqual({ contains: 'dragon', mode: 'insensitive' });
+        expect(where.OR).toEqual([
+          { name: { contains: 'dragon', mode: 'insensitive' } },
+          { description: { contains: 'dragon', mode: 'insensitive' } },
+        ]);
       });
     });
   });
