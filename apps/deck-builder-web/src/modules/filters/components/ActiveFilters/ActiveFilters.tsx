@@ -25,6 +25,8 @@ export function ActiveFilters() {
   const cardTypes = useFilterStore.use.cardTypes()
   const frameTypes = useFilterStore.use.frameTypes()
   const attributes = useFilterStore.use.attributes()
+  const races = useFilterStore.use.races()
+  const spellTrapSubTypes = useFilterStore.use.spellTrapSubTypes()
   const banStatuses = useFilterStore.use.banStatuses()
   const levelMin = useFilterStore.use.levelMin()
   const levelMax = useFilterStore.use.levelMax()
@@ -32,6 +34,9 @@ export function ActiveFilters() {
   const atkMax = useFilterStore.use.atkMax()
   const defMin = useFilterStore.use.defMin()
   const defMax = useFilterStore.use.defMax()
+  const isTuner = useFilterStore.use.isTuner()
+  const isFlip = useFilterStore.use.isFlip()
+  const isPendulum = useFilterStore.use.isPendulum()
   const removeFilter = useFilterStore.use.removeFilter()
   const clearAll = useFilterStore.use.clearAll()
   const getActiveFilterCount = useFilterStore.use.getActiveFilterCount()
@@ -57,6 +62,14 @@ export function ActiveFilters() {
 
       {attributes.map((attr) => (
         <FilterChip key={attr} label="Attribute" value={attr} onRemove={() => removeFilter('attribute', attr)} />
+      ))}
+
+      {races.map((race) => (
+        <FilterChip key={race} label="Race" value={race} onRemove={() => removeFilter('race', race)} />
+      ))}
+
+      {spellTrapSubTypes.map((type) => (
+        <FilterChip key={type} label="Sub-Type" value={type.replace('_', '-')} onRemove={() => removeFilter('spellTrapSubType', type)} />
       ))}
 
       {banStatuses.map((status) => (
@@ -85,6 +98,18 @@ export function ActiveFilters() {
           value={`${defMin ?? 0}–${defMax ?? 5000}`}
           onRemove={() => removeFilter('defRange')}
         />
+      )}
+
+      {isTuner && (
+        <FilterChip label="Property" value="Tuner" onRemove={() => removeFilter('isTuner')} />
+      )}
+
+      {isFlip && (
+        <FilterChip label="Property" value="Flip" onRemove={() => removeFilter('isFlip')} />
+      )}
+
+      {isPendulum && (
+        <FilterChip label="Property" value="Pendulum" onRemove={() => removeFilter('isPendulum')} />
       )}
 
       <Button

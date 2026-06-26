@@ -8,6 +8,7 @@ import type {
   CardsControllerFindAllCardTypeItem,
   CardsControllerFindAllFrameTypeItem,
   CardsControllerFindAllBanStatusTcgItem,
+  CardsControllerFindAllSpellTrapSubTypeItem,
 } from '@/generated/model'
 
 function toURLParams(state: FilterState): URLSearchParams {
@@ -16,6 +17,8 @@ function toURLParams(state: FilterState): URLSearchParams {
   state.cardTypes.forEach((t) => params.append('cardType', t))
   state.frameTypes.forEach((t) => params.append('frameType', t))
   state.attributes.forEach((a) => params.append('attribute', a))
+  state.races.forEach((r) => params.append('race', r))
+  state.spellTrapSubTypes.forEach((t) => params.append('spellTrapSubType', t))
   state.banStatuses.forEach((b) => params.append('banStatusTcg', b))
   if (state.levelMin !== undefined) params.set('levelMin', String(state.levelMin))
   if (state.levelMax !== undefined) params.set('levelMax', String(state.levelMax))
@@ -23,6 +26,9 @@ function toURLParams(state: FilterState): URLSearchParams {
   if (state.atkMax !== undefined) params.set('atkMax', String(state.atkMax))
   if (state.defMin !== undefined) params.set('defMin', String(state.defMin))
   if (state.defMax !== undefined) params.set('defMax', String(state.defMax))
+  if (state.isTuner !== undefined) params.set('isTuner', String(state.isTuner))
+  if (state.isFlip !== undefined) params.set('isFlip', String(state.isFlip))
+  if (state.isPendulum !== undefined) params.set('isPendulum', String(state.isPendulum))
   if (state.sortField !== 'name') params.set('sortField', state.sortField)
   if (state.sortDirection !== 'asc') params.set('sortDirection', state.sortDirection)
   return params
@@ -41,6 +47,8 @@ export function useFilterSync() {
     const cardTypes = searchParams.getAll('cardType') as CardsControllerFindAllCardTypeItem[]
     const frameTypes = searchParams.getAll('frameType') as CardsControllerFindAllFrameTypeItem[]
     const attributes = searchParams.getAll('attribute')
+    const races = searchParams.getAll('race')
+    const spellTrapSubTypes = searchParams.getAll('spellTrapSubType') as CardsControllerFindAllSpellTrapSubTypeItem[]
     const banStatuses = searchParams.getAll('banStatusTcg') as CardsControllerFindAllBanStatusTcgItem[]
     const levelMin = searchParams.get('levelMin')
     const levelMax = searchParams.get('levelMax')
@@ -48,6 +56,9 @@ export function useFilterSync() {
     const atkMax = searchParams.get('atkMax')
     const defMin = searchParams.get('defMin')
     const defMax = searchParams.get('defMax')
+    const isTuner = searchParams.get('isTuner')
+    const isFlip = searchParams.get('isFlip')
+    const isPendulum = searchParams.get('isPendulum')
     const sortField = searchParams.get('sortField') as SortField | null
     const sortDirection = searchParams.get('sortDirection') as SortDirection | null
 
@@ -55,6 +66,8 @@ export function useFilterSync() {
     cardTypes.forEach((t) => store.toggleCardType(t))
     frameTypes.forEach((t) => store.toggleFrameType(t))
     attributes.forEach((a) => store.toggleAttribute(a))
+    races.forEach((r) => store.toggleRace(r))
+    spellTrapSubTypes.forEach((t) => store.toggleSpellTrapSubType(t))
     banStatuses.forEach((b) => store.toggleBanStatus(b))
     if (levelMin !== null || levelMax !== null)
       store.setLevelRange(
@@ -71,6 +84,9 @@ export function useFilterSync() {
         defMin !== null ? Number(defMin) : undefined,
         defMax !== null ? Number(defMax) : undefined,
       )
+    if (isTuner !== null) store.setIsTuner(isTuner === 'true' ? true : undefined)
+    if (isFlip !== null) store.setIsFlip(isFlip === 'true' ? true : undefined)
+    if (isPendulum !== null) store.setIsPendulum(isPendulum === 'true' ? true : undefined)
     if (sortField) store.setSort(sortField, sortDirection ?? 'asc')
 
     // Subscribe to all future store changes and push URL.
