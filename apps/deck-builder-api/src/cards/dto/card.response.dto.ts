@@ -34,6 +34,7 @@ export class CardResponseDto {
   @ApiProperty() isFlip: boolean;
   @ApiProperty() isTuner: boolean;
   @ApiProperty() isPendulum: boolean;
+  @ApiProperty({ type: [String] }) linkMarkers: string[];
   @ApiProperty() isToken: boolean;
   @ApiProperty({ type: [String] }) aiTags: string[];
   @ApiProperty({ type: () => [CardImageResponseDto] }) cardImages: CardImageResponseDto[];

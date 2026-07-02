@@ -38,6 +38,7 @@ export interface YgoApiCard {
   linkval?: number;
   attribute?: string;
   typeline?: string[];
+  linkmarkers?: string[];
   banlist_info?: YgoApiBanlistInfo;
   card_sets?: YgoApiCardSet[];
   card_images?: YgoApiCardImage[];

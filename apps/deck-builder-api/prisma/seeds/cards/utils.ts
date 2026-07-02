@@ -148,6 +148,7 @@ export function mapApiCardToCreateInput(
     def: monster ? (card.def ?? null) : null,
     level: monster ? (card.level ?? null) : null,
     linkVal: monster ? (card.linkval ?? null) : null,
+    linkMarkers: (card.linkmarkers ?? []).map((m) => m.toLowerCase()),
     scale: monster ? (card.scale ?? null) : null,
     attribute: monster ? (card.attribute ?? null) : null,
     race: monster ? (card.race ?? null) : null,

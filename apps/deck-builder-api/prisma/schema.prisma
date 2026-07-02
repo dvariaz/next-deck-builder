@@ -79,6 +79,7 @@ model Card {
   def                Int?
   level              Int?
   linkVal            Int?
+  linkMarkers        String[]
   scale              Int?
   attribute          String?
   race               String?
