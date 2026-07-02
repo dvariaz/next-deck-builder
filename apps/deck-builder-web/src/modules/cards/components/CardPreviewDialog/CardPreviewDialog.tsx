@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Star, Swords, Shield, Link as LinkIcon, FileText, ImageIcon } from 'lucide-react'
+import { Star, Swords, Shield, FileText, ImageIcon } from 'lucide-react'
 import type { CardResponseDto } from '@/generated/model'
+import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogTitle } from '@/modules/common/components/Dialog/Dialog'
 import { Badge } from '@/modules/common/components/Badge/Badge'
 import { ScrollArea } from '@/modules/common/components/ScrollArea/ScrollArea'
@@ -11,7 +12,7 @@ import { AttributeBadge } from '@/modules/cards/components/AttributeBadge/Attrib
 import { BanlistBadge } from '@/modules/cards/components/BanlistBadge/BanlistBadge'
 import { CardTypeBadge } from '@/modules/cards/components/CardTypeBadge/CardTypeBadge'
 import { BanlistStatusIcon } from '@/modules/common/components/BanlistStatusIcon/BanlistStatusIcon'
-import { cn } from '@/lib/utils'
+import { LinkLevelIcon } from '../LinkLevelIcon/LinkLevelIcon'
 
 interface CardPreviewDialogProps {
   card: CardResponseDto | null
@@ -81,38 +82,46 @@ export function CardPreviewDialog({ card, open, onOpenChange }: CardPreviewDialo
           <div className="grid grid-cols-3 lg:grid-cols-4 gap-3">
             {cardLevel !== undefined && (
               <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-background/50">
-                <span className="text-xs text-muted-foreground">{card.linkVal ? 'Link' : 'Level'}</span>
-                <div className="flex items-center gap-1.5 text-amber-400 mb-1">
+                <div className="flex items-center gap-2 text-amber-400 mb-1">
                   {card.linkVal ? (
                     <>
-                      <LinkIcon className="h-4 w-4" />
-                      <span className="text-lg font-bold text-foreground">{cardLevel}</span>
+                      <LinkLevelIcon linkMarkers={card.linkMarkers} size={24} />
+                      <span className="text-lg font-bold text-foreground">Link {cardLevel}</span>
                     </>
                   ):(
                   <>
-                    <Star className="h-4 w-4 fill-current" />
-                    <span className="text-lg font-bold text-foreground">{cardLevel}</span>
+                    <span className="text-lg font-bold text-foreground">Level</span>
+                    <div className='flex items-center gap-1'>
+                      <Star className="h-4 w-4 fill-current" />
+                      <span className="text-lg font-bold text-foreground">{cardLevel}</span>
+                    </div>
                   </>
                 )}
                 </div>
               </div>
             )}
-            {card.atk !== undefined && (
-              <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-background/50">
-                <span className="text-xs text-muted-foreground">ATK</span>
-                <div className="flex items-center gap-1.5 text-red-400 mb-1">
-                  <Swords className="h-4 w-4 text-red-400 mb-1" />
-                  <span className="text-lg font-bold text-foreground">{card.atk}</span>
-                </div>
+            {(card.isTuner) && (
+              <div className="flex justify-center items-center p-2 rounded-lg bg-background/50">
+                <span className="text-lg font-bold text-foreground">Tuner</span>
               </div>
             )}
-            {card.def !== undefined && (
-              <div className="flex flex-col items-center gap-2 p-2 rounded-lg bg-background/50">
-                <span className="text-xs text-muted-foreground">DEF</span>
-                <div className="flex items-center gap-1.5 text-blue-400 mb-1">
-                  <Shield className="h-4 w-4 text-blue-400 mb-1" />
-                  <span className="text-lg font-bold text-foreground">{card.def}</span>
-                </div>
+            {(card.isFlip) && (
+              <div className="flex justify-center items-center p-2 rounded-lg bg-background/50">
+                <span className="text-lg font-bold text-foreground">Flip</span>
+              </div>
+            )}
+            {(card.atk !== undefined) && (card.atk !== null) && (
+              <div className="flex justify-center items-center gap-2 p-2 rounded-lg bg-background/50">
+                <Swords className="h-4 w-4 text-red-400" />
+                <span className="text-lg font-bold text-foreground">{card.atk >= 0 ? card.atk : '?'}</span>
+                <span className="text-sm font-bold text-foreground">ATK</span>
+              </div>
+            )}
+            {(card.def !== undefined) && (card.def !== null) && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-background/50">
+                <Shield className="h-4 w-4 text-blue-400" />
+                <span className="text-lg font-bold text-foreground">{card.def >= 0 ? card.def : '?'}</span>
+                <span className="text-sm font-bold text-foreground">DEF</span>
               </div>
             )}
           </div>
@@ -125,6 +134,7 @@ export function CardPreviewDialog({ card, open, onOpenChange }: CardPreviewDialo
             <h4 className="text-sm font-semibold text-muted-foreground mb-2">Card Text</h4>
             <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{card.description}</p>
           </div>
+
           <div className="pt-4 border-t border-border space-y-3">
             {card.archetype && (
               <div className="flex items-center gap-2">
@@ -132,17 +142,25 @@ export function CardPreviewDialog({ card, open, onOpenChange }: CardPreviewDialo
                 <Badge variant="secondary" className="bg-primary/10 text-primary">{card.archetype}</Badge>
               </div>
             )}
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-muted-foreground">Frame Type:</span>
-              <span className="text-foreground capitalize">{card.frameType.toLowerCase()}</span>
-            </div>
-            {card.spellTrapSubType && (
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-muted-foreground">Sub Type:</span>
-                <span className="text-foreground capitalize">{card.spellTrapSubType.toLowerCase()}</span>
-              </div>
-            )}
           </div>
+
+          {card.cardSets && card.cardSets.length > 0 && (
+            <div className="pt-4 border-t border-border">
+              <h4 className="text-sm font-semibold text-muted-foreground mb-2">Card Sets</h4>
+              <div className="space-y-1.5">
+                {card.cardSets.map((set) => (
+                  <div key={set.id} className="flex items-center justify-between text-xs gap-3 py-1">
+                    <span className="text-foreground font-medium truncate">{set.setName}</span>
+                    <div className="flex items-center gap-2 shrink-0 text-muted-foreground">
+                      <span>{set.setCode}</span>
+                      <span>·</span>
+                      <span>{set.setRarity}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </ScrollArea>
     </div>

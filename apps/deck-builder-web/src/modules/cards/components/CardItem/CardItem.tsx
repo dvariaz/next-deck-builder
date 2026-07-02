@@ -8,6 +8,7 @@ import { useDeckStore } from '@/modules/cards/hooks/useDeckStore/useDeckStore'
 import { formatCardTypeLabel } from '@/modules/cards/utils/formatCardType'
 import { Button } from '@/modules/common/components/Button/Button'
 import { BanlistStatusIcon } from '@/modules/common/components/BanlistStatusIcon/BanlistStatusIcon'
+import { LinkLevelIcon } from '@/modules/cards/components/LinkLevelIcon/LinkLevelIcon'
 import { cn } from '@/lib/utils'
 
 interface CardItemProps {
@@ -147,22 +148,22 @@ export function CardItem({ card, priority = false, onPreview }: CardItemProps) {
             {card.cardType === 'MONSTER' && (
               <>
                 {card.linkVal ? (
-                  <span className="flex items-center gap-0.5 text-blue-400">
-                    Link {card.linkVal}
+                  <span className="flex items-center gap-0.5">
+                    <LinkLevelIcon linkMarkers={card.linkMarkers ?? []} size={16} /> {card.linkVal}
                   </span>
                 ) : card.level ? (
                   <span className="flex items-center gap-0.5 text-amber-400">
                     <Star className="h-3 w-3 fill-amber-400" />{card.level}
                   </span>
                 ) : null}
-                {card.atk !== undefined && (
+                {(card.atk !== undefined) && (card.atk !== null) && (
                   <span className="flex items-center gap-0.5 text-red-400">
-                    <Swords className="h-3 w-3" />{card.atk}
+                    <Swords className="h-3 w-3" />{card.atk >= 0 ? card.atk : '?'}
                   </span>
                 )}
-                {card.def !== undefined && (
+                {(card.def !== undefined) && (card.def !== null) && (
                   <span className="flex items-center gap-0.5 text-blue-400">
-                    <Shield className="h-3 w-3" />{card.def}
+                    <Shield className="h-3 w-3" />{card.def >= 0 ? card.def : '?'}
                   </span>
                 )}
               </>
