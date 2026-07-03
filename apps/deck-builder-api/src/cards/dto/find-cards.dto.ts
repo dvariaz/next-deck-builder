@@ -49,6 +49,18 @@ export class FindCardsDto {
   @IsString({ each: true })
   race?: string[];
 
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @Transform(toArray)
+  @IsString({ each: true })
+  linkMarker?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  linkMarkerStrict?: boolean;
+
   @ApiPropertyOptional({ enum: CardType, isArray: true })
   @IsOptional()
   @Transform(toArray)

@@ -123,6 +123,41 @@ describe('CardsService', () => {
       });
     });
 
+    describe('buildWhere — link markers', () => {
+      it('builds a `hasEvery` filter for link markers (non-strict)', () => {
+        service.findAll({ linkMarker: ['top', 'bottom'], skip: 0, take: 20 });
+
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where.linkMarkers).toEqual({ hasEvery: ['top', 'bottom'] });
+        expect(where).not.toHaveProperty('NOT');
+      });
+
+      it('adds a complement `NOT hasSome` filter when strict', () => {
+        service.findAll({
+          linkMarker: ['top', 'bottom'],
+          linkMarkerStrict: true,
+          skip: 0,
+          take: 20,
+        });
+
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where.linkMarkers).toEqual({ hasEvery: ['top', 'bottom'] });
+        expect(where.NOT).toEqual({
+          linkMarkers: {
+            hasSome: ['right', 'left', 'top-left', 'top-right', 'bottom-right', 'bottom-left'],
+          },
+        });
+      });
+
+      it('omits the link marker filter when an empty array is provided', () => {
+        service.findAll({ linkMarker: [], linkMarkerStrict: true, skip: 0, take: 20 });
+
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where).not.toHaveProperty('linkMarkers');
+        expect(where).not.toHaveProperty('NOT');
+      });
+    });
+
     describe('buildWhere — enum filters', () => {
       it('filters by cardType', () => {
         service.findAll({ cardType: ['MONSTER'], skip: 0, take: 20 });
@@ -200,10 +235,21 @@ describe('CardsService', () => {
         expect(where.def).toEqual({ gte: 0, lte: 2000 });
       });
 
-      it('builds level range filter', () => {
+      it('builds a level/link range filter matching either level or linkVal', () => {
         service.findAll({ levelMin: 4, levelMax: 8, skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.level).toEqual({ gte: 4, lte: 8 });
+        expect(where.AND).toEqual([
+          { OR: [{ level: { gte: 4, lte: 8 } }, { linkVal: { gte: 4, lte: 8 } }] },
+        ]);
+        expect(where.level).toBeUndefined();
+      });
+
+      it('applies an open-ended level/link range (min only) to both columns', () => {
+        service.findAll({ levelMin: 3, skip: 0, take: 20 });
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where.AND).toEqual([
+          { OR: [{ level: { gte: 3 } }, { linkVal: { gte: 3 } }] },
+        ]);
       });
     });
 

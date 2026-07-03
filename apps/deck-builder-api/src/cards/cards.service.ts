@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { FindCardsDto } from './dto/find-cards.dto';
+import { LINK_MARKERS } from './link-markers.constant';
 
 @Injectable()
 export class CardsService {
@@ -53,6 +54,16 @@ export class CardsService {
     if (dto.banStatusTcg?.length) where.banStatusTcg = { in: dto.banStatusTcg };
     if (dto.banStatusOcg?.length) where.banStatusOcg = { in: dto.banStatusOcg };
 
+    if (dto.linkMarker?.length) {
+      where.linkMarkers = { hasEvery: dto.linkMarker };
+      if (dto.linkMarkerStrict) {
+        const complement = LINK_MARKERS.filter(
+          (m) => !dto.linkMarker!.includes(m),
+        );
+        where.NOT = { linkMarkers: { hasSome: complement } };
+      }
+    }
+
     if (dto.atkMin !== undefined || dto.atkMax !== undefined) {
       where.atk = {
         ...(dto.atkMin !== undefined && { gte: dto.atkMin }),
@@ -68,10 +79,13 @@ export class CardsService {
     }
 
     if (dto.levelMin !== undefined || dto.levelMax !== undefined) {
-      where.level = {
+      const range = {
         ...(dto.levelMin !== undefined && { gte: dto.levelMin }),
         ...(dto.levelMax !== undefined && { lte: dto.levelMax }),
       };
+      // Leveled/Rank monsters store the value in `level`; Link monsters store
+      // their rating in `linkVal`. The unified Level/Rank/Link range matches either.
+      where.AND = [{ OR: [{ level: range }, { linkVal: range }] }];
     }
 
     if (dto.isEffect !== undefined) where.isEffect = dto.isEffect;
