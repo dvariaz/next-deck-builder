@@ -2,13 +2,15 @@
 
 import { X } from 'lucide-react'
 import { Button } from '@/modules/common/components/Button/Button'
+import { formatBanlistLabel } from '@/modules/common/utils/formatBanlistLabel'
 import { useFilterStore } from '@/modules/filters/hooks/useFilterStore/useFilterStore'
+import { SPELL_TRAP_SUB_TYPE_LABELS } from '@/modules/filters/utils/filterConstants'
 
-function FilterChip({ label, value, onRemove }: { label: string; value: string; onRemove: () => void }) {
+function FilterChip({ label, value, capitalize, onRemove }: { label: string; value: string; capitalize?: boolean; onRemove: () => void }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
       <span className="text-muted-foreground">{label}:</span>
-      {value}
+      <span className={capitalize ? 'capitalize' : undefined}>{value}</span>
       <button
         onClick={onRemove}
         className="ml-0.5 rounded-full p-0.5 hover:bg-muted transition-colors"
@@ -53,11 +55,11 @@ export function ActiveFilters() {
       )}
 
       {cardTypes.map((type) => (
-        <FilterChip key={type} label="Type" value={type} onRemove={() => removeFilter('cardType', type)} />
+        <FilterChip key={type} label="Type" value={type.toLowerCase()} capitalize onRemove={() => removeFilter('cardType', type)} />
       ))}
 
       {frameTypes.map((type) => (
-        <FilterChip key={type} label="Frame" value={type} onRemove={() => removeFilter('frameType', type)} />
+        <FilterChip key={type} label="Frame" value={type.toLowerCase()} capitalize onRemove={() => removeFilter('frameType', type)} />
       ))}
 
       {attributes.map((attr) => (
@@ -69,11 +71,11 @@ export function ActiveFilters() {
       ))}
 
       {spellTrapSubTypes.map((type) => (
-        <FilterChip key={type} label="Sub-Type" value={type.replace('_', '-')} onRemove={() => removeFilter('spellTrapSubType', type)} />
+        <FilterChip key={type} label="Sub-Type" value={SPELL_TRAP_SUB_TYPE_LABELS[type]} onRemove={() => removeFilter('spellTrapSubType', type)} />
       ))}
 
       {banStatuses.map((status) => (
-        <FilterChip key={status} label="Banlist" value={status} onRemove={() => removeFilter('banStatus', status)} />
+        <FilterChip key={status} label="Banlist" value={formatBanlistLabel(status)} onRemove={() => removeFilter('banStatus', status)} />
       ))}
 
       {(levelMin !== undefined || levelMax !== undefined) && (
