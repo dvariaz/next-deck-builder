@@ -2,14 +2,16 @@
 
 import { X } from 'lucide-react'
 import { Button } from '@/modules/common/components/Button/Button'
+import { LinkLevelIcon } from '@/modules/cards/components/LinkLevelIcon/LinkLevelIcon'
 import { formatBanlistLabel } from '@/modules/common/utils/formatBanlistLabel'
 import { useFilterStore } from '@/modules/filters/hooks/useFilterStore/useFilterStore'
 import { SPELL_TRAP_SUB_TYPE_LABELS } from '@/modules/filters/utils/filterConstants'
+import { CardsControllerFindAllFrameTypeItem } from '@/generated/model'
 
-function FilterChip({ label, value, capitalize, onRemove }: { label: string; value: string; capitalize?: boolean; onRemove: () => void }) {
+function FilterChip({ label, value, capitalize, onRemove }: { label?: string; value: React.ReactNode; capitalize?: boolean; onRemove: () => void }) {
   return (
     <span className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
-      <span className="text-muted-foreground">{label}:</span>
+      {label && <span className="text-muted-foreground">{label}:</span>}
       <span className={capitalize ? 'capitalize' : undefined}>{value}</span>
       <button
         onClick={onRemove}
@@ -39,12 +41,18 @@ export function ActiveFilters() {
   const isTuner = useFilterStore.use.isTuner()
   const isFlip = useFilterStore.use.isFlip()
   const isPendulum = useFilterStore.use.isPendulum()
+  const linkMarkers = useFilterStore.use.linkMarkers()
+  const linkMarkerStrict = useFilterStore.use.linkMarkerStrict()
   const removeFilter = useFilterStore.use.removeFilter()
   const clearAll = useFilterStore.use.clearAll()
   const getActiveFilterCount = useFilterStore.use.getActiveFilterCount()
 
   const count = getActiveFilterCount()
   if (count === 0) return null
+
+  // Link monsters cap at Link 8, so mirror the slider's upper bound in the Level chip.
+  const isLinkContext = linkMarkers.length > 0 || frameTypes.includes(CardsControllerFindAllFrameTypeItem.LINK)
+  const levelUpperBound = isLinkContext ? 8 : 12
 
   return (
     <div className="flex flex-wrap items-center gap-2">
@@ -78,10 +86,10 @@ export function ActiveFilters() {
         <FilterChip key={status} label="Banlist" value={formatBanlistLabel(status)} onRemove={() => removeFilter('banStatus', status)} />
       ))}
 
-      {(levelMin !== undefined || levelMax !== undefined) && (
+      {(levelMin !== undefined || levelMax !== undefined) && !(linkMarkers.length > 0 && linkMarkerStrict) && (
         <FilterChip
           label="Level"
-          value={`${levelMin ?? 1}–${levelMax ?? 12}`}
+          value={`${levelMin ?? 1}–${levelMax ?? levelUpperBound}`}
           onRemove={() => removeFilter('levelRange')}
         />
       )}
@@ -112,6 +120,18 @@ export function ActiveFilters() {
 
       {isPendulum && (
         <FilterChip label="Property" value="Pendulum" onRemove={() => removeFilter('isPendulum')} />
+      )}
+
+      {linkMarkers.length > 0 && (
+        <FilterChip
+          value={
+            <span className="inline-flex items-center gap-1">
+              <LinkLevelIcon linkMarkers={linkMarkers} size={14} />
+              {`Link ${linkMarkerStrict ? linkMarkers.length : `${linkMarkers.length}+`}`}
+            </span>
+          }
+          onRemove={() => removeFilter('linkMarkers')}
+        />
       )}
 
       <Button

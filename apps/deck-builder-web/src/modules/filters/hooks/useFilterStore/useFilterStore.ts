@@ -1,9 +1,11 @@
 import { create } from 'zustand'
 import { createSelectors } from '@/modules/common/utils/store'
-import { CardsControllerFindAllCardTypeItem } from '@/generated/model'
+import {
+  CardsControllerFindAllCardTypeItem,
+  CardsControllerFindAllFrameTypeItem,
+} from '@/generated/model'
 import type {
   CardsControllerFindAllParams,
-  CardsControllerFindAllFrameTypeItem,
   CardsControllerFindAllBanStatusTcgItem,
   CardsControllerFindAllSpellTrapSubTypeItem,
 } from '@/generated/model'
@@ -28,6 +30,8 @@ interface FilterState {
   isTuner: boolean | undefined
   isFlip: boolean | undefined
   isPendulum: boolean | undefined
+  linkMarkers: string[]
+  linkMarkerStrict: boolean
   sortField: SortField
   sortDirection: SortDirection
 
@@ -44,6 +48,8 @@ interface FilterState {
   setIsTuner: (val: boolean | undefined) => void
   setIsFlip: (val: boolean | undefined) => void
   setIsPendulum: (val: boolean | undefined) => void
+  toggleLinkMarker: (marker: string) => void
+  setLinkMarkerStrict: (val: boolean) => void
   setSort: (field: SortField, direction: SortDirection) => void
   removeFilter: (type: string, value?: string) => void
   clearAll: () => void
@@ -66,12 +72,22 @@ const SPELL_TRAP_SUB_TYPE_IMPLIED_CARD_TYPES: Record<
   COUNTER: [TRAP],
 }
 
+const { LINK } = CardsControllerFindAllFrameTypeItem
+
 // Only auto-fills cardTypes when no card type has been explicitly chosen yet.
 function withImpliedCardTypes(
   current: CardsControllerFindAllCardTypeItem[],
   implied: CardsControllerFindAllCardTypeItem[],
 ) {
   return current.length === 0 ? implied : current
+}
+
+// A link monster's rating equals its number of link arrows. Selecting N markers
+// therefore implies: loose match → rating ≥ N (min only); strict (exact set) →
+// rating exactly N (min = max = N). No markers → no derived level range.
+function deriveLinkLevels(count: number, strict: boolean) {
+  if (count === 0) return { levelMin: undefined, levelMax: undefined }
+  return { levelMin: count, levelMax: strict ? count : undefined }
 }
 
 const initialState = {
@@ -91,6 +107,8 @@ const initialState = {
   isTuner: undefined as boolean | undefined,
   isFlip: undefined as boolean | undefined,
   isPendulum: undefined as boolean | undefined,
+  linkMarkers: [] as string[],
+  linkMarkerStrict: false,
   sortField: 'name' as SortField,
   sortDirection: 'asc' as SortDirection,
 }
@@ -185,6 +203,26 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
   setIsPendulum: (val) =>
     set((s) => ({ isPendulum: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
 
+  toggleLinkMarker: (marker) =>
+    set((s) => {
+      const isAdding = !s.linkMarkers.includes(marker)
+      const linkMarkers = isAdding
+        ? [...s.linkMarkers, marker]
+        : s.linkMarkers.filter((m) => m !== marker)
+      return {
+        linkMarkers,
+        cardTypes: isAdding ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes,
+        frameTypes: isAdding && !s.frameTypes.includes(LINK)
+          ? [...s.frameTypes, LINK]
+          : s.frameTypes,
+        ...deriveLinkLevels(linkMarkers.length, s.linkMarkerStrict),
+      }
+    }),
+  setLinkMarkerStrict: (val) =>
+    set((s) => (s.linkMarkers.length
+      ? { linkMarkerStrict: val, ...deriveLinkLevels(s.linkMarkers.length, val) }
+      : { linkMarkerStrict: val })),
+
   setSort: (field, direction) => set({ sortField: field, sortDirection: direction }),
 
   removeFilter: (type, value) =>
@@ -203,6 +241,8 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
         case 'isTuner': return { isTuner: undefined }
         case 'isFlip': return { isFlip: undefined }
         case 'isPendulum': return { isPendulum: undefined }
+        case 'linkMarker': return { linkMarkers: s.linkMarkers.filter((m) => m !== value) }
+        case 'linkMarkers': return { linkMarkers: [], linkMarkerStrict: false, levelMin: undefined, levelMax: undefined }
         default: return {}
       }
     }),
@@ -225,6 +265,7 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
     if (s.isTuner !== undefined) count++
     if (s.isFlip !== undefined) count++
     if (s.isPendulum !== undefined) count++
+    count += s.linkMarkers.length
     return count
   },
 
@@ -247,6 +288,10 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
     if (s.isTuner !== undefined) params.isTuner = s.isTuner
     if (s.isFlip !== undefined) params.isFlip = s.isFlip
     if (s.isPendulum !== undefined) params.isPendulum = s.isPendulum
+    if (s.linkMarkers.length) {
+      params.linkMarker = s.linkMarkers
+      if (s.linkMarkerStrict) params.linkMarkerStrict = true
+    }
     return params
   },
 }))

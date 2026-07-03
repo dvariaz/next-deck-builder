@@ -9,6 +9,7 @@ import { Checkbox } from '@/modules/common/components/Checkbox/Checkbox'
 import { Slider } from '@/modules/common/components/Slider/Slider'
 import { Button } from '@/modules/common/components/Button/Button'
 import { FilterSection } from '@/modules/filters/components/FilterSection/FilterSection'
+import { LinkMarkerSelector } from '@/modules/filters/components/LinkMarkerSelector/LinkMarkerSelector'
 import { BanlistStatusIcon } from '@/modules/common/components/BanlistStatusIcon/BanlistStatusIcon'
 import { formatBanlistLabel } from '@/modules/common/utils/formatBanlistLabel'
 import { useFilterStore } from '@/modules/filters/hooks/useFilterStore/useFilterStore'
@@ -73,6 +74,8 @@ export function FilterPanel() {
   const isTuner = useFilterStore.use.isTuner()
   const isFlip = useFilterStore.use.isFlip()
   const isPendulum = useFilterStore.use.isPendulum()
+  const linkMarkers = useFilterStore.use.linkMarkers()
+  const linkMarkerStrict = useFilterStore.use.linkMarkerStrict()
   const toggleCardType = useFilterStore.use.toggleCardType()
   const toggleFrameType = useFilterStore.use.toggleFrameType()
   const toggleAttribute = useFilterStore.use.toggleAttribute()
@@ -85,6 +88,8 @@ export function FilterPanel() {
   const setIsTuner = useFilterStore.use.setIsTuner()
   const setIsFlip = useFilterStore.use.setIsFlip()
   const setIsPendulum = useFilterStore.use.setIsPendulum()
+  const toggleLinkMarker = useFilterStore.use.toggleLinkMarker()
+  const setLinkMarkerStrict = useFilterStore.use.setLinkMarkerStrict()
 
   const [showAllFrameTypes, setShowAllFrameTypes] = useState(false)
   const [showAllRaces, setShowAllRaces] = useState(false)
@@ -92,12 +97,16 @@ export function FilterPanel() {
   const visibleFrameTypes = showAllFrameTypes ? FRAME_TYPES : FRAME_TYPES.slice(0, FRAME_TYPES_INITIAL_COUNT)
   const visibleRaces = showAllRaces ? RACES : RACES.slice(0, RACES_INITIAL_COUNT)
 
-  const levelRangeValues = [levelMin ?? 1, levelMax ?? 12]
+  // Link monsters top out at Link 8 (max markers), so cap the shared Level/Rank/Link range in link context.
+  const isLinkContext = frameTypes.includes(CardsControllerFindAllFrameTypeItem.LINK) || linkMarkers.length > 0
+  const levelUpperBound = isLinkContext ? 8 : 12
+
+  const levelRangeValues = [levelMin ?? 1, Math.min(levelMax ?? levelUpperBound, levelUpperBound)]
   const atkRangeValues = [atkMin ?? 0, atkMax ?? 5000]
   const defRangeValues = [defMin ?? 0, defMax ?? 5000]
 
   const handleLevelChange = (values: number[]) => {
-    setLevelRange(values[0] === 1 ? undefined : values[0], values[1] === 12 ? undefined : values[1])
+    setLevelRange(values[0] === 1 ? undefined : values[0], values[1] === levelUpperBound ? undefined : values[1])
   }
   const handleAtkChange = (values: number[]) => {
     setAtkRange(values[0] === 0 ? undefined : values[0], values[1] === 5000 ? undefined : values[1])
@@ -108,6 +117,8 @@ export function FilterPanel() {
 
   const showMonsterFilters = cardTypes.length === 0 || cardTypes.includes(CardsControllerFindAllCardTypeItem.MONSTER)
   const showSpellTrapFilters = cardTypes.length === 0 || cardTypes.includes(CardsControllerFindAllCardTypeItem.SPELL) || cardTypes.includes(CardsControllerFindAllCardTypeItem.TRAP)
+  // Link markers only apply to Link monsters, so hide them once a non-Link frame type is chosen.
+  const showLinkMarkers = showMonsterFilters && frameTypes.every((ft) => ft === CardsControllerFindAllFrameTypeItem.LINK)
 
   const monsterPropertiesCount = (isTuner ? 1 : 0) + (isFlip ? 1 : 0) + (isPendulum ? 1 : 0)
 
@@ -266,13 +277,27 @@ export function FilterPanel() {
               value={levelRangeValues}
               onValueChange={handleLevelChange}
               min={1}
-              max={12}
+              max={levelUpperBound}
               step={1}
               className="w-full"
             />
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>1</span><span>12</span>
+              <span>1</span><span>{levelUpperBound}</span>
             </div>
+          </div>
+        </FilterSection>
+      )}
+
+      {/* Link Markers — Link monsters only */}
+      {showLinkMarkers && (
+        <FilterSection title="Link Markers" badge={linkMarkers.length}>
+          <div className="flex justify-center">
+            <LinkMarkerSelector
+              selected={linkMarkers}
+              onToggle={toggleLinkMarker}
+              strict={linkMarkerStrict}
+              onStrictChange={setLinkMarkerStrict}
+            />
           </div>
         </FilterSection>
       )}

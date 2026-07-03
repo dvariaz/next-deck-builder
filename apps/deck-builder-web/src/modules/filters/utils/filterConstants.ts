@@ -43,3 +43,22 @@ export const SPELL_TRAP_SUB_TYPE_LABELS: Record<CardsControllerFindAllSpellTrapS
   RITUAL: 'Ritual',
   COUNTER: 'Counter',
 }
+
+// Lowercase link-arrow keys matching the LinkLevelIcon geometry and the DB casing.
+export const LINK_MARKERS = [
+  'top-left', 'top', 'top-right',
+  'left', 'right',
+  'bottom-left', 'bottom', 'bottom-right',
+] as const
+export type LinkMarker = typeof LINK_MARKERS[number]
+
+export const LINK_MARKER_LABELS: Record<LinkMarker, string> = {
+  'top-left': 'Top-Left',
+  top: 'Top',
+  'top-right': 'Top-Right',
+  left: 'Left',
+  right: 'Right',
+  'bottom-left': 'Bottom-Left',
+  bottom: 'Bottom',
+  'bottom-right': 'Bottom-Right',
+}

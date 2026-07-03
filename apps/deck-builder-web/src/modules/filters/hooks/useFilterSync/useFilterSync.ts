@@ -29,6 +29,8 @@ function toURLParams(state: FilterState): URLSearchParams {
   if (state.isTuner !== undefined) params.set('isTuner', String(state.isTuner))
   if (state.isFlip !== undefined) params.set('isFlip', String(state.isFlip))
   if (state.isPendulum !== undefined) params.set('isPendulum', String(state.isPendulum))
+  state.linkMarkers.forEach((m) => params.append('linkMarker', m))
+  if (state.linkMarkers.length && state.linkMarkerStrict) params.set('linkMarkerStrict', 'true')
   if (state.sortField !== 'name') params.set('sortField', state.sortField)
   if (state.sortDirection !== 'asc') params.set('sortDirection', state.sortDirection)
   return params
@@ -59,6 +61,8 @@ export function useFilterSync() {
     const isTuner = searchParams.get('isTuner')
     const isFlip = searchParams.get('isFlip')
     const isPendulum = searchParams.get('isPendulum')
+    const linkMarkers = searchParams.getAll('linkMarker')
+    const linkMarkerStrict = searchParams.get('linkMarkerStrict') === 'true'
     const sortField = searchParams.get('sortField') as SortField | null
     const sortDirection = searchParams.get('sortDirection') as SortDirection | null
 
@@ -87,6 +91,8 @@ export function useFilterSync() {
     if (isTuner !== null) store.setIsTuner(isTuner === 'true' ? true : undefined)
     if (isFlip !== null) store.setIsFlip(isFlip === 'true' ? true : undefined)
     if (isPendulum !== null) store.setIsPendulum(isPendulum === 'true' ? true : undefined)
+    linkMarkers.forEach((m) => store.toggleLinkMarker(m))
+    if (linkMarkers.length && linkMarkerStrict) store.setLinkMarkerStrict(true)
     if (sortField) store.setSort(sortField, sortDirection ?? 'asc')
 
     // Subscribe to all future store changes and push URL.
