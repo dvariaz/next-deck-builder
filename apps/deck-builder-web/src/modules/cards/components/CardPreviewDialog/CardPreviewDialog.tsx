@@ -143,24 +143,6 @@ export function CardPreviewDialog({ card, open, onOpenChange }: CardPreviewDialo
               </div>
             )}
           </div>
-
-          {card.cardSets && card.cardSets.length > 0 && (
-            <div className="pt-4 border-t border-border">
-              <h4 className="text-sm font-semibold text-muted-foreground mb-2">Card Sets</h4>
-              <div className="space-y-1.5">
-                {card.cardSets.map((set) => (
-                  <div key={set.id} className="flex items-center justify-between text-xs gap-3 py-1">
-                    <span className="text-foreground font-medium truncate">{set.setName}</span>
-                    <div className="flex items-center gap-2 shrink-0 text-muted-foreground">
-                      <span>{set.setCode}</span>
-                      <span>·</span>
-                      <span>{set.setRarity}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </ScrollArea>
     </div>
