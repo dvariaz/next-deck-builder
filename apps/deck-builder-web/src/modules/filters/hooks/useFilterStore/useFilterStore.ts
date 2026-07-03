@@ -1,8 +1,8 @@
 import { create } from 'zustand'
 import { createSelectors } from '@/modules/common/utils/store'
+import { CardsControllerFindAllCardTypeItem } from '@/generated/model'
 import type {
   CardsControllerFindAllParams,
-  CardsControllerFindAllCardTypeItem,
   CardsControllerFindAllFrameTypeItem,
   CardsControllerFindAllBanStatusTcgItem,
   CardsControllerFindAllSpellTrapSubTypeItem,
@@ -51,6 +51,29 @@ interface FilterState {
   toQueryParams: () => CardsControllerFindAllParams
 }
 
+const { MONSTER, SPELL, TRAP } = CardsControllerFindAllCardTypeItem
+
+const SPELL_TRAP_SUB_TYPE_IMPLIED_CARD_TYPES: Record<
+  CardsControllerFindAllSpellTrapSubTypeItem,
+  CardsControllerFindAllCardTypeItem[]
+> = {
+  NORMAL: [SPELL, TRAP],
+  CONTINUOUS: [SPELL, TRAP],
+  QUICK_PLAY: [SPELL],
+  EQUIP: [SPELL],
+  FIELD: [SPELL],
+  RITUAL: [SPELL],
+  COUNTER: [TRAP],
+}
+
+// Only auto-fills cardTypes when no card type has been explicitly chosen yet.
+function withImpliedCardTypes(
+  current: CardsControllerFindAllCardTypeItem[],
+  implied: CardsControllerFindAllCardTypeItem[],
+) {
+  return current.length === 0 ? implied : current
+}
+
 const initialState = {
   search: '',
   cardTypes: [] as CardsControllerFindAllCardTypeItem[],
@@ -85,32 +108,44 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
     })),
 
   toggleFrameType: (type) =>
-    set((s) => ({
-      frameTypes: s.frameTypes.includes(type)
-        ? s.frameTypes.filter((t) => t !== type)
-        : [...s.frameTypes, type],
-    })),
+    set((s) => {
+      const isAdding = !s.frameTypes.includes(type)
+      return {
+        frameTypes: isAdding ? [...s.frameTypes, type] : s.frameTypes.filter((t) => t !== type),
+        cardTypes: isAdding ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes,
+      }
+    }),
 
   toggleAttribute: (attr) =>
-    set((s) => ({
-      attributes: s.attributes.includes(attr)
-        ? s.attributes.filter((a) => a !== attr)
-        : [...s.attributes, attr],
-    })),
+    set((s) => {
+      const isAdding = !s.attributes.includes(attr)
+      return {
+        attributes: isAdding ? [...s.attributes, attr] : s.attributes.filter((a) => a !== attr),
+        cardTypes: isAdding ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes,
+      }
+    }),
 
   toggleRace: (race) =>
-    set((s) => ({
-      races: s.races.includes(race)
-        ? s.races.filter((r) => r !== race)
-        : [...s.races, race],
-    })),
+    set((s) => {
+      const isAdding = !s.races.includes(race)
+      return {
+        races: isAdding ? [...s.races, race] : s.races.filter((r) => r !== race),
+        cardTypes: isAdding ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes,
+      }
+    }),
 
   toggleSpellTrapSubType: (type) =>
-    set((s) => ({
-      spellTrapSubTypes: s.spellTrapSubTypes.includes(type)
-        ? s.spellTrapSubTypes.filter((t) => t !== type)
-        : [...s.spellTrapSubTypes, type],
-    })),
+    set((s) => {
+      const isAdding = !s.spellTrapSubTypes.includes(type)
+      return {
+        spellTrapSubTypes: isAdding
+          ? [...s.spellTrapSubTypes, type]
+          : s.spellTrapSubTypes.filter((t) => t !== type),
+        cardTypes: isAdding
+          ? withImpliedCardTypes(s.cardTypes, SPELL_TRAP_SUB_TYPE_IMPLIED_CARD_TYPES[type])
+          : s.cardTypes,
+      }
+    }),
 
   toggleBanStatus: (status) =>
     set((s) => ({
@@ -119,12 +154,36 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
         : [...s.banStatuses, status],
     })),
 
-  setLevelRange: (min, max) => set({ levelMin: min, levelMax: max }),
-  setAtkRange: (min, max) => set({ atkMin: min, atkMax: max }),
-  setDefRange: (min, max) => set({ defMin: min, defMax: max }),
-  setIsTuner: (val) => set({ isTuner: val }),
-  setIsFlip: (val) => set({ isFlip: val }),
-  setIsPendulum: (val) => set({ isPendulum: val }),
+  setLevelRange: (min, max) =>
+    set((s) => ({
+      levelMin: min,
+      levelMax: max,
+      cardTypes: min !== undefined || max !== undefined
+        ? withImpliedCardTypes(s.cardTypes, [MONSTER])
+        : s.cardTypes,
+    })),
+  setAtkRange: (min, max) =>
+    set((s) => ({
+      atkMin: min,
+      atkMax: max,
+      cardTypes: min !== undefined || max !== undefined
+        ? withImpliedCardTypes(s.cardTypes, [MONSTER])
+        : s.cardTypes,
+    })),
+  setDefRange: (min, max) =>
+    set((s) => ({
+      defMin: min,
+      defMax: max,
+      cardTypes: min !== undefined || max !== undefined
+        ? withImpliedCardTypes(s.cardTypes, [MONSTER])
+        : s.cardTypes,
+    })),
+  setIsTuner: (val) =>
+    set((s) => ({ isTuner: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
+  setIsFlip: (val) =>
+    set((s) => ({ isFlip: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
+  setIsPendulum: (val) =>
+    set((s) => ({ isPendulum: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
 
   setSort: (field, direction) => set({ sortField: field, sortDirection: direction }),
 

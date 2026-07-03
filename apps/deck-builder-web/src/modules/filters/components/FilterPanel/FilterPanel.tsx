@@ -197,6 +197,33 @@ export function FilterPanel() {
         </FilterSection>
       )}
 
+      {/* Monster Properties — monsters only */}
+      {showMonsterFilters && (
+        <FilterSection title="Properties" badge={monsterPropertiesCount}>
+          <div className="flex flex-wrap gap-2">
+            {([
+              { label: 'Tuner', value: isTuner, set: setIsTuner },
+              { label: 'Flip', value: isFlip, set: setIsFlip },
+              { label: 'Pendulum', value: isPendulum, set: setIsPendulum },
+            ] as const).map(({ label, value, set }) => (
+              <button
+                key={label}
+                onClick={() => set(value ? undefined : true)}
+                className={cn(
+                  'rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                  value
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted/50',
+                )}
+                aria-pressed={!!value}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </FilterSection>
+      )}
+
       {/* Race — monsters only */}
       {showMonsterFilters && (
         <FilterSection title="Race / Type" badge={races.length}>
@@ -292,33 +319,6 @@ export function FilterPanel() {
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>0</span><span>5000</span>
             </div>
-          </div>
-        </FilterSection>
-      )}
-
-      {/* Monster Properties — monsters only */}
-      {showMonsterFilters && (
-        <FilterSection title="Properties" badge={monsterPropertiesCount}>
-          <div className="flex flex-wrap gap-2">
-            {([
-              { label: 'Tuner', value: isTuner, set: setIsTuner },
-              { label: 'Flip', value: isFlip, set: setIsFlip },
-              { label: 'Pendulum', value: isPendulum, set: setIsPendulum },
-            ] as const).map(({ label, value, set }) => (
-              <button
-                key={label}
-                onClick={() => set(value ? undefined : true)}
-                className={cn(
-                  'rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
-                  value
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted/50',
-                )}
-                aria-pressed={!!value}
-              >
-                {label}
-              </button>
-            ))}
           </div>
         </FilterSection>
       )}
