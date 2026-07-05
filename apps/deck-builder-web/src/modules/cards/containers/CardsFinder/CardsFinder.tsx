@@ -25,7 +25,7 @@ export function CardsFinder() {
             </div>
             <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-foreground">
-                YuGi<span className="text-primary">DB</span>
+                Next <span className="text-primary">Deck</span>
               </h1>
               <p className="text-xs text-muted-foreground">Card Database</p>
             </div>
