@@ -97,10 +97,19 @@
   background: oklch(0.4 0.02 260);
 }
 
+.bg-star-mosaic {
+  background-image:
+    radial-gradient(circle, rgba(228, 228, 231, 0.7) 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(228, 228, 231, 0.5) 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(228, 228, 231, 0.2) 1px, transparent 1.6px);
+  background-size: 34px 34px, 48px 48px;
+  background-position: -10px -10px, -5px 5px, 3px 7px;
+}
+
 .neon-glow-cyan {
-  box-shadow: 0 0 5px oklch(0.75 0.18 180 / 0.5),
-              0 0 20px oklch(0.75 0.18 180 / 0.3),
-              0 0 40px oklch(0.75 0.18 180 / 0.1);
+  box-shadow: 0 0 5px oklch(0.75 0.1653 220.24 / 0.5),
+              0 0 20px oklch(0.75 0.1653 220.24 / 0.3),
+              0 0 40px oklch(0.75 0.1653 220.24 / 0.1);
 }
 
 @keyframes fly-to-deck {

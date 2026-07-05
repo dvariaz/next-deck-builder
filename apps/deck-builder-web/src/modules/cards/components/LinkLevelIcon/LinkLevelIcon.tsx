@@ -9,9 +9,10 @@ interface LinkLevelIconProps {
   linkMarkers: string[]
   size?: number
   className?: string
+  activeColor?: string
 }
 
-export function LinkLevelIcon({ linkMarkers, size = 40, className }: LinkLevelIconProps) {
+export function LinkLevelIcon({ linkMarkers, size = 40, className, activeColor = ACTIVE_COLOR }: LinkLevelIconProps) {
   const active = new Set(linkMarkers.map((m) => m.toLowerCase()))
 
   return (
@@ -26,8 +27,8 @@ export function LinkLevelIcon({ linkMarkers, size = 40, className }: LinkLevelIc
         <polygon
           key={key}
           points={points}
-          fill={active.has(key) ? ACTIVE_COLOR : 'none'}
-          stroke={active.has(key) ? ACTIVE_COLOR : INACTIVE_STROKE}
+          fill={active.has(key) ? activeColor : 'none'}
+          stroke={active.has(key) ? activeColor : INACTIVE_STROKE}
           strokeWidth={STROKE_WIDTH}
           strokeLinejoin="miter"
         />

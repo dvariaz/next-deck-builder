@@ -4,12 +4,14 @@ import { useState } from 'react'
 import {
   Flame, Droplets, Wind, Mountain, Sun, Moon, Sparkles,
   Shield, Sword, Zap, ChevronDown,
+  Cuboid, Shell, Layers, BookOpenText, Scale, Metronome,
 } from 'lucide-react'
 import { Checkbox } from '@/modules/common/components/Checkbox/Checkbox'
 import { Slider } from '@/modules/common/components/Slider/Slider'
 import { Button } from '@/modules/common/components/Button/Button'
 import { FilterSection } from '@/modules/filters/components/FilterSection/FilterSection'
 import { LinkMarkerSelector } from '@/modules/filters/components/LinkMarkerSelector/LinkMarkerSelector'
+import { LinkLevelIcon } from '@/modules/cards/components/LinkLevelIcon/LinkLevelIcon'
 import { BanlistStatusIcon } from '@/modules/common/components/BanlistStatusIcon/BanlistStatusIcon'
 import { formatBanlistLabel } from '@/modules/common/utils/formatBanlistLabel'
 import { useFilterStore } from '@/modules/filters/hooks/useFilterStore/useFilterStore'
@@ -23,6 +25,8 @@ import {
   ATTRIBUTES,
   type Attribute,
   FRAME_TYPES,
+  type FrameType,
+  LINK_MARKERS,
   RACES,
   SPELL_TRAP_SUB_TYPES,
   SPELL_TRAP_SUB_TYPE_LABELS,
@@ -48,6 +52,28 @@ const attributeColors: Record<Attribute, string> = {
   DIVINE: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
 }
 
+const frameTypeIcons: Record<FrameType, React.ReactNode> = {
+  NORMAL: <Cuboid className="h-5 w-5" />,
+  EFFECT: <Sparkles className="h-5 w-5" />,
+  FUSION: <Shell className="h-5 w-5" />,
+  SYNCHRO: <Metronome className="h-5 w-5" />,
+  XYZ: <Layers className="h-5 w-5" />,
+  LINK: <LinkLevelIcon linkMarkers={[...LINK_MARKERS]} activeColor="currentColor" size={20} />,
+  RITUAL: <BookOpenText className="h-5 w-5" />,
+  PENDULUM: <Scale className="h-5 w-5" />,
+}
+
+const frameTypeColors: Record<FrameType, string> = {
+  NORMAL: 'border-yellow-200/30 bg-yellow-200/10 text-yellow-200',
+  EFFECT: 'border-orange-300/30 bg-orange-300/10 text-orange-400',
+  FUSION: 'border-purple-500/30 bg-purple-500/10 text-purple-400',
+  SYNCHRO: 'border-slate-100/30 bg-slate-100/10 text-slate-100',
+  XYZ: 'border-zinc-300/70 bg-zinc-800/90 text-zinc-50 bg-star-mosaic',
+  LINK: 'border-sky-600/30 bg-sky-600/10 text-sky-400',
+  RITUAL: 'border-sky-400/30 bg-sky-400/10 text-sky-300',
+  PENDULUM: 'border-orange-300/30 bg-gradient-to-b from-orange-300/20 to-teal-300/20 text-teal-300',
+}
+
 const banlistColors: Record<CardsControllerFindAllBanStatusTcgItem, string> = {
   FORBIDDEN: 'text-red-400',
   LIMITED: 'text-orange-400',
@@ -56,7 +82,6 @@ const banlistColors: Record<CardsControllerFindAllBanStatusTcgItem, string> = {
 }
 
 const RACES_INITIAL_COUNT = 6
-const FRAME_TYPES_INITIAL_COUNT = 4
 
 export function FilterPanel() {
   const cardTypes = useFilterStore.use.cardTypes()
@@ -99,10 +124,8 @@ export function FilterPanel() {
   const toggleLinkMarker = useFilterStore.use.toggleLinkMarker()
   const setLinkMarkerStrict = useFilterStore.use.setLinkMarkerStrict()
 
-  const [showAllFrameTypes, setShowAllFrameTypes] = useState(false)
   const [showAllRaces, setShowAllRaces] = useState(false)
 
-  const visibleFrameTypes = showAllFrameTypes ? FRAME_TYPES : FRAME_TYPES.slice(0, FRAME_TYPES_INITIAL_COUNT)
   const visibleRaces = showAllRaces ? RACES : RACES.slice(0, RACES_INITIAL_COUNT)
 
   // Link monsters top out at Link 8 (max markers), so cap the shared Level/Rank/Link range in link context.
@@ -164,29 +187,26 @@ export function FilterPanel() {
       {/* Frame Type — monsters only */}
       {showMonsterFilters && (
         <FilterSection title="Frame Type" badge={frameTypes.length} defaultOpen={cardTypes.includes('MONSTER')}>
-          <div className="space-y-2">
-            {visibleFrameTypes.map((type: CardsControllerFindAllFrameTypeItem) => (
-              <label key={type} className="flex items-center gap-2 cursor-pointer group">
-                <Checkbox
-                  checked={frameTypes.includes(type)}
-                  onCheckedChange={() => toggleFrameType(type)}
-                />
-                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors capitalize">
-                  {type.toLowerCase()}
-                </span>
-              </label>
-            ))}
-            {FRAME_TYPES.length > FRAME_TYPES_INITIAL_COUNT && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAllFrameTypes(!showAllFrameTypes)}
-                className="w-full justify-start gap-1 text-xs text-muted-foreground"
-              >
-                <ChevronDown className={cn('h-3 w-3 transition-transform', showAllFrameTypes && 'rotate-180')} />
-                {showAllFrameTypes ? 'Show less' : `Show ${FRAME_TYPES.length - FRAME_TYPES_INITIAL_COUNT} more`}
-              </Button>
-            )}
+          <div className="grid grid-cols-3 gap-2">
+            {FRAME_TYPES.map((type) => {
+              const isSelected = frameTypes.includes(type)
+              return (
+                <button
+                  key={type}
+                  onClick={() => toggleFrameType(type)}
+                  className={cn(
+                    'flex flex-col items-center gap-1.5 rounded-lg border p-3 transition-all text-xs font-medium',
+                    isSelected
+                      ? frameTypeColors[type]
+                      : 'border-border hover:border-muted-foreground/50 hover:bg-muted/50 text-muted-foreground',
+                  )}
+                  aria-pressed={isSelected}
+                >
+                  {frameTypeIcons[type]}
+                  <span className="capitalize">{type.toLowerCase()}</span>
+                </button>
+              )
+            })}
           </div>
         </FilterSection>
       )}

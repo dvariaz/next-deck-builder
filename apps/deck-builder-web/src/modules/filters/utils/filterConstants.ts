@@ -16,6 +16,7 @@ export const FRAME_TYPES = [
   CardsControllerFindAllFrameTypeItem.RITUAL,
   CardsControllerFindAllFrameTypeItem.PENDULUM,
 ] as const
+export type FrameType = typeof FRAME_TYPES[number]
 
 export const RACES = [
   'Dragon', 'Spellcaster', 'Warrior', 'Fiend', 'Zombie', 'Machine',
