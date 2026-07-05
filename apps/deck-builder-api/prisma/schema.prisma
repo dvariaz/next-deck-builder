@@ -93,6 +93,10 @@ model Card {
   isFlip             Boolean  @default(false)
   isTuner            Boolean  @default(false)
   isPendulum         Boolean  @default(false)
+  isToon             Boolean  @default(false)
+  isSpirit           Boolean  @default(false)
+  isUnion            Boolean  @default(false)
+  isGemini           Boolean  @default(false)
   isToken            Boolean  @default(false)
 
   aiTags             Json?

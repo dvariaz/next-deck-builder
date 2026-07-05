@@ -34,6 +34,10 @@ export class CardResponseDto {
   @ApiProperty() isFlip: boolean;
   @ApiProperty() isTuner: boolean;
   @ApiProperty() isPendulum: boolean;
+  @ApiProperty() isToon: boolean;
+  @ApiProperty() isSpirit: boolean;
+  @ApiProperty() isUnion: boolean;
+  @ApiProperty() isGemini: boolean;
   @ApiProperty({ type: [String] }) linkMarkers: string[];
   @ApiProperty() isToken: boolean;
   @ApiProperty({ type: [String] }) aiTags: string[];

@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Card" ADD COLUMN     "isGemini" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isSpirit" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isToon" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isUnion" BOOLEAN NOT NULL DEFAULT false;

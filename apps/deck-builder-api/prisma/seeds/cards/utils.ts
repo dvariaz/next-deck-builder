@@ -160,6 +160,10 @@ export function mapApiCardToCreateInput(
     isTuner: typeline.includes('Tuner') || card.type.includes('Tuner'),
     isPendulum:
       card.frameType.includes('pendulum') || typeline.includes('Pendulum'),
+    isToon: typeline.includes('Toon') || card.type.includes('Toon'),
+    isSpirit: typeline.includes('Spirit') || card.type.includes('Spirit'),
+    isUnion: typeline.includes('Union') || card.type.includes('Union'),
+    isGemini: typeline.includes('Gemini') || card.type.includes('Gemini'),
     isToken: card.frameType === 'token' || card.type === 'Token',
   };
 }

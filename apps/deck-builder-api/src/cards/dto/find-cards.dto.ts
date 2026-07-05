@@ -173,6 +173,30 @@ export class FindCardsDto {
   @IsOptional()
   @Transform(toBoolean)
   @IsBoolean()
+  isToon?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  isSpirit?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  isUnion?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
+  isGemini?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(toBoolean)
+  @IsBoolean()
   isToken?: boolean;
 
   @ApiPropertyOptional({ minimum: 0, default: 0 })

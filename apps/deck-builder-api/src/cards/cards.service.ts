@@ -92,6 +92,10 @@ export class CardsService {
     if (dto.isFlip !== undefined) where.isFlip = dto.isFlip;
     if (dto.isTuner !== undefined) where.isTuner = dto.isTuner;
     if (dto.isPendulum !== undefined) where.isPendulum = dto.isPendulum;
+    if (dto.isToon !== undefined) where.isToon = dto.isToon;
+    if (dto.isSpirit !== undefined) where.isSpirit = dto.isSpirit;
+    if (dto.isUnion !== undefined) where.isUnion = dto.isUnion;
+    if (dto.isGemini !== undefined) where.isGemini = dto.isGemini;
     if (dto.isToken !== undefined) where.isToken = dto.isToken;
 
     return where;
