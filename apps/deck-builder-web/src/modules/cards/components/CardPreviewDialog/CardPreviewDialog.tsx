@@ -110,6 +110,26 @@ export function CardPreviewDialog({ card, open, onOpenChange }: CardPreviewDialo
                 <span className="text-lg font-bold text-foreground">Flip</span>
               </div>
             )}
+            {(card.isToon) && (
+              <div className="flex justify-center items-center p-2 rounded-lg bg-background/50">
+                <span className="text-lg font-bold text-foreground">Toon</span>
+              </div>
+            )}
+            {(card.isSpirit) && (
+              <div className="flex justify-center items-center p-2 rounded-lg bg-background/50">
+                <span className="text-lg font-bold text-foreground">Spirit</span>
+              </div>
+            )}
+            {(card.isUnion) && (
+              <div className="flex justify-center items-center p-2 rounded-lg bg-background/50">
+                <span className="text-lg font-bold text-foreground">Union</span>
+              </div>
+            )}
+            {(card.isGemini) && (
+              <div className="flex justify-center items-center p-2 rounded-lg bg-background/50">
+                <span className="text-lg font-bold text-foreground">Gemini</span>
+              </div>
+            )}
             {(card.atk !== undefined) && (card.atk !== null) && (
               <div className="flex justify-center items-center gap-2 p-2 rounded-lg bg-background/50">
                 <Swords className="h-4 w-4 text-red-400" />

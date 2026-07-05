@@ -74,6 +74,10 @@ export function FilterPanel() {
   const isTuner = useFilterStore.use.isTuner()
   const isFlip = useFilterStore.use.isFlip()
   const isPendulum = useFilterStore.use.isPendulum()
+  const isToon = useFilterStore.use.isToon()
+  const isSpirit = useFilterStore.use.isSpirit()
+  const isUnion = useFilterStore.use.isUnion()
+  const isGemini = useFilterStore.use.isGemini()
   const linkMarkers = useFilterStore.use.linkMarkers()
   const linkMarkerStrict = useFilterStore.use.linkMarkerStrict()
   const toggleCardType = useFilterStore.use.toggleCardType()
@@ -88,6 +92,10 @@ export function FilterPanel() {
   const setIsTuner = useFilterStore.use.setIsTuner()
   const setIsFlip = useFilterStore.use.setIsFlip()
   const setIsPendulum = useFilterStore.use.setIsPendulum()
+  const setIsToon = useFilterStore.use.setIsToon()
+  const setIsSpirit = useFilterStore.use.setIsSpirit()
+  const setIsUnion = useFilterStore.use.setIsUnion()
+  const setIsGemini = useFilterStore.use.setIsGemini()
   const toggleLinkMarker = useFilterStore.use.toggleLinkMarker()
   const setLinkMarkerStrict = useFilterStore.use.setLinkMarkerStrict()
 
@@ -120,7 +128,9 @@ export function FilterPanel() {
   // Link markers only apply to Link monsters, so hide them once a non-Link frame type is chosen.
   const showLinkMarkers = showMonsterFilters && frameTypes.every((ft) => ft === CardsControllerFindAllFrameTypeItem.LINK)
 
-  const monsterPropertiesCount = (isTuner ? 1 : 0) + (isFlip ? 1 : 0) + (isPendulum ? 1 : 0)
+  const monsterPropertiesCount =
+    (isTuner ? 1 : 0) + (isFlip ? 1 : 0) + (isPendulum ? 1 : 0) +
+    (isToon ? 1 : 0) + (isSpirit ? 1 : 0) + (isUnion ? 1 : 0) + (isGemini ? 1 : 0)
 
   return (
     <div className="space-y-1">
@@ -216,6 +226,10 @@ export function FilterPanel() {
               { label: 'Tuner', value: isTuner, set: setIsTuner },
               { label: 'Flip', value: isFlip, set: setIsFlip },
               { label: 'Pendulum', value: isPendulum, set: setIsPendulum },
+              { label: 'Toon', value: isToon, set: setIsToon },
+              { label: 'Spirit', value: isSpirit, set: setIsSpirit },
+              { label: 'Union', value: isUnion, set: setIsUnion },
+              { label: 'Gemini', value: isGemini, set: setIsGemini },
             ] as const).map(({ label, value, set }) => (
               <button
                 key={label}

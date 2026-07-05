@@ -30,6 +30,10 @@ interface FilterState {
   isTuner: boolean | undefined
   isFlip: boolean | undefined
   isPendulum: boolean | undefined
+  isToon: boolean | undefined
+  isSpirit: boolean | undefined
+  isUnion: boolean | undefined
+  isGemini: boolean | undefined
   linkMarkers: string[]
   linkMarkerStrict: boolean
   sortField: SortField
@@ -48,6 +52,10 @@ interface FilterState {
   setIsTuner: (val: boolean | undefined) => void
   setIsFlip: (val: boolean | undefined) => void
   setIsPendulum: (val: boolean | undefined) => void
+  setIsToon: (val: boolean | undefined) => void
+  setIsSpirit: (val: boolean | undefined) => void
+  setIsUnion: (val: boolean | undefined) => void
+  setIsGemini: (val: boolean | undefined) => void
   toggleLinkMarker: (marker: string) => void
   setLinkMarkerStrict: (val: boolean) => void
   setSort: (field: SortField, direction: SortDirection) => void
@@ -107,6 +115,10 @@ const initialState = {
   isTuner: undefined as boolean | undefined,
   isFlip: undefined as boolean | undefined,
   isPendulum: undefined as boolean | undefined,
+  isToon: undefined as boolean | undefined,
+  isSpirit: undefined as boolean | undefined,
+  isUnion: undefined as boolean | undefined,
+  isGemini: undefined as boolean | undefined,
   linkMarkers: [] as string[],
   linkMarkerStrict: false,
   sortField: 'name' as SortField,
@@ -202,6 +214,14 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
     set((s) => ({ isFlip: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
   setIsPendulum: (val) =>
     set((s) => ({ isPendulum: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
+  setIsToon: (val) =>
+    set((s) => ({ isToon: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
+  setIsSpirit: (val) =>
+    set((s) => ({ isSpirit: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
+  setIsUnion: (val) =>
+    set((s) => ({ isUnion: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
+  setIsGemini: (val) =>
+    set((s) => ({ isGemini: val, cardTypes: val ? withImpliedCardTypes(s.cardTypes, [MONSTER]) : s.cardTypes })),
 
   toggleLinkMarker: (marker) =>
     set((s) => {
@@ -241,6 +261,10 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
         case 'isTuner': return { isTuner: undefined }
         case 'isFlip': return { isFlip: undefined }
         case 'isPendulum': return { isPendulum: undefined }
+        case 'isToon': return { isToon: undefined }
+        case 'isSpirit': return { isSpirit: undefined }
+        case 'isUnion': return { isUnion: undefined }
+        case 'isGemini': return { isGemini: undefined }
         case 'linkMarker': return { linkMarkers: s.linkMarkers.filter((m) => m !== value) }
         case 'linkMarkers': return { linkMarkers: [], linkMarkerStrict: false, levelMin: undefined, levelMax: undefined }
         default: return {}
@@ -265,6 +289,10 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
     if (s.isTuner !== undefined) count++
     if (s.isFlip !== undefined) count++
     if (s.isPendulum !== undefined) count++
+    if (s.isToon !== undefined) count++
+    if (s.isSpirit !== undefined) count++
+    if (s.isUnion !== undefined) count++
+    if (s.isGemini !== undefined) count++
     count += s.linkMarkers.length
     return count
   },
@@ -288,6 +316,10 @@ export const useFilterStoreBase = create<FilterState>()((set, get) => ({
     if (s.isTuner !== undefined) params.isTuner = s.isTuner
     if (s.isFlip !== undefined) params.isFlip = s.isFlip
     if (s.isPendulum !== undefined) params.isPendulum = s.isPendulum
+    if (s.isToon !== undefined) params.isToon = s.isToon
+    if (s.isSpirit !== undefined) params.isSpirit = s.isSpirit
+    if (s.isUnion !== undefined) params.isUnion = s.isUnion
+    if (s.isGemini !== undefined) params.isGemini = s.isGemini
     if (s.linkMarkers.length) {
       params.linkMarker = s.linkMarkers
       if (s.linkMarkerStrict) params.linkMarkerStrict = true

@@ -41,6 +41,10 @@ export function ActiveFilters() {
   const isTuner = useFilterStore.use.isTuner()
   const isFlip = useFilterStore.use.isFlip()
   const isPendulum = useFilterStore.use.isPendulum()
+  const isToon = useFilterStore.use.isToon()
+  const isSpirit = useFilterStore.use.isSpirit()
+  const isUnion = useFilterStore.use.isUnion()
+  const isGemini = useFilterStore.use.isGemini()
   const linkMarkers = useFilterStore.use.linkMarkers()
   const linkMarkerStrict = useFilterStore.use.linkMarkerStrict()
   const removeFilter = useFilterStore.use.removeFilter()
@@ -120,6 +124,22 @@ export function ActiveFilters() {
 
       {isPendulum && (
         <FilterChip label="Property" value="Pendulum" onRemove={() => removeFilter('isPendulum')} />
+      )}
+
+      {isToon && (
+        <FilterChip label="Property" value="Toon" onRemove={() => removeFilter('isToon')} />
+      )}
+
+      {isSpirit && (
+        <FilterChip label="Property" value="Spirit" onRemove={() => removeFilter('isSpirit')} />
+      )}
+
+      {isUnion && (
+        <FilterChip label="Property" value="Union" onRemove={() => removeFilter('isUnion')} />
+      )}
+
+      {isGemini && (
+        <FilterChip label="Property" value="Gemini" onRemove={() => removeFilter('isGemini')} />
       )}
 
       {linkMarkers.length > 0 && (
