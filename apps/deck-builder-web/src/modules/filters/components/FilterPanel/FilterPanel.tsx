@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import {
-  Flame, Droplets, Wind, Mountain, Sun, Moon, Sparkles,
+  Sparkles,
   Shield, Sword, Zap, ChevronDown,
   Cuboid, Shell, Layers, BookOpenText, Scale, Metronome,
 } from 'lucide-react'
@@ -10,6 +10,7 @@ import { Checkbox } from '@/modules/common/components/Checkbox/Checkbox'
 import { Slider } from '@/modules/common/components/Slider/Slider'
 import { Button } from '@/modules/common/components/Button/Button'
 import { FilterSection } from '@/modules/filters/components/FilterSection/FilterSection'
+import { AttributeIcon } from '@/modules/filters/components/AttributeIcon/AttributeIcon'
 import { LinkMarkerSelector } from '@/modules/filters/components/LinkMarkerSelector/LinkMarkerSelector'
 import { LinkLevelIcon } from '@/modules/cards/components/LinkLevelIcon/LinkLevelIcon'
 import { BanlistStatusIcon } from '@/modules/common/components/BanlistStatusIcon/BanlistStatusIcon'
@@ -32,16 +33,6 @@ import {
   SPELL_TRAP_SUB_TYPE_LABELS,
 } from '@/modules/filters/utils/filterConstants'
 
-const attributeIcons: Record<Attribute, React.ReactNode> = {
-  DARK: <Moon className="h-4 w-4" />,
-  LIGHT: <Sun className="h-4 w-4" />,
-  FIRE: <Flame className="h-4 w-4" />,
-  WATER: <Droplets className="h-4 w-4" />,
-  EARTH: <Mountain className="h-4 w-4" />,
-  WIND: <Wind className="h-4 w-4" />,
-  DIVINE: <Sparkles className="h-4 w-4" />,
-}
-
 const attributeColors: Record<Attribute, string> = {
   DARK: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
   LIGHT: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
@@ -49,7 +40,7 @@ const attributeColors: Record<Attribute, string> = {
   WATER: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
   EARTH: 'bg-amber-600/20 text-amber-500 border-amber-600/30',
   WIND: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-  DIVINE: 'bg-pink-500/20 text-pink-400 border-pink-500/30',
+  DIVINE: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
 }
 
 const frameTypeIcons: Record<FrameType, React.ReactNode> = {
@@ -229,7 +220,7 @@ export function FilterPanel() {
                   )}
                   aria-pressed={isSelected}
                 >
-                  {attributeIcons[attr]}
+                  <AttributeIcon attribute={attr} className="h-4 w-4" />
                   <span>{attr}</span>
                 </button>
               )
