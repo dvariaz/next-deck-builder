@@ -110,6 +110,11 @@ jspm_packages/
 # Generated API client (orval output)
 apps/deck-builder-web/src/generated/
 
+# Playwright
+apps/deck-builder-web/playwright-report/
+apps/deck-builder-web/test-results/
+apps/deck-builder-web/blob-report/
+
 # Agent Skills
 .agents/
 .agents/*

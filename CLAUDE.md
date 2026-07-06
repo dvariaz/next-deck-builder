@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | Styling | Tailwind CSS 4 |
 | State | Zustand 5 |
 | API testing | Jest (API unit + e2e) |
-| Web testing | Vitest + React Testing Library (unit), Cypress (component/e2e) |
+| Web testing | Vitest + React Testing Library (unit), Playwright (e2e) |
 
 ## Monorepo Structure
 
@@ -69,9 +69,14 @@ cd apps/deck-builder-web
 yarn dev                  # Next.js + Turbopack
 yarn test                 # Vitest (single run)
 yarn test:watch           # Vitest watch mode
-yarn cypress:open         # Cypress component/e2e tests
+yarn e2e                  # Playwright e2e tests (auto-starts the dev server)
+yarn e2e:ui               # Playwright e2e tests in UI mode
 yarn generate             # Regenerate the orval API client from openapi.json
 ```
+
+#### e2e tests (Playwright)
+
+e2e specs live in `apps/deck-builder-web/e2e/*.spec.ts`, configured via `playwright.config.ts` (Chromium only, `baseURL` `http://localhost:3000`). `webServer` runs `yarn dev` automatically and reuses an already-running dev server outside CI, so no manual setup is needed before `yarn e2e`. Reports/artifacts land in `playwright-report/` and `test-results/` (gitignored).
 
 #### Regenerating the API client
 
