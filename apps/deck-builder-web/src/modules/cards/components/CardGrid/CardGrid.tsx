@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ChevronDown, Search } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import type { CardResponseDto } from '@/generated/model'
@@ -15,6 +15,7 @@ import { sortCards } from '@/modules/cards/utils/sortCards'
 export function CardGrid() {
   const [previewCard, setPreviewCard] = useState<CardResponseDto | null>(null)
   const params = useFilterStore(useShallow((s) => s.toQueryParams()))
+  const search = useFilterStore.use.search()
   const sortField = useFilterStore.use.sortField()
   const sortDirection = useFilterStore.use.sortDirection()
   const { cards, total, isFetching, isFetchingNextPage, hasNextPage, fetchNextPage, isError } = useCardsInfinite(params)
@@ -23,6 +24,14 @@ export function CardGrid() {
     () => sortCards(cards, sortField, sortDirection),
     [cards, sortField, sortDirection],
   )
+
+  useEffect(() => {
+    document.title = previewCard
+      ? `${previewCard.name} - Next Deck`
+      : search
+        ? `${search} - Next Deck`
+        : 'Next Deck'
+  }, [previewCard, search])
 
   if (isError) {
     return (
