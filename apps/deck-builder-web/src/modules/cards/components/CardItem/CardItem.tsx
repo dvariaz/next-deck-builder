@@ -15,11 +15,14 @@ interface CardItemProps {
   card: CardResponseDto
   priority?: boolean
   onPreview: (card: CardResponseDto) => void
+  className?: string
+  style?: React.CSSProperties
 }
 
-export function CardItem({ card, priority = false, onPreview }: CardItemProps) {
+export function CardItem({ card, priority = false, onPreview, className, style }: CardItemProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState(false)
+  const [isFullImageLoaded, setIsFullImageLoaded] = useState(false)
   const [flyAnimation, setFlyAnimation] = useState(false)
   const [feedback, setFeedback] = useState<{ show: boolean; success: boolean; message: string }>({
     show: false, success: false, message: '',
@@ -31,6 +34,7 @@ export function CardItem({ card, priority = false, onPreview }: CardItemProps) {
   const getMaxCopies = useDeckStore.use.getMaxCopies()
 
   const imageUrl = card.cardImages[0]?.imageUrl
+  const smallImageUrl = card.cardImages[0]?.imageUrlSmall
   const banStatus = card.banStatusTcg
   const isForbidden = banStatus === 'FORBIDDEN'
   const currentCount = getCardCount(card.id)
@@ -53,7 +57,9 @@ export function CardItem({ card, priority = false, onPreview }: CardItemProps) {
       className={cn(
         'group relative flex flex-col rounded-lg transition-all duration-300 cursor-pointer bg-card border border-border',
         isHovered && 'scale-[1.02] -translate-y-1 shadow-xl shadow-primary/10 border-primary/50',
+        className,
       )}
+      style={style}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => onPreview(card)}
@@ -90,16 +96,36 @@ export function CardItem({ card, priority = false, onPreview }: CardItemProps) {
 
       <div className="relative aspect-421/614 w-full bg-muted">
         {!imageError && imageUrl ? (
-          <Image
-            src={imageUrl}
-            alt={card.name}
-            fill
-            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
-            className="object-contain"
-            onError={() => setImageError(true)}
-            unoptimized
-            priority={priority}
-          />
+          <>
+            {smallImageUrl && (
+              <Image
+                src={smallImageUrl}
+                alt=""
+                aria-hidden="true"
+                fill
+                sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
+                className={cn(
+                  'object-contain transition-opacity duration-300',
+                  isFullImageLoaded ? 'opacity-0' : 'opacity-100',
+                )}
+                unoptimized
+                priority={priority}
+              />
+            )}
+            <Image
+              src={imageUrl}
+              alt={card.name}
+              fill
+              sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
+              className={cn(
+                'object-contain transition-opacity duration-300',
+                isFullImageLoaded ? 'opacity-100' : 'opacity-0',
+              )}
+              onLoad={() => setIsFullImageLoaded(true)}
+              onError={() => setImageError(true)}
+              unoptimized
+            />
+          </>
         ) : (
           <div className="flex h-full items-center justify-center">
             <span className="text-muted-foreground text-xs">No Image</span>

@@ -80,6 +80,8 @@ export function CardGrid() {
             card={card}
             priority={index < 10}
             onPreview={setPreviewCard}
+            className="animate-in fade-in slide-in-from-bottom-3 duration-500 fill-mode-backwards"
+            style={{ animationDelay: `${(index % 10) * 40}ms` }}
           />
         ))}
         {isFetchingNextPage && <CardGridSkeleton count={6} />}
