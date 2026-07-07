@@ -1,14 +1,11 @@
 'use client'
 
-import { useState } from 'react'
 import {
   Sparkles,
-  Shield, Sword, Zap, ChevronDown,
+  Shield, Sword, Zap,
   Cuboid, Shell, Layers, BookOpenText, Scale, Metronome,
 } from 'lucide-react'
-import { Checkbox } from '@/modules/common/components/Checkbox/Checkbox'
 import { Slider } from '@/modules/common/components/Slider/Slider'
-import { Button } from '@/modules/common/components/Button/Button'
 import { FilterSection } from '@/modules/filters/components/FilterSection/FilterSection'
 import { AttributeIcon } from '@/modules/filters/components/AttributeIcon/AttributeIcon'
 import { LinkMarkerSelector } from '@/modules/filters/components/LinkMarkerSelector/LinkMarkerSelector'
@@ -72,8 +69,6 @@ const banlistColors: Record<CardsControllerFindAllBanStatusTcgItem, string> = {
   UNLIMITED: 'text-muted-foreground',
 }
 
-const RACES_INITIAL_COUNT = 6
-
 export function FilterPanel() {
   const cardTypes = useFilterStore.use.cardTypes()
   const frameTypes = useFilterStore.use.frameTypes()
@@ -114,10 +109,6 @@ export function FilterPanel() {
   const setIsGemini = useFilterStore.use.setIsGemini()
   const toggleLinkMarker = useFilterStore.use.toggleLinkMarker()
   const setLinkMarkerStrict = useFilterStore.use.setLinkMarkerStrict()
-
-  const [showAllRaces, setShowAllRaces] = useState(false)
-
-  const visibleRaces = showAllRaces ? RACES : RACES.slice(0, RACES_INITIAL_COUNT)
 
   // Link monsters top out at Link 8 (max markers), so cap the shared Level/Rank/Link range in link context.
   const isLinkContext = frameTypes.includes(CardsControllerFindAllFrameTypeItem.LINK) || linkMarkers.length > 0
@@ -263,29 +254,25 @@ export function FilterPanel() {
       {/* Race — monsters only */}
       {showMonsterFilters && (
         <FilterSection title="Race / Type" badge={races.length}>
-          <div className="space-y-2">
-            {visibleRaces.map((race: string) => (
-              <label key={race} className="flex items-center gap-2 cursor-pointer group">
-                <Checkbox
-                  checked={races.includes(race)}
-                  onCheckedChange={() => toggleRace(race)}
-                />
-                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+          <div className="flex flex-wrap gap-2">
+            {RACES.map((race: string) => {
+              const isSelected = races.includes(race)
+              return (
+                <button
+                  key={race}
+                  onClick={() => toggleRace(race)}
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                    isSelected
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted/50',
+                  )}
+                  aria-pressed={isSelected}
+                >
                   {race}
-                </span>
-              </label>
-            ))}
-            {RACES.length > RACES_INITIAL_COUNT && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAllRaces(!showAllRaces)}
-                className="w-full justify-start gap-1 text-xs text-muted-foreground"
-              >
-                <ChevronDown className={cn('h-3 w-3 transition-transform', showAllRaces && 'rotate-180')} />
-                {showAllRaces ? 'Show less' : `Show ${RACES.length - RACES_INITIAL_COUNT} more`}
-              </Button>
-            )}
+                </button>
+              )
+            })}
           </div>
         </FilterSection>
       )}
@@ -376,40 +363,51 @@ export function FilterPanel() {
       {/* Spell/Trap Sub-Type — spells and traps only */}
       {showSpellTrapFilters && (
         <FilterSection title="Sub-Type" badge={spellTrapSubTypes.length}>
-          <div className="space-y-2">
-            {SPELL_TRAP_SUB_TYPES.map((type) => (
-              <label key={type} className="flex items-center gap-2 cursor-pointer group">
-                <Checkbox
-                  checked={spellTrapSubTypes.includes(type)}
-                  onCheckedChange={() => toggleSpellTrapSubType(type)}
-                />
-                <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+          <div className="flex flex-wrap gap-2">
+            {SPELL_TRAP_SUB_TYPES.map((type) => {
+              const isSelected = spellTrapSubTypes.includes(type)
+              return (
+                <button
+                  key={type}
+                  onClick={() => toggleSpellTrapSubType(type)}
+                  className={cn(
+                    'rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                    isSelected
+                      ? 'border-primary bg-primary/10 text-primary'
+                      : 'border-border text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted/50',
+                  )}
+                  aria-pressed={isSelected}
+                >
                   {SPELL_TRAP_SUB_TYPE_LABELS[type]}
-                </span>
-              </label>
-            ))}
+                </button>
+              )
+            })}
           </div>
         </FilterSection>
       )}
 
       {/* Banlist Status (TCG) */}
       <FilterSection title="Banlist (TCG)" badge={banStatuses.length}>
-        <div className="space-y-2">
-          {([CardsControllerFindAllBanStatusTcgItem.FORBIDDEN, CardsControllerFindAllBanStatusTcgItem.LIMITED, CardsControllerFindAllBanStatusTcgItem.SEMI_LIMITED] as const).map((status) => (
-            <label key={status} className="flex items-center gap-2 cursor-pointer group">
-              <Checkbox
-                checked={banStatuses.includes(status)}
-                onCheckedChange={() => toggleBanStatus(status)}
-              />
-              <span className={cn(
-                'flex items-center gap-2 text-sm transition-colors',
-                banStatuses.includes(status) ? banlistColors[status] : 'text-muted-foreground group-hover:text-foreground',
-              )}>
+        <div className="flex flex-wrap gap-2">
+          {([CardsControllerFindAllBanStatusTcgItem.FORBIDDEN, CardsControllerFindAllBanStatusTcgItem.LIMITED, CardsControllerFindAllBanStatusTcgItem.SEMI_LIMITED] as const).map((status) => {
+            const isSelected = banStatuses.includes(status)
+            return (
+              <button
+                key={status}
+                onClick={() => toggleBanStatus(status)}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all',
+                  isSelected
+                    ? cn('border-primary bg-primary/10', banlistColors[status])
+                    : 'border-border text-muted-foreground hover:border-muted-foreground/50 hover:bg-muted/50',
+                )}
+                aria-pressed={isSelected}
+              >
                 <BanlistStatusIcon status={status} size="sm" />
                 {formatBanlistLabel(status)}
-              </span>
-            </label>
-          ))}
+              </button>
+            )
+          })}
         </div>
       </FilterSection>
     </div>
