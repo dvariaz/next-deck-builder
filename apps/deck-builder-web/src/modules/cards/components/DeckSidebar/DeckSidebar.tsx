@@ -64,7 +64,7 @@ function DeckCardItem({ deckCard, maxCopies, isAnimating, onDecrease, onIncrease
 }
 
 export function DeckSidebar() {
-  const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(true)
 
   const deckCards = useDeckStore.use.deckCards()
   const lastAddedCardId = useDeckStore.use.lastAddedCardId()

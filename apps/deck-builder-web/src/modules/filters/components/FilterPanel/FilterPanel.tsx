@@ -168,7 +168,7 @@ export function FilterPanel() {
 
       {/* Frame Type — monsters only */}
       {showMonsterFilters && (
-        <FilterSection title="Frame Type" badge={frameTypes.length} defaultOpen={cardTypes.includes('MONSTER')}>
+        <FilterSection title="Frame Type" badge={frameTypes.length}>
           <div className="grid grid-cols-3 gap-2">
             {FRAME_TYPES.map((type) => {
               const isSelected = frameTypes.includes(type)
