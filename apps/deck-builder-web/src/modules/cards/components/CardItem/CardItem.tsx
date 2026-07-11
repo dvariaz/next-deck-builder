@@ -2,13 +2,12 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import { Swords, Shield, Star, Eye, Plus, Ban, Check } from 'lucide-react'
+import { Swords, Shield, Star, Check } from 'lucide-react'
 import type { CardResponseDto } from '@/generated/model'
-import { useDeckStore } from '@/modules/cards/hooks/useDeckStore/useDeckStore'
 import { formatCardTypeLabel } from '@/modules/cards/utils/formatCardType'
-import { Button } from '@/modules/common/components/Button/Button'
 import { BanlistStatusIcon } from '@/modules/common/components/BanlistStatusIcon/BanlistStatusIcon'
 import { LinkLevelIcon } from '@/modules/cards/components/LinkLevelIcon/LinkLevelIcon'
+import { CardItemOverlay } from '@/modules/cards/components/CardItemOverlay/CardItemOverlay'
 import { cn } from '@/lib/utils'
 
 interface CardItemProps {
@@ -28,22 +27,11 @@ export function CardItem({ card, priority = false, onPreview, className, style }
     show: false, success: false, message: '',
   })
 
-  const addCard = useDeckStore.use.addCard()
-  const canAddCard = useDeckStore.use.canAddCard()
-  const getCardCount = useDeckStore.use.getCardCount()
-  const getMaxCopies = useDeckStore.use.getMaxCopies()
-
   const imageUrl = card.cardImages[0]?.imageUrl
   const smallImageUrl = card.cardImages[0]?.imageUrlSmall
   const banStatus = card.banStatusTcg
-  const isForbidden = banStatus === 'FORBIDDEN'
-  const currentCount = getCardCount(card.id)
-  const maxCopies = getMaxCopies(card)
-  const canAdd = canAddCard(card)
 
-  const handleAddToDeck = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    const result = addCard(card)
+  const handleAdded = (result: { success: boolean; message: string }) => {
     setFeedback({ show: true, success: result.success, message: result.message })
     setTimeout(() => setFeedback({ show: false, success: false, message: '' }), 1500)
     if (result.success) {
@@ -55,8 +43,8 @@ export function CardItem({ card, priority = false, onPreview, className, style }
   return (
     <div
       className={cn(
-        'group relative flex flex-col rounded-lg transition-all duration-300 cursor-pointer bg-card border border-border',
-        isHovered && 'scale-[1.02] -translate-y-1 shadow-xl shadow-primary/10 border-primary/50',
+        'group relative flex flex-col cursor-pointer bg-card border border-border',
+        isHovered && 'shadow-xl shadow-primary/10 border-primary/50',
         className,
       )}
       style={style}
@@ -136,35 +124,11 @@ export function CardItem({ card, priority = false, onPreview, className, style }
           <BanlistStatusIcon status={banStatus} className="absolute -top-2.5 -left-2.5 z-10" />
         )}
 
-        <div className={cn(
-          'absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 opacity-0 transition-opacity duration-200',
-          isHovered && 'opacity-100',
-        )}>
-          <Button
-            size="sm"
-            variant="secondary"
-            className="gap-1.5 bg-background/95 hover:bg-background shadow-lg"
-            onClick={(e) => { e.stopPropagation(); onPreview(card) }}
-          >
-            <Eye className="h-4 w-4" />
-            Preview
-          </Button>
-          <Button
-            size="sm"
-            variant={isForbidden ? 'destructive' : canAdd ? 'default' : 'secondary'}
-            className={cn('gap-1.5 shadow-lg', canAdd && !isForbidden && 'bg-green-600 hover:bg-green-700 text-white')}
-            onClick={handleAddToDeck}
-            disabled={isForbidden}
-          >
-            {isForbidden ? (
-              <><Ban className="h-4 w-4" />Forbidden</>
-            ) : canAdd ? (
-              <><Plus className="h-4 w-4" />Add to Deck</>
-            ) : (
-              <><Check className="h-4 w-4" />{currentCount}/{maxCopies}</>
-            )}
-          </Button>
-        </div>
+        <CardItemOverlay
+          card={card}
+          isHovered={isHovered}
+          onAdded={handleAdded}
+        />
       </div>
 
       <div className="p-2 space-y-1.5 bg-card">
