@@ -111,6 +111,7 @@ jspm_packages/
 apps/deck-builder-web/src/generated/
 
 # Playwright
+.playwright-mcp/
 apps/deck-builder-web/playwright-report/
 apps/deck-builder-web/test-results/
 apps/deck-builder-web/blob-report/
