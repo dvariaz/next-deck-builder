@@ -16,15 +16,13 @@ export function CardItemOverlay({
 }: CardItemOverlayProps) {
   const addCard = useDeckStore.use.addCard()
   const decreaseCard = useDeckStore.use.decreaseCard()
-  const canAddCard = useDeckStore.use.canAddCard()
   const getMaxCopies = useDeckStore.use.getMaxCopies()
-  const deckCards = useDeckStore.use.deckCards()
+  const currentCount = useDeckStore((s) => s.getCardCount(card.id))
+  const canAdd = useDeckStore((s) => s.canAddCard(card))
 
   const isForbidden = card.banStatusTcg === 'FORBIDDEN'
-  const currentCount = deckCards.find((dc) => dc.card.id === card.id)?.quantity ?? 0
   const isInDeck = currentCount > 0
   const maxCopies = getMaxCopies(card)
-  const canAdd = canAddCard(card)
   const tcgPlayerUrl = `https://www.tcgplayer.com/search/all/product?q=${encodeURIComponent(card.name)}`
 
   const handleAddToDeck = (e: React.MouseEvent) => {
