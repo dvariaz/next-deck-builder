@@ -42,7 +42,7 @@ export function CardsFinder() {
       <div className="flex">
         <FilterSidebar />
 
-        <main className="flex-1 min-w-0">
+        <main className="flex-1 min-w-0 @container">
           {/* Toolbar */}
           <div className="sticky top-16 z-30 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
             <div className="flex flex-col gap-3 p-4 lg:px-6">

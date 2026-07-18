@@ -37,13 +37,13 @@ export function CardItemOverlay({
 
   return (
     <div className={cn(
-      'absolute inset-0 flex flex-col items-center transition-opacity duration-200 p-4',
+      'absolute inset-0 flex flex-col items-center transition-opacity duration-200 p-2 @[200px]:p-4',
       isInDeck
         ? cn('opacity-100', isHovered && 'bg-black/60 backdrop-blur-xs')
         : cn('bg-black/60 backdrop-blur-xs opacity-0', isHovered && 'opacity-100'),
     )}>
       <span className={cn(
-        'flex flex-col items-center justify-center gap-1.5 text-xs font-semibold text-foreground/80 px-8 pt-8 transition-opacity duration-200 h-4/10',
+        'flex flex-col items-center justify-center gap-1.5 text-xs font-semibold text-foreground/80 px-2 pt-4 @[200px]:px-8 @[200px]:pt-8 transition-opacity duration-200 h-4/10',
         isInDeck && !isHovered && 'opacity-0 pointer-events-none',
       )}>
         <Eye className="h-4 w-4" />
@@ -52,12 +52,12 @@ export function CardItemOverlay({
 
       <div className="h-6/10 w-full flex flex-col gap-3">
         {isForbidden ? (
-          <span className="flex justify-center items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium text-muted-foreground bg-background/80 w-full border-border hover:border-muted-foreground/50">
+          <span className="flex justify-center items-center gap-1.5 rounded-lg px-2 py-1.5 @[200px]:px-4 @[200px]:py-2 text-xs font-medium text-muted-foreground bg-background/80 w-full border-border hover:border-muted-foreground/50">
             <Ban className="h-3.5 w-3.5" />Forbidden
           </span>
         ) : currentCount === 0 ? (
           <button
-            className="flex justify-center items-center gap-1.5 rounded-lg px-4 py-2.5 transition-colors text-xs font-medium text-foreground bg-background/80 hover:bg-background/60 cursor-pointer w-full border border-border hover:border-muted-foreground/50"
+            className="flex justify-center items-center gap-1.5 rounded-lg px-2 py-2 @[200px]:px-4 @[200px]:py-2.5 transition-colors text-xs font-medium text-foreground bg-background/80 hover:bg-background/60 cursor-pointer w-full border border-border hover:border-muted-foreground/50"
             onClick={handleAddToDeck}
           >
             <CopyPlus className="h-3 w-3" />Add to Deck
@@ -90,7 +90,7 @@ export function CardItemOverlay({
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
           className={cn(
-            'flex items-center justify-center gap-1.5 rounded-lg p-2.5 text-xs font-medium text-foreground border border-border hover:border-muted-foreground/50 bg-background/80 hover:bg-background/60 transition duration-200 w-full',
+            'flex items-center justify-center gap-1.5 rounded-lg p-1.5 @[200px]:p-2.5 text-xs font-medium text-foreground border border-border hover:border-muted-foreground/50 bg-background/80 hover:bg-background/60 transition duration-200 w-full',
             isInDeck && !isHovered && 'opacity-0 pointer-events-none',
           )}
         >

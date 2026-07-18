@@ -82,7 +82,7 @@ export function CardItem({ card, priority = false, onPreview, className, style }
         </div>
       )}
 
-      <div className="relative aspect-421/614 w-full bg-muted">
+      <div className="relative aspect-421/614 w-full bg-muted @container">
         {!imageError && imageUrl ? (
           <>
             {smallImageUrl && (

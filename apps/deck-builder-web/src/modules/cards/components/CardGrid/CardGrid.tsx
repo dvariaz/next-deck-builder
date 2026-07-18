@@ -46,7 +46,7 @@ export function CardGrid() {
     return (
       <div className="space-y-4">
         <div className="text-sm text-muted-foreground animate-pulse">Loading cards...</div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-2 @sm:grid-cols-3 @4xl:grid-cols-4 @6xl:grid-cols-5 gap-4">
           <CardGridSkeleton count={15} />
         </div>
       </div>
@@ -73,7 +73,7 @@ export function CardGrid() {
         cards
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 @md:grid-cols-3 @lg:grid-cols-4 @2xl:grid-cols-5 gap-4">
         {sortedCards.map((card, index) => (
           <CardItem
             key={card.id}
