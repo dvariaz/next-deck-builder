@@ -128,3 +128,12 @@ Next.js App Router. Source is organized into:
 **API calls:** Data fetching goes through the orval-generated React Query client (`src/generated/api/`), typically wrapped in a hook such as `useCardsInfinite`. Filter state lives in `useFilterStore`; `toQueryParams()` maps it to the generated `*Params` type, and `useFilterSync` mirrors it to the URL. See `#### Regenerating the API client` for the generation workflow.
 
 > **Array query params:** the generated URL builder serializes arrays with `String(value)`, producing a comma-joined value (`attribute=DARK,LIGHT`) rather than repeated params. `useFilterSync`, however, writes repeated params (`attribute=DARK&attribute=LIGHT`). So the API's `toArray` transform (`apps/deck-builder-api/src/common/transforms.ts`) accepts both: scalar, repeated, and comma-joined. New multi-value filters should pair `@Transform(toArray)` with `@IsEnum(X, { each: true })` / `@IsString({ each: true })`.
+
+## Playwright / Visual Verification
+- Do NOT run Playwright or the Playwright MCP automatically when building or 
+  modifying frontend components.
+- Only run Playwright when explicitly instructed (e.g. "verify with Playwright", 
+  "run the visual test").
+- After building a component, just let me know it's ready for visual verification 
+  if applicable, instead of running it yourself.
+  
