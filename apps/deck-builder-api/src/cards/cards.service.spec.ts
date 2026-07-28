@@ -81,16 +81,40 @@ describe('CardsService', () => {
         service.findAll({ skip: 0, take: 20 });
 
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where).not.toHaveProperty('OR');
+        expect(where).not.toHaveProperty('AND');
       });
 
       it('searches name and description for the q query string', () => {
         service.findAll({ q: 'destroy', skip: 0, take: 20 });
 
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.OR).toEqual([
-          { name: { contains: 'destroy', mode: 'insensitive' } },
-          { description: { contains: 'destroy', mode: 'insensitive' } },
+        expect(where.AND).toEqual([
+          {
+            OR: [
+              { name: { contains: 'destroy', mode: 'insensitive' } },
+              { description: { contains: 'destroy', mode: 'insensitive' } },
+            ],
+          },
+        ]);
+      });
+
+      it('requires every token in a multi-word q to match, regardless of order', () => {
+        service.findAll({ q: 'Primite Ether', skip: 0, take: 20 });
+
+        const { where } = mockFindMany.mock.calls[0][0];
+        expect(where.AND).toEqual([
+          {
+            OR: [
+              { name: { contains: 'Primite', mode: 'insensitive' } },
+              { description: { contains: 'Primite', mode: 'insensitive' } },
+            ],
+          },
+          {
+            OR: [
+              { name: { contains: 'Ether', mode: 'insensitive' } },
+              { description: { contains: 'Ether', mode: 'insensitive' } },
+            ],
+          },
         ]);
       });
 
@@ -300,9 +324,13 @@ describe('CardsService', () => {
         expect(where.attribute).toEqual({ in: ['DARK', 'LIGHT'] });
         expect(where.atk).toEqual({ gte: 2000 });
         expect(where.isTuner).toBe(true);
-        expect(where.OR).toEqual([
-          { name: { contains: 'dragon', mode: 'insensitive' } },
-          { description: { contains: 'dragon', mode: 'insensitive' } },
+        expect(where.AND).toEqual([
+          {
+            OR: [
+              { name: { contains: 'dragon', mode: 'insensitive' } },
+              { description: { contains: 'dragon', mode: 'insensitive' } },
+            ],
+          },
         ]);
       });
     });

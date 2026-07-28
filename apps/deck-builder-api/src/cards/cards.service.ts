@@ -26,12 +26,20 @@ export class CardsService {
   private buildWhere(dto: FindCardsDto): Prisma.CardWhereInput {
     const where: Prisma.CardWhereInput = {};
     const insensitive = Prisma.QueryMode.insensitive;
+    const andConditions: Prisma.CardWhereInput[] = [];
 
     if (dto.q) {
-      where.OR = [
-        { name: { contains: dto.q, mode: insensitive } },
-        { description: { contains: dto.q, mode: insensitive } },
-      ];
+      // Match cards containing every token somewhere in name/description,
+      // regardless of order, so "Primite Ether" finds "Primite Dragon Ether Beryl".
+      const tokens = dto.q.trim().split(/\s+/).filter(Boolean);
+      andConditions.push(
+        ...tokens.map((token) => ({
+          OR: [
+            { name: { contains: token, mode: insensitive } },
+            { description: { contains: token, mode: insensitive } },
+          ],
+        })),
+      );
     }
 
     if (dto.name) {
@@ -85,8 +93,10 @@ export class CardsService {
       };
       // Leveled/Rank monsters store the value in `level`; Link monsters store
       // their rating in `linkVal`. The unified Level/Rank/Link range matches either.
-      where.AND = [{ OR: [{ level: range }, { linkVal: range }] }];
+      andConditions.push({ OR: [{ level: range }, { linkVal: range }] });
     }
+
+    if (andConditions.length) where.AND = andConditions;
 
     if (dto.isEffect !== undefined) where.isEffect = dto.isEffect;
     if (dto.isFlip !== undefined) where.isFlip = dto.isFlip;
