@@ -8,6 +8,7 @@ import { SortControls } from '@/modules/filters/components/SortControls/SortCont
 import { ActiveFilters } from '@/modules/filters/components/ActiveFilters/ActiveFilters'
 import { CardGrid } from '@/modules/cards/components/CardGrid/CardGrid'
 import { DeckSidebar } from '@/modules/cards/components/DeckSidebar/DeckSidebar'
+import { MobileDeckSheet } from '@/modules/cards/components/MobileDeckSheet/MobileDeckSheet'
 import { CardCountDisplay } from '@/modules/cards/components/CardCountDisplay/CardCountDisplay'
 import { useFilterSync } from '@/modules/filters/hooks/useFilterSync/useFilterSync'
 
@@ -51,6 +52,7 @@ export function CardsFinder() {
                   <MobileFilterSheet />
                   <SortControls />
                 </div>
+                <MobileDeckSheet />
               </div>
               <ActiveFilters />
             </div>

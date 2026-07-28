@@ -5,7 +5,15 @@ import { useDeckStore } from './useDeckStore'
 const store = () => useDeckStore.getState()
 
 beforeEach(() => {
-  useDeckStore.setState({ deckCards: [], lastAddedCardId: null })
+  localStorage.clear()
+  const draftId = crypto.randomUUID()
+  useDeckStore.setState({
+    drafts: { [draftId]: { id: draftId, name: 'Draft 1', deckCards: [], createdAt: Date.now(), updatedAt: Date.now() } },
+    activeDraftId: draftId,
+    deckCards: [],
+    totalCards: 0,
+    lastAddedCardId: null,
+  })
 })
 
 describe('useDeckStore', () => {
@@ -175,6 +183,110 @@ describe('useDeckStore', () => {
 
       expect(store().deckCards).toEqual([])
       expect(store().lastAddedCardId).toBeNull()
+    })
+  })
+
+  describe('drafts', () => {
+    it('persists the active draft to localStorage on every mutation', () => {
+      store().addCard(makeCard({ id: 'a' }))
+
+      const raw = localStorage.getItem('deck-builder-drafts')
+      expect(raw).not.toBeNull()
+
+      const persisted = JSON.parse(raw!)
+      expect(persisted.version).toBe(1)
+      const activeDraftId = persisted.state.activeDraftId
+      expect(persisted.state.drafts[activeDraftId].deckCards).toEqual([
+        { card: makeCard({ id: 'a' }), quantity: 1 },
+      ])
+    })
+
+    it('createDraft starts a new empty draft and makes it active', () => {
+      store().addCard(makeCard({ id: 'a' }))
+      const previousDraftId = store().activeDraftId
+
+      const newDraftId = store().createDraft('Burn Deck')
+
+      expect(newDraftId).not.toBe(previousDraftId)
+      expect(store().activeDraftId).toBe(newDraftId)
+      expect(store().deckCards).toEqual([])
+      expect(store().drafts[previousDraftId].deckCards).toHaveLength(1)
+      expect(store().drafts[newDraftId].name).toBe('Burn Deck')
+    })
+
+    it('switchDraft restores the target draft as the working deck', () => {
+      store().addCard(makeCard({ id: 'a' }))
+      const firstDraftId = store().activeDraftId
+      store().createDraft('Second Draft')
+      store().addCard(makeCard({ id: 'b' }))
+
+      store().switchDraft(firstDraftId)
+
+      expect(store().activeDraftId).toBe(firstDraftId)
+      expect(store().deckCards).toEqual([{ card: makeCard({ id: 'a' }), quantity: 1 }])
+    })
+
+    it('renameDraft updates the draft name', () => {
+      const draftId = store().activeDraftId
+
+      store().renameDraft(draftId, 'Control Deck')
+
+      expect(store().drafts[draftId].name).toBe('Control Deck')
+    })
+
+    it('renameDraft ignores blank names', () => {
+      const draftId = store().activeDraftId
+      const originalName = store().drafts[draftId].name
+
+      store().renameDraft(draftId, '   ')
+
+      expect(store().drafts[draftId].name).toBe(originalName)
+    })
+
+    it('deleteDraft removes a non-active draft', () => {
+      const firstDraftId = store().activeDraftId
+      const secondDraftId = store().createDraft('Second Draft')
+      store().switchDraft(firstDraftId)
+
+      store().deleteDraft(secondDraftId)
+
+      expect(store().drafts[secondDraftId]).toBeUndefined()
+      expect(store().activeDraftId).toBe(firstDraftId)
+    })
+
+    it('deleteDraft falls back to another draft when deleting the active one', () => {
+      const firstDraftId = store().activeDraftId
+      store().addCard(makeCard({ id: 'a' }))
+      const secondDraftId = store().createDraft('Second Draft')
+
+      store().deleteDraft(secondDraftId)
+
+      expect(store().activeDraftId).toBe(firstDraftId)
+      expect(store().deckCards).toEqual([{ card: makeCard({ id: 'a' }), quantity: 1 }])
+    })
+
+    it('deleteDraft refuses to remove the last remaining draft', () => {
+      const draftId = store().activeDraftId
+
+      store().deleteDraft(draftId)
+
+      expect(store().drafts[draftId]).toBeDefined()
+      expect(Object.keys(store().drafts)).toHaveLength(1)
+    })
+
+    it('listDrafts returns drafts ordered by most recently updated', () => {
+      vi.useFakeTimers()
+      try {
+        store().renameDraft(store().activeDraftId, 'Oldest')
+        vi.advanceTimersByTime(1000)
+        const newerDraftId = store().createDraft('Newer')
+
+        const drafts = store().listDrafts()
+
+        expect(drafts[0].id).toBe(newerDraftId)
+      } finally {
+        vi.useRealTimers()
+      }
     })
   })
 })
