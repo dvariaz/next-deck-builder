@@ -41,15 +41,15 @@ export function DeckCardGridItem({ deckCard, maxCopies, isAnimating, onDecrease,
             className="flex items-center justify-center p-1 rounded-md text-white hover:bg-white/20 cursor-pointer"
             onClick={onDecrease}
           >
-            <Minus className="h-3 w-3" />
+            <Minus className="h-5 w-5 lg:h-4 lg:w-4" />
           </button>
-          <span className="text-[10px] font-medium text-white min-w-[3ch] text-center">{quantity}/{maxCopies}</span>
+          <span className="text-[10px] font-medium text-white min-w-[3ch] text-center flex-1">{quantity}/{maxCopies}</span>
           <button
             className="flex items-center justify-center p-1 rounded-md text-white hover:bg-white/20 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             onClick={onIncrease}
             disabled={quantity >= maxCopies}
           >
-            <Plus className="h-3 w-3" />
+            <Plus className="h-5 w-5 lg:h-4 lg:w-4" />
           </button>
         </div>
       </div>
