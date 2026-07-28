@@ -9,7 +9,7 @@ function ScrollArea({ className, children, ...props }: ComponentProps<typeof Scr
     <ScrollAreaPrimitive.Root data-slot="scroll-area" className={cn('relative overflow-hidden', className)} {...props}>
       <ScrollAreaPrimitive.Viewport
         data-slot="scroll-area-viewport"
-        className="size-full rounded-[inherit] outline-none"
+        className="size-full rounded-[inherit] outline-none [&>div]:block!"
       >
         {children}
       </ScrollAreaPrimitive.Viewport>
