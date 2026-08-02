@@ -19,6 +19,11 @@ import {
 } from '../../../generated/prisma/enums';
 import { toArray, toBoolean } from '../../common/transforms';
 
+export enum CardSort {
+  NAME = 'name',
+  NEWEST = 'newest',
+}
+
 export class FindCardsDto {
   @ApiPropertyOptional({
     description: 'Full-text search across card name and description',
@@ -198,6 +203,15 @@ export class FindCardsDto {
   @Transform(toBoolean)
   @IsBoolean()
   isToken?: boolean;
+
+  @ApiPropertyOptional({
+    enum: CardSort,
+    default: CardSort.NAME,
+    description: 'Result ordering: alphabetical by name, or newest first',
+  })
+  @IsOptional()
+  @IsEnum(CardSort)
+  sort?: CardSort = CardSort.NAME;
 
   @ApiPropertyOptional({ minimum: 0, default: 0 })
   @IsOptional()

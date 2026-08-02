@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { FindCardsDto } from './dto/find-cards.dto';
+import { CardSort, FindCardsDto } from './dto/find-cards.dto';
 import { LINK_MARKERS } from './link-markers.constant';
 
 @Injectable()
@@ -10,13 +10,19 @@ export class CardsService {
 
   async findAll(dto: FindCardsDto) {
     const where = this.buildWhere(dto);
+    const orderBy: Prisma.CardOrderByWithRelationInput[] =
+      dto.sort === CardSort.NEWEST
+        ? // Newest by real TCG release date; cards never released in the TCG
+          // (null tcgDate) sort last, then break ties by insertion order.
+          [{ tcgDate: { sort: 'desc', nulls: 'last' } }, { id: 'desc' }]
+        : [{ name: 'asc' }];
     const [results, total] = await Promise.all([
       this.prisma.card.findMany({
         where,
         include: { cardImages: true },
         skip: dto.skip,
         take: dto.take,
-        orderBy: { name: 'asc' },
+        orderBy,
       }),
       this.prisma.card.count({ where }),
     ]);

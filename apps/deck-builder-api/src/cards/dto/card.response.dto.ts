@@ -41,5 +41,17 @@ export class CardResponseDto {
   @ApiProperty({ type: [String] }) linkMarkers: string[];
   @ApiProperty() isToken: boolean;
   @ApiProperty({ type: [String] }) aiTags: string[];
+
+  // Extended metadata (YGOProDeck misc=yes)
+  @ApiPropertyOptional() betaName?: string;
+  @ApiPropertyOptional() treatedAs?: string;
+  @ApiProperty({ type: [String] }) formats: string[];
+  @ApiPropertyOptional() upvotes?: number;
+  @ApiPropertyOptional() downvotes?: number;
+  @ApiPropertyOptional() konamiId?: number;
+  @ApiPropertyOptional() mdRarity?: string;
+  @ApiPropertyOptional({ type: String, format: 'date-time' }) tcgDate?: string;
+  @ApiPropertyOptional({ type: String, format: 'date-time' }) ocgDate?: string;
+
   @ApiProperty({ type: () => [CardImageResponseDto] }) cardImages: CardImageResponseDto[];
 }

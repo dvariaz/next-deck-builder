@@ -22,6 +22,20 @@ export interface YgoApiBanlistInfo {
   ban_goat?: string;
 }
 
+// Returned per card when the request includes `misc=yes`. Usually a single
+// element; cards with alternate passcodes may return more, so we read [0].
+export interface YgoApiMiscInfo {
+  beta_name?: string;
+  treated_as?: string;
+  formats?: string[];
+  upvotes?: number;
+  downvotes?: number;
+  konami_id?: number;
+  md_rarity?: string;
+  tcg_date?: string; // YYYY-MM-DD
+  ocg_date?: string; // YYYY-MM-DD
+}
+
 export interface YgoApiCard {
   id: number;
   name: string;
@@ -42,6 +56,7 @@ export interface YgoApiCard {
   banlist_info?: YgoApiBanlistInfo;
   card_sets?: YgoApiCardSet[];
   card_images?: YgoApiCardImage[];
+  misc_info?: YgoApiMiscInfo[];
 }
 
 export interface YgoApiResponse {

@@ -102,6 +102,17 @@ model Card {
   aiTags             Json?
   aiLabeledAt        DateTime?
 
+  // Extended metadata (YGOProDeck misc=yes)
+  betaName           String?
+  treatedAs          String?
+  formats            String[]
+  upvotes            Int?
+  downvotes          Int?
+  konamiId           Int?
+  mdRarity           String?
+  tcgDate            DateTime? // Original TCG release date
+  ocgDate            DateTime? // Original OCG release date
+
   cardSets           CardSet[]
   cardImages         CardImage[]
 }

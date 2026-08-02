@@ -124,6 +124,13 @@ function mapBanStatus(value?: string): BanStatus | null {
   return BAN_STATUS_MAP[value] ?? null;
 }
 
+// Parse a YYYY-MM-DD release date into a Date, tolerating missing/blank values.
+function parseReleaseDate(value?: string): Date | null {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 export function shouldSkipCard(card: YgoApiCard): boolean {
   return card.frameType === 'skill' || card.type === 'Skill Card';
 }
@@ -133,6 +140,7 @@ export function mapApiCardToCreateInput(
 ): Prisma.CardCreateManyInput {
   const typeline = card.typeline ?? [];
   const monster = isMonster(card);
+  const misc = card.misc_info?.[0] ?? {};
 
   return {
     ygoId: card.id,
@@ -165,6 +173,17 @@ export function mapApiCardToCreateInput(
     isUnion: typeline.includes('Union') || card.type.includes('Union'),
     isGemini: typeline.includes('Gemini') || card.type.includes('Gemini'),
     isToken: card.frameType === 'token' || card.type === 'Token',
+
+    // Extended metadata (misc=yes)
+    betaName: misc.beta_name ?? null,
+    treatedAs: misc.treated_as ?? null,
+    formats: misc.formats ?? [],
+    upvotes: misc.upvotes ?? null,
+    downvotes: misc.downvotes ?? null,
+    konamiId: misc.konami_id ?? null,
+    mdRarity: misc.md_rarity ?? null,
+    tcgDate: parseReleaseDate(misc.tcg_date),
+    ocgDate: parseReleaseDate(misc.ocg_date),
   };
 }
 
