@@ -121,3 +121,67 @@
 .animate-fly-to-deck {
   animation: fly-to-deck 0.5s ease-out forwards;
 }
+
+/* ---- Landing page ---- */
+
+/* Seamless vertical marquee for the hero card wall.
+   Each column duplicates its cards, so a -50% translate loops perfectly. */
+@keyframes marquee-y-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+@keyframes marquee-y-down {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+.animate-marquee-up {
+  animation: marquee-y-up var(--marquee-duration, 60s) linear infinite;
+}
+.animate-marquee-down {
+  animation: marquee-y-down var(--marquee-duration, 60s) linear infinite;
+}
+
+/* Gentle floating bob for accent elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Slow neon aura pulse */
+@keyframes aura-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+.animate-aura {
+  animation: aura-pulse 5s ease-in-out infinite;
+}
+
+/* Scroll-reveal: hidden until IntersectionObserver flips data-visible */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal[data-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee-up,
+  .animate-marquee-down,
+  .animate-float,
+  .animate-aura {
+    animation: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
