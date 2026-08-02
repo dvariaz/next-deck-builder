@@ -1,6 +1,7 @@
 'use client'
 
 import { Sparkles } from 'lucide-react'
+import Link from 'next/link'
 import { SearchBar } from '@/modules/filters/components/SearchBar/SearchBar'
 import { FilterSidebar } from '@/modules/filters/components/FilterSidebar/FilterSidebar'
 import { MobileFilterSheet } from '@/modules/filters/components/MobileFilterSheet/MobileFilterSheet'
@@ -24,12 +25,12 @@ export function CardsFinder() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/20 neon-glow-cyan">
               <Sparkles className="h-5 w-5 text-primary" />
             </div>
-            <div className="hidden sm:block">
+            <Link className="hidden sm:block" href="/">
               <h1 className="text-lg font-bold text-foreground">
                 Next <span className="text-primary">Deck</span>
               </h1>
               <p className="text-xs text-muted-foreground">Card Database</p>
-            </div>
+            </Link>
           </div>
 
           <div className="flex-1 flex justify-center">
