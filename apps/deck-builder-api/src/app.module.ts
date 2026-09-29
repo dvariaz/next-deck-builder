@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { CardsModule } from './cards/cards.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SearchGraphModule } from './search-graph/search-graph.module';
 
 @Module({
   imports: [
@@ -9,7 +10,8 @@ import { PrismaModule } from './prisma/prisma.module';
       isGlobal: true,
     }),
     PrismaModule,
-    CardsModule
+    CardsModule,
+    SearchGraphModule,
   ],
   controllers: [],
   providers: [],

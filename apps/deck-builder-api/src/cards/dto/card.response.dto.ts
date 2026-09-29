@@ -10,7 +10,7 @@ import {
 import { CardImageResponseDto } from './card-image.response.dto';
 
 export class CardResponseDto {
-  @ApiProperty() id: string;
+  @ApiProperty() id: number;
   @ApiProperty() ygoId: number;
   @ApiProperty() name: string;
   @ApiProperty({ enum: CardType }) cardType: CardType;
@@ -28,8 +28,10 @@ export class CardResponseDto {
   @ApiPropertyOptional() attribute?: string;
   @ApiPropertyOptional() race?: string;
   @ApiPropertyOptional({ enum: SummonType }) summonType?: SummonType;
-  @ApiPropertyOptional({ enum: MonsterEffectType }) monsterEffectType?: MonsterEffectType;
-  @ApiPropertyOptional({ enum: SpellTrapSubType }) spellTrapSubType?: SpellTrapSubType;
+  @ApiPropertyOptional({ enum: MonsterEffectType })
+  monsterEffectType?: MonsterEffectType;
+  @ApiPropertyOptional({ enum: SpellTrapSubType })
+  spellTrapSubType?: SpellTrapSubType;
   @ApiProperty() isEffect: boolean;
   @ApiProperty() isFlip: boolean;
   @ApiProperty() isTuner: boolean;
@@ -53,5 +55,6 @@ export class CardResponseDto {
   @ApiPropertyOptional({ type: String, format: 'date-time' }) tcgDate?: string;
   @ApiPropertyOptional({ type: String, format: 'date-time' }) ocgDate?: string;
 
-  @ApiProperty({ type: () => [CardImageResponseDto] }) cardImages: CardImageResponseDto[];
+  @ApiProperty({ type: () => [CardImageResponseDto] })
+  cardImages: CardImageResponseDto[];
 }
