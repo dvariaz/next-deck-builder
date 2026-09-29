@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CardSort, FindCardsDto } from './dto/find-cards.dto';
-import { LINK_MARKERS } from './link-markers.constant';
+import {
+  insensitiveContains,
+  levelOrLinkRange,
+  linkMarkerFilter,
+  numericRange,
+} from './card-where.builder';
 
 @Injectable()
 export class CardsService {
@@ -26,12 +31,14 @@ export class CardsService {
       }),
       this.prisma.card.count({ where }),
     ]);
-    return { results, pagination: { total, skip: dto.skip ?? 0, take: dto.take ?? 20 } };
+    return {
+      results,
+      pagination: { total, skip: dto.skip ?? 0, take: dto.take ?? 20 },
+    };
   }
 
   private buildWhere(dto: FindCardsDto): Prisma.CardWhereInput {
     const where: Prisma.CardWhereInput = {};
-    const insensitive = Prisma.QueryMode.insensitive;
     const andConditions: Prisma.CardWhereInput[] = [];
 
     if (dto.q) {
@@ -41,20 +48,18 @@ export class CardsService {
       andConditions.push(
         ...tokens.map((token) => ({
           OR: [
-            { name: { contains: token, mode: insensitive } },
-            { description: { contains: token, mode: insensitive } },
+            { name: insensitiveContains(token) },
+            { description: insensitiveContains(token) },
           ],
         })),
       );
     }
 
-    if (dto.name) {
-      where.name = { contains: dto.name, mode: insensitive };
-    }
+    const name = insensitiveContains(dto.name);
+    if (name) where.name = name;
 
-    if (dto.archetype) {
-      where.archetype = { contains: dto.archetype, mode: insensitive };
-    }
+    const archetype = insensitiveContains(dto.archetype);
+    if (archetype) where.archetype = archetype;
 
     if (dto.attribute?.length) where.attribute = { in: dto.attribute };
     if (dto.race?.length) where.race = { in: dto.race };
@@ -68,39 +73,19 @@ export class CardsService {
     if (dto.banStatusTcg?.length) where.banStatusTcg = { in: dto.banStatusTcg };
     if (dto.banStatusOcg?.length) where.banStatusOcg = { in: dto.banStatusOcg };
 
-    if (dto.linkMarker?.length) {
-      where.linkMarkers = { hasEvery: dto.linkMarker };
-      if (dto.linkMarkerStrict) {
-        const complement = LINK_MARKERS.filter(
-          (m) => !dto.linkMarker!.includes(m),
-        );
-        where.NOT = { linkMarkers: { hasSome: complement } };
-      }
-    }
+    Object.assign(
+      where,
+      linkMarkerFilter(dto.linkMarker, dto.linkMarkerStrict),
+    );
 
-    if (dto.atkMin !== undefined || dto.atkMax !== undefined) {
-      where.atk = {
-        ...(dto.atkMin !== undefined && { gte: dto.atkMin }),
-        ...(dto.atkMax !== undefined && { lte: dto.atkMax }),
-      };
-    }
+    const atk = numericRange(dto.atkMin, dto.atkMax);
+    if (atk) where.atk = atk;
 
-    if (dto.defMin !== undefined || dto.defMax !== undefined) {
-      where.def = {
-        ...(dto.defMin !== undefined && { gte: dto.defMin }),
-        ...(dto.defMax !== undefined && { lte: dto.defMax }),
-      };
-    }
+    const def = numericRange(dto.defMin, dto.defMax);
+    if (def) where.def = def;
 
-    if (dto.levelMin !== undefined || dto.levelMax !== undefined) {
-      const range = {
-        ...(dto.levelMin !== undefined && { gte: dto.levelMin }),
-        ...(dto.levelMax !== undefined && { lte: dto.levelMax }),
-      };
-      // Leveled/Rank monsters store the value in `level`; Link monsters store
-      // their rating in `linkVal`. The unified Level/Rank/Link range matches either.
-      andConditions.push({ OR: [{ level: range }, { linkVal: range }] });
-    }
+    const level = levelOrLinkRange(dto.levelMin, dto.levelMax);
+    if (level) andConditions.push(level);
 
     if (andConditions.length) where.AND = andConditions;
 
