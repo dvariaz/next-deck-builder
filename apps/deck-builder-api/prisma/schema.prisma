@@ -102,6 +102,12 @@ model Card {
   aiTags             Json?
   aiLabeledAt        DateTime?
 
+  // Structured effect IR produced by src/card-effect-parser (ParsedCardEffects).
+  // Written by `yarn effects:parse`; consumed by the search graph. Wiped on reseed,
+  // since the seeder deletes and recreates every row.
+  cardEffects        Json?
+  effectsParsedAt    DateTime?
+
   // Extended metadata (YGOProDeck misc=yes)
   betaName           String?
   treatedAs          String?
@@ -115,6 +121,13 @@ model Card {
 
   cardSets           CardSet[]
   cardImages         CardImage[]
+
+  // Search-graph criteria resolution filters on these columns (never on `description`),
+  // and issues one count per distinct predicate per tier — so they carry the query cost.
+  @@index([archetype])
+  @@index([cardType])
+  @@index([level])
+  @@index([cardType, archetype])
 }
 
 model CardSet {
