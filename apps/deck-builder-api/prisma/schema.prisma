@@ -102,6 +102,12 @@ model Card {
   aiTags             Json?
   aiLabeledAt        DateTime?
 
+  // Structured effect IR produced by src/card-effect-parser (ParsedCardEffects).
+  // Written by `yarn effects:parse`. Wiped on reseed, since the seeder deletes
+  // and recreates every row.
+  cardEffects        Json?
+  effectsParsedAt    DateTime?
+
   // Extended metadata (YGOProDeck misc=yes)
   betaName           String?
   treatedAs          String?
