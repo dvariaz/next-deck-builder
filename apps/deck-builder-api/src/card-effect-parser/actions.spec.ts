@@ -1,3 +1,4 @@
+import { CardType } from '../../generated/prisma/enums';
 import { parseAction, parseSelection, segmentRejection } from './actions';
 import type { ParserContext } from './card-effect.types';
 import { preprocess } from './normalize';
@@ -6,6 +7,7 @@ const ctx: ParserContext = {
   archetypes: new Set(['HERO', 'Sky Striker Ace', 'Trickstar']),
   races: new Set(['Warrior', 'Spellcaster', 'Psychic', 'Dragon']),
   cardName: 'Test Card',
+  cardType: CardType.MONSTER,
 };
 
 const act = (

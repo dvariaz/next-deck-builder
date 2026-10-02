@@ -4,18 +4,44 @@ import {
   type ParsedCardEffects,
   type ParserContext,
 } from './card-effect.types';
-import { FIXTURES, FIXTURE_ARCHETYPES, FIXTURE_RACES } from './fixtures';
+import type { CardType } from '../../generated/prisma/enums';
+import {
+  FIXTURES,
+  FIXTURE_ARCHETYPES,
+  FIXTURE_RACES,
+  type CardFixture,
+} from './fixtures';
 
 const PARSED_AT = '2026-01-01T00:00:00.000Z';
 
-const ctxFor = (cardName: string): ParserContext => ({
-  archetypes: FIXTURE_ARCHETYPES,
-  races: FIXTURE_RACES,
-  cardName,
-});
+/**
+ * A ParserContext built the way production builds one. Takes the whole fixture
+ * rather than just a name, because the card's type decides how its effects are
+ * classified — see CardFixture.cardType.
+ */
+const ctxFor = (
+  fixture: string | CardFixture,
+  cardType: CardType = 'MONSTER',
+): ParserContext =>
+  typeof fixture === 'string'
+    ? {
+        archetypes: FIXTURE_ARCHETYPES,
+        races: FIXTURE_RACES,
+        cardName: fixture,
+        cardType,
+      }
+    : {
+        archetypes: FIXTURE_ARCHETYPES,
+        races: FIXTURE_RACES,
+        cardName: fixture.name,
+        cardType: fixture.cardType,
+        ...(fixture.spellTrapSubType
+          ? { spellTrapSubType: fixture.spellTrapSubType }
+          : {}),
+      };
 
-const parse = (fixture: { name: string; description: string }) =>
-  parseCardEffects(fixture.description, ctxFor(fixture.name), PARSED_AT);
+const parse = (fixture: CardFixture) =>
+  parseCardEffects(fixture.description, ctxFor(fixture), PARSED_AT);
 
 /** The search actions the graph would draw edges from. */
 const searches = (parsed: ParsedCardEffects) =>
@@ -442,9 +468,29 @@ describe('parseCardEffects', () => {
     });
 
     it('records the detach as the cost', () => {
-      expect(parse(FIXTURES.alchemicMagician).effects[0].cost).toMatchObject({
-        detach: 1,
-      });
+      // Found by its action, not by index: the card's first sentence is a
+      // continuous ATK gain, which is now recorded as an effect of its own.
+      const effect = parse(FIXTURES.alchemicMagician).effects.find((e) =>
+        e.actions.some((a) => a.verb === 'SET'),
+      );
+      expect(effect?.cost).toMatchObject({ detach: 1 });
+    });
+
+    it('records the continuous ATK gain as its own effect', () => {
+      const parsed = parse(FIXTURES.alchemicMagician);
+      const continuous = parsed.effects.find(
+        (e) => e.effectType === 'CONTINUOUS',
+      );
+      expect(continuous?.modifiers).toMatchObject([
+        {
+          kind: 'STAT',
+          stat: 'ATK',
+          mode: 'GAIN',
+          amount: 'VARIABLE',
+          target: { kind: 'self' },
+        },
+      ]);
+      expect(continuous?.actions).toEqual([]);
     });
   });
 
@@ -505,10 +551,17 @@ describe('parseCardEffects', () => {
     });
 
     it('keeps the Pendulum and Monster halves apart', () => {
+      // Both halves now produce effects — the Pendulum half is a summon lock
+      // and an ATK buff, which are continuous rather than actions — so the
+      // point of this case is that each is attributed to the right block.
       const parsed = parse(FIXTURES.qliphortCarrier);
-      expect(
-        parsed.effects.every((effect) => effect.blockKind === 'MONSTER'),
-      ).toBe(true);
+      const kinds = new Set(parsed.effects.map((e) => e.blockKind));
+      expect(kinds).toEqual(new Set(['PENDULUM', 'MONSTER']));
+
+      const pendulum = parsed.effects.filter((e) => e.blockKind === 'PENDULUM');
+      expect(pendulum.flatMap((e) => e.modifiers.map((m) => m.kind))).toContain(
+        'SUMMON_LOCK',
+      );
     });
   });
 
@@ -563,7 +616,7 @@ describe('parseCardEffects', () => {
       // which is the accepted cost of not missing a real gap — the queue is
       // 299 cards out of 14,353, small enough to read.
       const parsed = parseCardEffects(
-        'You cannot Special Summon monsters this turn.',
+        'A monster is Special Summoned by Add.',
         ctxFor('Nonsense'),
         PARSED_AT,
       );
@@ -603,14 +656,32 @@ describe('parseCardEffects', () => {
     });
 
     it('marks modern text with neither punctuation as not chainable', () => {
-      // A continuous effect. Divine Wrath cannot negate one of these, because
-      // there is nothing to chain to.
+      // Divine Wrath cannot negate one of these, because there is nothing to
+      // chain to. Asserted on a sentence that DOES yield an action, because a
+      // sentence yielding none is not recorded at all — see the known gap in
+      // README.md ("What it deliberately does not do").
+      const parsed = parseCardEffects(
+        'Negate the effects of all face-up monsters your opponent controls.',
+        ctxFor('Continuous'),
+        PARSED_AT,
+      );
+      expect(parsed.effects).toHaveLength(1);
+      expect(parsed.effects[0].startsChain).toBe(false);
+    });
+
+    it('records a continuous effect that performs no action', () => {
       const parsed = parseCardEffects(
         'This card gains 500 ATK for each Dragon monster you control.',
         ctxFor('Continuous'),
         PARSED_AT,
       );
-      expect(parsed.effects[0]?.startsChain ?? false).toBe(false);
+      expect(parsed.effects).toHaveLength(1);
+      expect(parsed.effects[0]).toMatchObject({
+        effectType: 'CONTINUOUS',
+        startsChain: false,
+        actions: [],
+      });
+      expect(parsed.effects[0].trigger).toBeUndefined();
     });
 
     it('leaves the clue undefined on a pre-PSCT printing', () => {
@@ -684,6 +755,245 @@ describe('parseCardEffects', () => {
           }
         }
       }
+    });
+  });
+
+  describe('effectType — classifying the effect', () => {
+    it('reads a continuous effect from the ABSENCE of a trigger', () => {
+      const parsed = parseCardEffects(
+        'This card gains 500 ATK for each Dragon monster you control.',
+        ctxFor('Continuous'),
+        PARSED_AT,
+      );
+      expect(parsed.effects[0]).toMatchObject({
+        effectType: 'CONTINUOUS',
+        startsChain: false,
+      });
+      expect(parsed.effects[0].trigger).toBeUndefined();
+    });
+
+    it('reads a trigger effect', () => {
+      expect(parse(FIXTURES.sangan).effects[0].effectType).toBe('TRIGGER');
+    });
+
+    it('reads an ignition effect from a bare phase window', () => {
+      const parsed = parseCardEffects(
+        'During your Main Phase: You can Special Summon 1 Warrior monster from your hand.',
+        ctxFor('Ignition'),
+        PARSED_AT,
+      );
+      expect(parsed.effects[0].effectType).toBe('IGNITION');
+    });
+
+    it('reads a Quick Effect', () => {
+      expect(parse(FIXTURES.ashBlossomJoyousSpring).effects[0].effectType).toBe(
+        'QUICK',
+      );
+    });
+
+    it('reads a Flip effect', () => {
+      expect(parse(FIXTURES.reaperOfTheCards).effects[0].effectType).toBe(
+        'FLIP',
+      );
+    });
+
+    describe('card type decides the chain clue', () => {
+      it('treats an unpunctuated Spell as activated, not continuous', () => {
+        // Terraforming. Spells and Traps start a chain when activated whatever
+        // their punctuation — the colon/semicolon clue is a MONSTER-effect
+        // rule, and reading this as continuous was a real bug.
+        const parsed = parse(FIXTURES.terraforming);
+        expect(parsed.effects[0]).toMatchObject({
+          effectType: 'ACTIVATED',
+          startsChain: true,
+        });
+      });
+
+      it('still reads a continuous line on a card that stays on the field', () => {
+        // A Continuous Spell can print a continuous state alongside its
+        // activation, and that line applies without being activated.
+        const parsed = parseCardEffects(
+          'All "HERO" monsters you control gain 300 ATK.',
+          {
+            archetypes: FIXTURE_ARCHETYPES,
+            races: FIXTURE_RACES,
+            cardName: 'Continuous Spell',
+            cardType: 'SPELL',
+            spellTrapSubType: 'CONTINUOUS',
+          },
+          PARSED_AT,
+        );
+        expect(parsed.effects[0]).toMatchObject({
+          effectType: 'CONTINUOUS',
+          startsChain: false,
+        });
+      });
+
+      it('does not read a Normal Spell line as continuous', () => {
+        const parsed = parseCardEffects(
+          'Inflict 1200 damage to your opponent.',
+          {
+            archetypes: FIXTURE_ARCHETYPES,
+            races: FIXTURE_RACES,
+            cardName: 'Normal Spell',
+            cardType: 'SPELL',
+            spellTrapSubType: 'NORMAL',
+          },
+          PARSED_AT,
+        );
+        expect(parsed.effects[0]).toMatchObject({
+          effectType: 'ACTIVATED',
+          startsChain: true,
+        });
+        expect(parsed.effects[0].actions[0]).toMatchObject({
+          verb: 'INFLICT_DAMAGE',
+          amount: 1200,
+        });
+      });
+    });
+  });
+
+  describe('sentences that are not effects', () => {
+    it('does not record a bare once-per-turn statement', () => {
+      // This previously produced a bogus SPECIAL_SUMMON "search" out of a
+      // restriction, on 8 cards.
+      const parsed = parseCardEffects(
+        'You can only Special Summon "Artemis, the Magistus Moon Maiden" once per turn.',
+        ctxFor('Artemis, the Magistus Moon Maiden'),
+        PARSED_AT,
+      );
+      expect(parsed.effects).toEqual([]);
+      expect(parsed.needsReview).toBe(false);
+    });
+
+    it('does not record an Extra Deck materials line', () => {
+      const parsed = parseCardEffects(
+        '2 Level 4 monsters.',
+        ctxFor('Xyz Monster'),
+        PARSED_AT,
+      );
+      expect(parsed.effects).toEqual([]);
+    });
+
+    it('does not record a parenthetical aside', () => {
+      const parsed = parseCardEffects(
+        '(This card is always treated as a "Qli" card.)',
+        ctxFor('Aside'),
+        PARSED_AT,
+      );
+      expect(parsed.effects).toEqual([]);
+    });
+
+    it('still records a sentence that merely CONTAINS parentheses', () => {
+      // The gate must not be greedy: a sentence that starts with "(" and ends
+      // with ")" is not therefore a bare aside.
+      const parsed = parseCardEffects(
+        '(Quick Effect): You can pay 800 LP; Special Summon 1 Warrior monster from your GY (that card is NOT treated as a Trap).',
+        ctxFor('Tiki Peace'),
+        PARSED_AT,
+      );
+      expect(searches(parsed)).toHaveLength(1);
+    });
+  });
+
+  describe('costs stated as "<cost> to <action>"', () => {
+    it('lifts the cost even with no leading condition', () => {
+      // "You can remove 2 A-Counters ... to Special Summon this card" — the
+      // removal is what is PAID, so the Summon must survive it.
+      const parsed = parseCardEffects(
+        'You can remove 2 A-Counters from anywhere on the field to Special Summon this card from your hand.',
+        ctxFor('Alien Overlord'),
+        PARSED_AT,
+      );
+      const summon = parsed.effects
+        .flatMap((e) => e.actions)
+        .find((a) => a.verb === 'SPECIAL_SUMMON');
+      expect(summon).toBeDefined();
+    });
+
+    it('lifts a Life Point cost', () => {
+      const parsed = parseCardEffects(
+        'Pay 1000 Life Points to Special Summon 1 Level 6 or lower Fusion Monster from your Extra Deck.',
+        ctxFor('Magical Scientist'),
+        PARSED_AT,
+      );
+      expect(searches(parsed)).toHaveLength(1);
+      expect(parsed.effects[0].cost).toMatchObject({ payLifePoints: 1000 });
+    });
+
+    it('tolerates a "Once per turn," prefix before the cost', () => {
+      const parsed = parseCardEffects(
+        'Once per turn, you can remove 2 A-Counters from anywhere on the field to Special Summon 1 "Alien" monster from your Deck.',
+        ctxFor('Code A Ancient Ruins'),
+        PARSED_AT,
+      );
+      expect(searches(parsed)).toHaveLength(1);
+    });
+  });
+
+  describe('bare "and" joining two actions', () => {
+    it('splits when a real action verb follows', () => {
+      // Gallis the Star Beast. Before this, INFLICT_DAMAGE won the segment and
+      // the Special Summon was lost.
+      const parsed = parseCardEffects(
+        'Inflict damage to your opponent equal to its Level x 200 and Special Summon this card from your hand.',
+        ctxFor('Gallis the Star Beast'),
+        PARSED_AT,
+      );
+      const verbs = parsed.effects.flatMap((e) => e.actions.map((a) => a.verb));
+      expect(verbs).toEqual(
+        expect.arrayContaining(['INFLICT_DAMAGE', 'SPECIAL_SUMMON']),
+      );
+    });
+
+    it('marks the second half as dependent, since "and" is all-or-nothing', () => {
+      const parsed = parseCardEffects(
+        'Inflict 500 damage to your opponent and Special Summon this card from your hand.',
+        ctxFor('Test'),
+        PARSED_AT,
+      );
+      const summon = parsed.effects
+        .flatMap((e) => e.actions)
+        .find((a) => a.verb === 'SPECIAL_SUMMON');
+      expect(summon).toMatchObject({
+        conjunction: 'AND',
+        dependsOnPrevious: true,
+      });
+    });
+
+    it('does NOT split a noun phrase joined by "and"', () => {
+      const parsed = parseCardEffects(
+        'Destroy 1 monster and 1 Spell on the field.',
+        ctxFor('Test'),
+        PARSED_AT,
+      );
+      expect(parsed.effects[0].actions).toHaveLength(1);
+    });
+  });
+
+  describe('a coin or die result is a dependent conjunction', () => {
+    it('splits "and if the result is heads," so the Summon survives', () => {
+      const parsed = parseCardEffects(
+        'You can toss a coin and if the result is heads, Special Summon this card to your field.',
+        ctxFor('Couple of Aces'),
+        PARSED_AT,
+      );
+      const verbs = parsed.effects.flatMap((e) => e.actions.map((a) => a.verb));
+      expect(verbs).toEqual(
+        expect.arrayContaining(['TOSS_COIN', 'SPECIAL_SUMMON']),
+      );
+    });
+
+    it('splits a die roll the same way', () => {
+      const parsed = parseCardEffects(
+        'You can roll a six-sided die, and if you roll a 2, 3, 4, or 5, Special Summon this card.',
+        ctxFor('Psychic Rover'),
+        PARSED_AT,
+      );
+      const verbs = parsed.effects.flatMap((e) => e.actions.map((a) => a.verb));
+      expect(verbs).toEqual(
+        expect.arrayContaining(['ROLL_DICE', 'SPECIAL_SUMMON']),
+      );
     });
   });
 });

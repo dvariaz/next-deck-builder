@@ -84,6 +84,58 @@ const VERB_PATTERNS: { verb: EffectVerb; re: RegExp }[] = [
 ];
 
 /**
+ * Discrete non-search actions, kept in a second table.
+ *
+ * Separate only to resolve a tie-break: where both tables match at the SAME
+ * position, the specific verb should win, so that "place 1 Spell Counter" is a
+ * PLACE_COUNTER rather than the generic PLACE. Position still decides first —
+ * see `pickVerb` — because "the first verb in the segment wins" is what keeps
+ * "detach 1 Xyz Material; Special Summon 1 monster" a Special Summon.
+ */
+const DISCRETE_VERB_PATTERNS: { verb: EffectVerb; re: RegExp }[] = [
+  { verb: EffectVerb.PLACE_COUNTER, re: /\bplace\b[^.;]{0,30}\bcounters?\b/i },
+  {
+    verb: EffectVerb.REMOVE_COUNTER,
+    re: /\bremove\b[^.;]{0,30}\bcounters?\b/i,
+  },
+  { verb: EffectVerb.INFLICT_DAMAGE, re: /\binflict\b/i },
+  {
+    verb: EffectVerb.GAIN_LP,
+    re: /\bgain\b[^.;]{0,20}\b(?:LP|Life Points)\b/i,
+  },
+  {
+    verb: EffectVerb.LOSE_LP,
+    re: /\b(?:lose|pay)\b[^.;]{0,20}\b(?:LP|Life Points)\b/i,
+  },
+  { verb: EffectVerb.TAKE_CONTROL, re: /\btake control\b/i },
+  {
+    verb: EffectVerb.CHANGE_POSITION,
+    re: /\bchange\b[^.;]{0,40}\bbattle position\b/i,
+  },
+  { verb: EffectVerb.DETACH, re: /\bdetach\b/i },
+  { verb: EffectVerb.TOSS_COIN, re: /\btoss\b[^.;]{0,20}\bcoins?\b/i },
+  { verb: EffectVerb.ROLL_DICE, re: /\broll\b[^.;]{0,20}\bdi(?:e|ce)\b/i },
+  { verb: EffectVerb.DECLARE, re: /\bdeclare\b/i },
+  { verb: EffectVerb.FLIP, re: /\bflip\b[^.;]{0,30}\bface-up\b/i },
+];
+
+/** Verbs whose magnitude is the point of the action. */
+const AMOUNT_VERBS: readonly EffectVerb[] = [
+  EffectVerb.INFLICT_DAMAGE,
+  EffectVerb.GAIN_LP,
+  EffectVerb.LOSE_LP,
+  EffectVerb.PLACE_COUNTER,
+  EffectVerb.REMOVE_COUNTER,
+  EffectVerb.DRAW,
+  EffectVerb.EXCAVATE,
+  EffectVerb.DETACH,
+];
+
+/** 'VARIABLE' when the text computes the number rather than stating it. */
+const VARIABLE_AMOUNT_RE =
+  /\b(?:for each|equal to|x\s*\d|half|double|the number of)\b/i;
+
+/**
  * Longer zone names must precede their own suffixes ("Extra Deck" vs "Deck").
  *
  * The optional "Card" covers the pre-2011 spelling — "Spell & Trap Card Zone",
@@ -341,15 +393,41 @@ export function parseActions(
 ): EffectAction[] {
   if (segmentRejection(segment)) return [];
 
-  // The first verb in the segment wins.
-  let best: { verb: EffectVerb; at: number; length: number } | undefined;
-  for (const { verb, re } of VERB_PATTERNS) {
-    const match = re.exec(segment);
-    if (!match) continue;
-    if (!best || match.index < best.at) {
-      best = { verb, at: match.index, length: match[0].length };
-    }
-  }
+  // The EARLIEST verb in the segment wins, across both tables. Consulting the
+  // specific table first instead would let a discrete verb anywhere in the
+  // segment beat a search verb that precedes it, silently turning
+  // "detach 1 Xyz Material, then Special Summon 1 monster" into a detach.
+  //
+  // `specific` only breaks ties at the same position, where the narrower verb
+  // is the right reading.
+  const pickVerb = () => {
+    let found:
+      | { verb: EffectVerb; at: number; length: number; specific: boolean }
+      | undefined;
+
+    const scan = (
+      patterns: { verb: EffectVerb; re: RegExp }[],
+      specific: boolean,
+    ) => {
+      for (const { verb, re } of patterns) {
+        const match = re.exec(segment);
+        if (!match) continue;
+        const better =
+          !found ||
+          match.index < found.at ||
+          (match.index === found.at && specific && !found.specific);
+        if (better) {
+          found = { verb, at: match.index, length: match[0].length, specific };
+        }
+      }
+    };
+
+    scan(VERB_PATTERNS, false);
+    scan(DISCRETE_VERB_PATTERNS, true);
+    return found;
+  };
+
+  const best = pickVerb();
   if (!best) return [];
 
   const tail = segment.slice(best.at + best.length);
@@ -444,6 +522,20 @@ export function parseActions(
 
   const conjunction = options.conjunction ?? Conjunction.NONE;
 
+  // The magnitude, for the verbs whose whole point is the number.
+  let amount: number | 'VARIABLE' | undefined;
+  if (AMOUNT_VERBS.includes(verb)) {
+    if (VARIABLE_AMOUNT_RE.test(segment)) amount = 'VARIABLE';
+    else {
+      // Searched from the verb, not from `tail`: a pattern like "gain 500 LP"
+      // has to swallow the number to tell LP from ATK, so the digits sit
+      // INSIDE the matched verb text rather than after it.
+      const digits = /\b([\d,]+)\b/.exec(segment.slice(best.at));
+      const value = digits ? Number(digits[1].replace(/,/g, '')) : NaN;
+      if (Number.isFinite(value)) amount = value;
+    }
+  }
+
   return targets.map(({ target, quantity }) => ({
     verb,
     sourceZones: zones,
@@ -451,6 +543,7 @@ export function parseActions(
     target,
     quantity,
     selection,
+    ...(amount !== undefined ? { amount } : {}),
     conjunction,
     dependsOnPrevious: DEPENDENT_CONJUNCTIONS.includes(conjunction),
     resolved: isResolvedTarget(target) && (!needsZone || zones.length > 0),

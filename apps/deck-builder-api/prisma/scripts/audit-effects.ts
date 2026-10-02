@@ -34,14 +34,27 @@ async function main() {
     );
 
     const cards = await prisma.card.findMany({
-      select: { name: true, description: true },
+      select: {
+        name: true,
+        description: true,
+        cardType: true,
+        spellTrapSubType: true,
+      },
     });
 
     const hits = new Map<string, { name: string; text: string }[]>();
     let totalSearches = 0;
 
     for (const card of cards) {
-      const ctx: ParserContext = { archetypes, races, cardName: card.name };
+      const ctx: ParserContext = {
+        archetypes,
+        races,
+        cardName: card.name,
+        cardType: card.cardType,
+        ...(card.spellTrapSubType
+          ? { spellTrapSubType: card.spellTrapSubType }
+          : {}),
+      };
       const parsed = parseCardEffects(card.description, ctx);
       for (const effect of parsed.effects) {
         for (const action of effect.actions) {

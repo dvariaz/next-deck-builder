@@ -38,6 +38,17 @@ import { Conjunction, TriggerTiming } from './card-effect.types';
  */
 
 /**
+ * Every verb that can open a resolution. Shared by the legacy trigger and
+ * legacy cost splitters, which both need to know "a clause starts here".
+ *
+ * Wider than stage 6's verb table on purpose: this list only has to recognise
+ * a clause boundary, so including verbs the IR does not model ("Inflict",
+ * "Gain") costs nothing and keeps the boundary in the right place.
+ */
+const ACTION_VERB =
+  '(?:Add|Special Summon|Normal Summon|Flip Summon|Pendulum Summon|Ritual Summon|Set|Send|Banish|Draw|Excavate|Reveal|Return|Shuffle|Destroy|Negate|Equip|Attach|Place|Tribute|Discard|Detach|Select|Target|Choose|Inflict|Gain|Pay|Increase|Decrease|Change|Take|Halve|Double|Apply|Declare|Roll|Toss|Look|Show|Pick up)';
+
+/**
  * Resolution chaining, capturing WHICH conjunction split the segment — the
  * word decides whether the segment still happens when the clause before it
  * fails. See Conjunction.
@@ -50,8 +61,17 @@ import { Conjunction, TriggerTiming } from './card-effect.types';
  * Y as material" becomes an action — which for a search graph is the half
  * that matters.
  */
-const RESOLUTION_SPLIT_RE =
-  /,\s*(also|then|but|after that|and if you do)\b,?\s*/gi;
+const RESOLUTION_SPLIT_RE = new RegExp(
+  '(?:,\\s*|\\s+(?=and\\b))' +
+    '(also|then|but|after that|and if you do' +
+    '|and if the result is \\w+|and if you roll[^,;.]{0,30}' +
+    // Bare "and" splits ONLY when a real action verb follows, which is what
+    // keeps "1 Warrior and 1 Spellcaster monster" a single noun phrase while
+    // still splitting "inflict damage ... and Special Summon this card".
+    `|and(?=\\s+${ACTION_VERB}\\b)` +
+    ')\\b,?\\s*',
+  'gi',
+);
 
 const CONJUNCTIONS: Record<string, Conjunction> = {
   also: Conjunction.ALSO,
@@ -59,7 +79,23 @@ const CONJUNCTIONS: Record<string, Conjunction> = {
   but: Conjunction.BUT,
   'after that': Conjunction.AFTER_THAT,
   'and if you do': Conjunction.AND_IF_YOU_DO,
+  and: Conjunction.AND,
 };
+
+/**
+ * A coin or die result is the same dependent shape as "and if you do": the
+ * second half happens only if the first produced the right outcome.
+ *
+ * Without this split the whole sentence is one segment, the coin toss wins the
+ * "first verb" contest, and the Special Summon that is the point of the card
+ * is never recorded.
+ */
+const CONDITIONAL_RESULT_RE = /^and if (?:the result is|you roll)\b/i;
+
+function toConjunction(word: string): Conjunction {
+  if (CONDITIONAL_RESULT_RE.test(word)) return Conjunction.AND_IF_YOU_DO;
+  return CONJUNCTIONS[word] ?? Conjunction.NONE;
+}
 
 /** One resolution segment, with the conjunction that introduced it. */
 export interface ResolutionSegment {
@@ -78,17 +114,6 @@ const QUICK_EFFECT_RE = /\(Quick Effect\)/i;
  * dominant form by far is "(except during the Damage Step)", on 635 cards.
  */
 const EXCLUSION_RE = /\((?:except|but not)\s+[^)]{0,100}\)/gi;
-
-/**
- * Every verb that can open a resolution. Shared by the legacy trigger and
- * legacy cost splitters, which both need to know "a clause starts here".
- *
- * Wider than stage 6's verb table on purpose: this list only has to recognise
- * a clause boundary, so including verbs the IR does not model ("Inflict",
- * "Gain") costs nothing and keeps the boundary in the right place.
- */
-const ACTION_VERB =
-  '(?:Add|Special Summon|Normal Summon|Flip Summon|Pendulum Summon|Ritual Summon|Set|Send|Banish|Draw|Excavate|Reveal|Return|Shuffle|Destroy|Negate|Equip|Attach|Place|Tribute|Discard|Detach|Select|Target|Choose|Inflict|Gain|Pay|Increase|Decrease|Change|Take|Halve|Double|Apply|Declare|Roll|Toss|Look|Show|Pick up)';
 
 /**
  * A legacy sentence opens with its condition. The optional "Once per turn,"
@@ -121,7 +146,8 @@ const LEGACY_SPLIT_RE = new RegExp(
  * a destination ("add 1 card ... to your hand").
  */
 const LEGACY_COST_RE = new RegExp(
-  `^(?:you can\\s+|you may\\s+|you must\\s+)?((?:pay|Tribute|discard|banish|remove|detach|send)\\b[^,;]{0,80}?)\\s+to\\s+(?=${ACTION_VERB}\\b)`,
+  '^(?:Once per turn,\\s*|Once,\\s*)?(?:you can\\s+|you may\\s+|you must\\s+)?' +
+    `((?:pay|Tribute|discard|banish|remove|detach|send)\\b[^,;]{0,80}?)\\s+to\\s+(?=${ACTION_VERB}\\b)`,
   'i',
 );
 
@@ -183,9 +209,7 @@ export function splitResolutions(text: string): ResolutionSegment[] {
     const word = i === 0 ? undefined : parts[i - 1]?.toLowerCase();
     segments.push({
       text: body,
-      conjunction: word
-        ? (CONJUNCTIONS[word] ?? Conjunction.NONE)
-        : Conjunction.NONE,
+      conjunction: word ? toConjunction(word) : Conjunction.NONE,
     });
   }
 
@@ -237,22 +261,33 @@ function parseExclusions(sentence: string): string[] {
  */
 function splitLegacyClause(
   text: string,
-): { trigger: string; cost?: string; body: string } | undefined {
-  if (!LEGACY_OPENER_RE.test(text)) return undefined;
+): { trigger?: string; cost?: string; body: string } | undefined {
+  const hasOpener = LEGACY_OPENER_RE.test(text);
+  const split = hasOpener ? LEGACY_SPLIT_RE.exec(text) : null;
 
-  const split = LEGACY_SPLIT_RE.exec(text);
-  if (!split) return undefined;
+  let trigger: string | undefined;
+  let body = text;
 
-  const trigger = text.slice(0, split.index).trim();
-  let body = text.slice(split.index + split[0].length).trim();
-  if (!trigger || !body) return undefined;
+  if (split) {
+    trigger = text.slice(0, split.index).trim();
+    body = text.slice(split.index + split[0].length).trim();
+    if (!trigger || !body) return undefined;
+  }
 
+  // The cost lift is NOT conditional on there being a trigger. "You can remove
+  // 2 A-Counters from anywhere on the field to Special Summon this card" is the
+  // same "<cost> to <action>" construction with no leading condition, and
+  // gating it behind the trigger lost the Special Summon to the counter
+  // removal, which is what is being PAID.
   let cost: string | undefined;
   const costMatch = LEGACY_COST_RE.exec(body);
   if (costMatch) {
     cost = costMatch[1].trim();
     body = body.slice(costMatch[0].length).trim();
   }
+
+  if (!trigger && !cost) return undefined;
+  if (!body) return undefined;
 
   return { trigger, cost, body };
 }
@@ -288,7 +323,7 @@ export function splitClause(sentence: string): PsctClause {
         resolutions: splitResolutions(legacy.body),
         optional:
           OPTIONAL_RE.test(legacy.cost ?? '') || OPTIONAL_RE.test(legacy.body),
-        timing: parseTiming(legacy.trigger),
+        timing: legacy.trigger ? parseTiming(legacy.trigger) : undefined,
         quickEffect,
         exclusions,
         legacy: true,

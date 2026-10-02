@@ -2,7 +2,10 @@
 
 Turns a Yu-Gi-Oh card's printed effect text into a structured intermediate
 representation (IR) that code can query — what the card does, what it can
-reach, what it costs, and what limits apply.
+reach, what it costs, what states it applies, and what limits apply.
+
+It parses **every** kind of effect, not only the search-oriented ones: a
+continuous ATK buff, an attack restriction and a Deck search are all recorded.
 
 It is a pure, framework-free library: no Nest, no Prisma client, no decorators.
 The only thing it needs from the outside is a small vocabulary (`ParserContext`),
@@ -13,9 +16,11 @@ from a `tsx` batch script, and from unit tests on a fixture set.
 import { parseCardEffects } from './card-effect-parser';
 
 const parsed = parseCardEffects(card.description, {
-  archetypes, // SELECT DISTINCT archetype  — 650 values in the current pool
-  races, // SELECT DISTINCT race        — 26 values
+  archetypes, // SELECT DISTINCT archetype — 650 values in the current pool
+  races, // SELECT DISTINCT race      — 26 values
   cardName: card.name,
+  cardType: card.cardType, // decides how effects are classified; see below
+  spellTrapSubType: card.spellTrapSubType ?? undefined,
 });
 ```
 
@@ -49,6 +54,7 @@ exists to handle.
 | 6     | `actions.ts`            | Turn a resolution segment into verb + zones + destination + target            |
 | 7     | `restrictions.ts`       | Once-per-turn scopes, Summon conditions, display-only locks                   |
 | 8     | `cost.ts`               | The cost half of a clause                                                     |
+| 9     | `modifiers.ts`          | Continuous states — stat changes, protections, locks                          |
 | —     | `alias.ts`              | "This card is also treated as X" — a projection of _identity_, not of effects |
 | —     | `card-effect-parser.ts` | Entry point; assembles the above                                              |
 
@@ -67,6 +73,32 @@ can never become actions (Sangan's "If this card is sent from the field to the
 GY:" contains both _sent_ and _GY_, but the action matcher never sees it) and
 costs can never become actions (One for One's "Send 1 monster from your hand to
 the GY;" lands in `cost`).
+
+## Actions vs modifiers
+
+An effect does two different kinds of thing, and the IR keeps them apart
+because the game does:
+
+- **`actions`** — discrete things that happen on resolution. A card moves, a
+  monster is destroyed, damage is dealt. These have a verb, a target, and
+  usually a source zone and a destination.
+- **`modifiers`** — continuous _states_ the effect applies. "gains 500 ATK",
+  "cannot be destroyed by battle", "is unaffected by card effects". There is no
+  moment at which these happen; they hold for as long as the effect applies.
+
+Forcing a modifier through `EffectAction` would mean inventing a source zone
+and a destination for something that moves no cards. Modifiers reuse
+`EffectTarget`, so "All "Qli" monsters you control gain 300 ATK" yields a
+queryable predicate for _who_ it buffs, exactly as a search does for what it
+fetches.
+
+A stat modifier reports `stat`, `mode` (`GAIN` / `LOSE` / `BECOMES`) and
+`amount`. `mode` is a ruling distinction, not a synonym set: a monster whose ATK
+_becomes_ 0 has lost its original value, while one that _loses_ ATK has not.
+`amount` is `'VARIABLE'` when the text computes it ("gains 100 ATK for each
+..."), which is honest rather than recording a number that is not the answer.
+
+`duration` is kept verbatim ("until the End Phase") and never modelled.
 
 ## Rulings the IR models
 
@@ -159,6 +191,37 @@ Every Fusion, Synchro, Xyz, Link, Ritual and Pendulum Summon _is_ a Special
 Summon, so they all map to `SPECIAL_SUMMON` rather than each getting a verb of
 its own. Only Normal Summon and Flip Summon are not Special Summons.
 
+### Classifying the effect
+
+`CardEffect.effectType` is the game's own classification:
+
+| Type         | Read from                                        | Starts a chain |
+| ------------ | ------------------------------------------------ | -------------- |
+| `CONTINUOUS` | no trigger **and** no activation punctuation     | no             |
+| `TRIGGER`    | "When/If &lt;event&gt;:"                         | yes            |
+| `IGNITION`   | "During your Main Phase:" with no event          | yes            |
+| `QUICK`      | "(Quick Effect):"                                | yes            |
+| `FLIP`       | "FLIP:"                                          | yes            |
+| `ACTIVATED`  | it activates, but the wording does not say which | yes            |
+
+`CONTINUOUS` is the only one read from an **absence** — a continuous effect
+states no trigger because it never activates; it simply applies. That is also
+what made it the type a search-oriented parser missed entirely.
+
+**The chain clue is not universal.** It is a MONSTER-effect rule: a Spell or
+Trap starts a chain when activated whatever its punctuation, so Terraforming's
+single unpunctuated sentence is `ACTIVATED`, not `CONTINUOUS`. This is why
+`ParserContext` requires `cardType` — without it that card, and every other
+unpunctuated Spell, is misclassified.
+
+A card that _stays_ on the field (Continuous, Field, Equip) can print both an
+activation effect and continuous lines. One that resolves and leaves (Normal,
+Quick-Play, Counter) cannot, so every line belongs to the activation — hence
+`spellTrapSubType` on the context too.
+
+Across the pool: 9,719 `TRIGGER`, 6,767 `ACTIVATED`, 5,373 `CONTINUOUS`,
+1,810 `IGNITION`, 1,164 `QUICK`, 184 `FLIP`.
+
 ### Does the effect start a chain?
 
 The colon and the semicolon are not only separators — their _presence_ is the
@@ -193,11 +256,15 @@ they are a weaker claim about what the card reaches than a bare search is.
 A.I. Connect only adds a monster to the hand _if_ the Special Summon before it
 succeeded.
 
-Bare `and` and bare `or` are deliberately **not** split on. Both are real clause
-conjunctions, but in card text they join noun phrases ("1 Warrior **or**
-Spellcaster monster") far more often than clauses. The consequence is that only
-the first half of "Special Summon X **and** attach Y as material" becomes an
-action — which for a search graph is the half that matters.
+Bare `and` **is** split, but only when a known action verb follows it: "Inflict
+damage ... **and** Special Summon this card" splits, while "1 Warrior **and** 1
+Spellcaster monster" stays one noun phrase. It is marked dependent in both
+directions, since "and" is all-or-nothing. A coin or die result ("**and if** the
+result is heads, ...") is the same dependent shape as "and if you do", and
+splitting it is what keeps the Special Summon on a coin-flip card.
+
+Bare `or` is deliberately not split on: in card text it joins noun phrases ("1
+Warrior **or** Spellcaster monster") far more often than clauses.
 
 ### Pronoun resolutions
 
@@ -255,38 +322,43 @@ signal is `resolved: false` — not the review queue.
 
 Measured by parsing all 14,353 cards in the seeded pool.
 
-| Card type                  | Cards | Actions | Resolved | Flagged for review |
-| -------------------------- | ----: | ------: | -------: | -----------------: |
-| Monster — Effect           |  5936 |    9120 |      66% |               2.4% |
-| Trap — normal              |  1333 |    1850 |      57% |               3.2% |
-| Spell — normal             |  1080 |    1654 |      63% |               1.4% |
-| Monster — Normal           |   790 |      13 |       0% |               0.1% |
-| Monster — Xyz              |   589 |     944 |      60% |               1.2% |
-| Spell — quick-play         |   571 |     898 |      67% |               3.2% |
-| Trap — continuous          |   563 |     867 |      59% |               1.8% |
-| Monster — Fusion           |   560 |     764 |      58% |               0.5% |
-| Monster — Synchro          |   529 |     926 |      54% |               0.9% |
-| Spell — continuous         |   513 |     791 |      65% |               2.3% |
-| Monster — Link             |   473 |     876 |      64% |               0.8% |
-| Monster — Pendulum         |   352 |     814 |      72% |               0.9% |
-| Spell — field              |   336 |     586 |      63% |               2.4% |
-| Spell — equip              |   282 |     447 |      78% |               0.7% |
-| Trap — counter             |   179 |     379 |      26% |               1.7% |
-| Monster — Ritual           |   146 |     284 |      62% |               0.0% |
-| Spell — ritual             |    83 |     212 |      58% |               0.0% |
-| Monster — Fusion Pendulum  |    14 |      45 |      71% |               0.0% |
-| Monster — Xyz Pendulum     |    10 |      50 |      58% |               0.0% |
-| Monster — Synchro Pendulum |     8 |      29 |      83% |               0.0% |
-| Monster — Ritual Pendulum  |     6 |      25 |      68% |               0.0% |
+| Card type                  | Cards | Actions | Resolved | Modifiers | Flagged |
+| -------------------------- | ----: | ------: | -------: | --------: | ------: |
+| Monster — Effect           |  5936 |    9801 |      63% |      2537 |    0.7% |
+| Trap — normal              |  1333 |    2051 |      55% |       362 |    1.6% |
+| Spell — normal             |  1080 |    1783 |      62% |       291 |    0.6% |
+| Monster — Normal           |   790 |      14 |       0% |        12 |    0.1% |
+| Monster — Xyz              |   589 |    1119 |      54% |       405 |    0.3% |
+| Spell — quick-play         |   571 |     962 |      64% |       243 |    1.1% |
+| Trap — continuous          |   563 |     959 |      56% |       203 |    1.1% |
+| Monster — Fusion           |   560 |     871 |      54% |       311 |    0.2% |
+| Monster — Synchro          |   529 |    1014 |      53% |       306 |    0.6% |
+| Spell — continuous         |   513 |     855 |      59% |       218 |    1.2% |
+| Monster — Link             |   473 |     903 |      62% |       365 |    0.2% |
+| Monster — Pendulum         |   352 |     849 |      69% |       285 |    0.0% |
+| Spell — field              |   336 |     629 |      60% |       225 |    1.2% |
+| Spell — equip              |   282 |     515 |      73% |       232 |    0.0% |
+| Trap — counter             |   179 |     432 |      25% |        16 |    0.6% |
+| Monster — Ritual           |   146 |     300 |      61% |        68 |    0.0% |
+| Spell — ritual             |    83 |     214 |      58% |         8 |    0.0% |
+| Monster — Fusion Pendulum  |    14 |      48 |      65% |        15 |    0.0% |
+| Monster — Xyz Pendulum     |    10 |      50 |      58% |         5 |    0.0% |
+| Monster — Synchro Pendulum |     8 |      30 |      83% |         3 |    0.0% |
+| Monster — Ritual Pendulum  |     6 |      25 |      68% |         2 |    0.0% |
 
 Every frame type the seeder produces is covered. Two rows read low by design:
 vanilla Normal Monsters have flavour text rather than effects, and Counter Traps
 mostly negate rather than move cards, so there is little for a target to resolve
-_to_.
+_to_ — which is also why they carry almost no modifiers.
 
-Totals: **21,574 actions, 13,587 resolved**, of which **7,950 are resolved
-search actions** (`ADD` / `SPECIAL_SUMMON` / `NORMAL_SUMMON` / `SET`).
-**273 cards (1.9%) are flagged for review** and no sentence is left unparsed.
+Totals: **25,017 effects** carrying **23,424 actions (14,109 resolved)** and
+**6,112 modifiers**. Of the actions, **8,065 are resolved search actions**
+(`ADD` / `SPECIAL_SUMMON` / `NORMAL_SUMMON` / `SET`). **98 cards (0.7%) are
+flagged for review** and no sentence is left unparsed.
+
+1,574 cards produce no effects at all. 677 of those are vanilla Normal Monsters,
+whose text is flavour rather than effects; the remaining 897 are the real
+residue, and the review queue is drawn from them.
 
 `yarn effects:audit` re-parses the pool and greps resolved search actions for
 text that smells like a false positive. Current state: **zero** negation and
@@ -300,14 +372,18 @@ actions that happen to be conditional), `negate-context` 0.14%
 
 - **No rules engine.** It does not simulate a duel, resolve chains, track
   priority, or evaluate whether an activation is currently legal.
-- **No model of locks.** Summon locks, archetype locks and phase locks are kept
-  verbatim in `restrictions.labels` for display. Building a machine model of
-  them is a rabbit hole with no payoff for querying what a card can reach.
+- **Locks are typed but not simulated.** A summon or activation lock is recorded
+  as a `SUMMON_LOCK` / `ACTIVATION_LOCK` modifier with its text kept verbatim,
+  and also appears in `restrictions.labels` for display. Neither is a machine
+  model of what the lock permits — "except FIRE monsters" is not parsed into a
+  predicate.
+- **No duration model.** `modifier.duration` is Konami's phrase verbatim
+  ("until the End Phase"), never a structured window.
 - **No negation semantics.** A segment containing a negation is discarded, not
   inverted. `excludeNames` from `except "X"` is the one exception.
 - **No "non-DARK"-style exclusions.** `EffectPredicate` cannot express a negated
   attribute, so those are skipped rather than inverted.
-- **Not a substitute for judgement on the 273.** The flagged cards are flagged
+- **Not a substitute for judgement on the 98.** The flagged cards are flagged
   because a rule-based parser cannot model them (coin flips, "this effect
   becomes that card's activation effect", "apply its effect that activates when
   it is flipped face-up"). They are the queue for a future LLM or manual pass.
@@ -352,7 +428,7 @@ stale against the pool.
 5. **Bump `PARSER_VERSION`** if persisted rows are now wrong.
 
 ```bash
-yarn test --testPathPattern card-effect-parser   # 359 tests
+yarn test --testPathPattern card-effect-parser   # 404 tests
 ```
 
 ## Sources

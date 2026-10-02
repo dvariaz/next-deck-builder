@@ -18,7 +18,7 @@ import type {
  * service compares it and re-parses live on mismatch, so a bump is safe but
  * costs a live parse until `yarn effects:parse` runs again.
  */
-export const PARSER_VERSION = 2;
+export const PARSER_VERSION = 3;
 
 /**
  * The word a trigger condition opens with. This is not cosmetic — it decides
@@ -91,6 +91,11 @@ export const Conjunction = {
   THEN: 'THEN',
   AND_IF_YOU_DO: 'AND_IF_YOU_DO',
   ALSO: 'ALSO',
+  /**
+   * Bare "and". Split only when a known action verb follows it, so that
+   * "1 Warrior and 1 Spellcaster monster" stays one noun phrase.
+   */
+  AND: 'AND',
   AFTER_THAT: 'AFTER_THAT',
   /** ", but ..." — a qualification on what precedes, not a further action. */
   BUT: 'BUT',
@@ -109,6 +114,9 @@ export const DEPENDENT_CONJUNCTIONS: readonly Conjunction[] = [
   Conjunction.THEN,
   Conjunction.AND_IF_YOU_DO,
   Conjunction.AFTER_THAT,
+  // "and" is all-or-nothing: both halves are strictly required, so neither
+  // happens unless both can.
+  Conjunction.AND,
 ];
 
 /** What the player does. Only the first four are "search" verbs. */
@@ -131,6 +139,20 @@ export const EffectVerb = {
   EQUIP: 'EQUIP',
   TRIBUTE: 'TRIBUTE',
   DISCARD: 'DISCARD',
+  // Discrete non-search actions. These resolve once rather than applying
+  // continuously — a continuous state belongs in EffectModifier instead.
+  INFLICT_DAMAGE: 'INFLICT_DAMAGE',
+  GAIN_LP: 'GAIN_LP',
+  LOSE_LP: 'LOSE_LP',
+  TAKE_CONTROL: 'TAKE_CONTROL',
+  CHANGE_POSITION: 'CHANGE_POSITION',
+  FLIP: 'FLIP',
+  PLACE_COUNTER: 'PLACE_COUNTER',
+  REMOVE_COUNTER: 'REMOVE_COUNTER',
+  DETACH: 'DETACH',
+  TOSS_COIN: 'TOSS_COIN',
+  ROLL_DICE: 'ROLL_DICE',
+  DECLARE: 'DECLARE',
 } as const;
 export type EffectVerb = (typeof EffectVerb)[keyof typeof EffectVerb];
 
@@ -243,6 +265,11 @@ export interface EffectAction {
    * monster in your GY; Special Summon it").
    */
   selection: SelectionMode;
+  /**
+   * The magnitude, for verbs that carry one (INFLICT_DAMAGE, GAIN_LP,
+   * LOSE_LP, PLACE_COUNTER, DRAW ...). 'VARIABLE' when the text computes it.
+   */
+  amount?: number | 'VARIABLE';
   /** The conjunction that introduced this action's segment. */
   conjunction: Conjunction;
   /**
@@ -363,6 +390,106 @@ export interface EffectRestrictions {
   summonConditions: SummonCondition[];
 }
 
+/**
+ * The game's classification of an effect.
+ *
+ * CONTINUOUS is the one that is read from an ABSENCE: a continuous effect
+ * states no trigger and carries no colon or semicolon, because it never
+ * activates — it simply applies while the card is face-up. The others all
+ * activate and start a chain, and are told apart by what opens them.
+ */
+export const EffectType = {
+  /** No trigger and no activation punctuation. Applies while face-up. */
+  CONTINUOUS: 'CONTINUOUS',
+  /** "When/If <event>:" — activates off something that happened. */
+  TRIGGER: 'TRIGGER',
+  /** "During your Main Phase:" — you choose to activate it. */
+  IGNITION: 'IGNITION',
+  /** "(Quick Effect):" — Spell Speed 2. */
+  QUICK: 'QUICK',
+  /** "FLIP:" — activates on being flipped face-up. */
+  FLIP: 'FLIP',
+  /**
+   * Activates (it has the punctuation) but the opening word does not say which
+   * of the above it is. Most Spell and Trap text reads this way, since those
+   * cards activate by being played rather than off a condition.
+   */
+  ACTIVATED: 'ACTIVATED',
+} as const;
+export type EffectType = (typeof EffectType)[keyof typeof EffectType];
+
+/** A stat a modifier can change. */
+export const EffectStat = {
+  ATK: 'ATK',
+  DEF: 'DEF',
+  ATK_AND_DEF: 'ATK_AND_DEF',
+  LEVEL: 'LEVEL',
+  RANK: 'RANK',
+  PENDULUM_SCALE: 'PENDULUM_SCALE',
+  ATTRIBUTE: 'ATTRIBUTE',
+  TYPE: 'TYPE',
+} as const;
+export type EffectStat = (typeof EffectStat)[keyof typeof EffectStat];
+
+/**
+ * A continuous state an effect applies, as opposed to a discrete action it
+ * performs on resolution.
+ *
+ * The distinction is the game's own: "gains 500 ATK" and "cannot be destroyed
+ * by battle" describe how a card behaves for as long as the effect applies,
+ * and there is no moment at which they "happen". Modelling them as actions
+ * would mean inventing a source zone and a destination for things that move
+ * no cards.
+ */
+export const ModifierKind = {
+  /** gains / loses / becomes a stat. See `stat`, `mode`, `amount`. */
+  STAT: 'STAT',
+  CANNOT_ATTACK: 'CANNOT_ATTACK',
+  MUST_ATTACK: 'MUST_ATTACK',
+  CAN_ATTACK_DIRECTLY: 'CAN_ATTACK_DIRECTLY',
+  CANNOT_CHANGE_POSITION: 'CANNOT_CHANGE_POSITION',
+  /** "cannot be destroyed by battle and/or card effects" */
+  INDESTRUCTIBLE: 'INDESTRUCTIBLE',
+  UNTARGETABLE: 'UNTARGETABLE',
+  /** "is unaffected by ..." */
+  UNAFFECTED: 'UNAFFECTED',
+  CANNOT_BE_MATERIAL: 'CANNOT_BE_MATERIAL',
+  CANNOT_BE_TRIBUTED: 'CANNOT_BE_TRIBUTED',
+  CANNOT_BE_BANISHED: 'CANNOT_BE_BANISHED',
+  /** "is treated as a(n) X" — a type/archetype identity grant, not an alias. */
+  TREATED_AS: 'TREATED_AS',
+  /** "you cannot Special Summon monsters, except ..." */
+  SUMMON_LOCK: 'SUMMON_LOCK',
+  /** "you cannot activate cards or effects ..." */
+  ACTIVATION_LOCK: 'ACTIVATION_LOCK',
+  /** Recognised as a continuous state, but not one of the above. */
+  OTHER: 'OTHER',
+} as const;
+export type ModifierKind = (typeof ModifierKind)[keyof typeof ModifierKind];
+
+export interface EffectModifier {
+  kind: ModifierKind;
+  /** What the state applies to. Reuses the action target machinery. */
+  target: EffectTarget;
+  /** STAT only: which stat. */
+  stat?: EffectStat;
+  /** STAT only: gained, lost, or overwritten. */
+  mode?: 'GAIN' | 'LOSE' | 'BECOMES';
+  /**
+   * STAT only: the magnitude. 'VARIABLE' when the text computes it ("gains 100
+   * ATK for each ..."), which is honest rather than guessing a number.
+   */
+  amount?: number | 'VARIABLE';
+  /**
+   * Verbatim duration ("until the End Phase", "this turn"). Undefined means
+   * the state holds for as long as the effect applies, which is the default
+   * for a continuous effect.
+   */
+  duration?: string;
+  /** The clause this came from. Same audit contract as EffectAction. */
+  sourceText: string;
+}
+
 /** Which part of the card text an effect came from. */
 export type EffectBlockKind = 'MAIN' | 'PENDULUM' | 'MONSTER' | 'BULLET';
 
@@ -370,6 +497,7 @@ export interface CardEffect {
   /** Stable within a card: `${blockIndex}.${sentenceIndex}`. */
   id: string;
   blockKind: EffectBlockKind;
+  effectType: EffectType;
   trigger?: EffectTrigger;
   /**
    * Whether this effect starts a chain, read from the one punctuation clue
@@ -385,7 +513,10 @@ export interface CardEffect {
    */
   startsChain?: boolean;
   cost: EffectCost;
+  /** Discrete things that happen on resolution. */
   actions: EffectAction[];
+  /** Continuous states the effect applies. See EffectModifier. */
+  modifiers: EffectModifier[];
   restrictions: EffectRestrictions;
   /** "You can ..." — an optional effect rather than a mandatory one. */
   optional: boolean;
@@ -419,6 +550,22 @@ export interface ParserContext {
   races: ReadonlySet<string>;
   /** The name of the card being parsed, for "this card" and OPT matching. */
   cardName: string;
+  /**
+   * The card's type. Required, because the chain clue is NOT universal:
+   * Spells and Traps always start a chain when activated, whatever their
+   * punctuation, and only MONSTER effects are read from the colon/semicolon.
+   *
+   * Without this, Terraforming's "Add 1 Field Spell from your Deck to your
+   * hand." has no punctuation and would be classified a continuous effect.
+   */
+  cardType: CardType;
+  /**
+   * For Spells and Traps: the subtype, which says whether the card stays on
+   * the field. A Continuous, Field or Equip card can print continuous effects
+   * alongside its activation; a Normal or Quick-Play card activates, resolves
+   * and leaves, so every line of it belongs to the activation.
+   */
+  spellTrapSubType?: SpellTrapSubType;
 }
 
 /** The verbs the search graph projects edges from. */

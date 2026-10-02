@@ -112,7 +112,7 @@ NestJS module structure under `src/`:
 
 - `prisma/` — `PrismaModule` (global) + `PrismaService` (wraps PrismaClient with `@prisma/adapter-pg`)
 - `cards/` — `CardsModule` with controller (`GET /cards`) and service
-- `card-effect-parser/` — pure, framework-free library that turns printed card effect text into a structured IR. Not a Nest module: no decorators and no Prisma client, so it also runs under `tsx` in the batch scripts. See `src/card-effect-parser/README.md`, and treat `card-effect.types.ts` as the contract with every consumer.
+- `card-effect-parser/` — pure, framework-free library that turns printed card effect text into a structured IR covering every kind of effect, not just searches: discrete `actions`, continuous `modifiers` (stat changes, protections, locks), costs, triggers and restrictions. Not a Nest module: no decorators and no Prisma client, so it also runs under `tsx` in the batch scripts. Building a `ParserContext` needs the card's `cardType` (and `spellTrapSubType` for Spells/Traps) — effect classification depends on it, since the colon/semicolon chain clue is a monster-effect rule. See `src/card-effect-parser/README.md`, and treat `card-effect.types.ts` as the contract with every consumer.
 
 Prisma schema lives in `prisma/schema.prisma`. The generated client is output to `generated/prisma/` (not `node_modules`), so import it as `'../../generated/prisma/client'`. The `PrismaPg` driver adapter is instantiated in `prisma/prisma-adapter.factory.ts` using `DATABASE_URL`.
 

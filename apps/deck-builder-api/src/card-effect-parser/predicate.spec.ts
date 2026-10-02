@@ -1,3 +1,4 @@
+import { CardType } from '../../generated/prisma/enums';
 import type { ParserContext } from './card-effect.types';
 import { isEmptyPredicate, parsePredicate } from './predicate';
 
@@ -15,6 +16,7 @@ const ctx: ParserContext = {
     'Sea Serpent',
   ]),
   cardName: 'Test Card',
+  cardType: CardType.MONSTER,
 };
 
 const parse = (np: string) => parsePredicate(np, ctx);

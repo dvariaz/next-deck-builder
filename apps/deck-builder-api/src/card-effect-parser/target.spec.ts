@@ -1,3 +1,4 @@
+import { CardType } from '../../generated/prisma/enums';
 import type { ParserContext } from './card-effect.types';
 import { preprocess } from './normalize';
 import {
@@ -20,6 +21,7 @@ const ctx: ParserContext = {
   ]),
   races: new Set(['Warrior', 'Spellcaster', 'Psychic', 'Dragon']),
   cardName: 'Test Card',
+  cardType: CardType.MONSTER,
 };
 
 /** Resolve a raw (unmasked) noun phrase the way the pipeline would. */

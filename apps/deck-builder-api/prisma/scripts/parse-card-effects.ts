@@ -102,6 +102,10 @@ async function main() {
           name: true,
           description: true,
           cardEffects: true,
+          // The parser classifies effects differently by card type: the
+          // colon/semicolon chain clue is a MONSTER-effect rule.
+          cardType: true,
+          spellTrapSubType: true,
         },
         take: LIMIT ? Math.min(BATCH_SIZE, LIMIT - parsedCount) : BATCH_SIZE,
         skip,
@@ -117,7 +121,15 @@ async function main() {
           continue;
         }
 
-        const ctx: ParserContext = { archetypes, races, cardName: card.name };
+        const ctx: ParserContext = {
+          archetypes,
+          races,
+          cardName: card.name,
+          cardType: card.cardType,
+          ...(card.spellTrapSubType
+            ? { spellTrapSubType: card.spellTrapSubType }
+            : {}),
+        };
         const parsed = parseCardEffects(card.description, ctx);
         parsedCount++;
 
