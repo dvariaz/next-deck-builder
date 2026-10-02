@@ -2,6 +2,7 @@ import {
   EffectDestination,
   EffectVerb,
   EffectZone,
+  SelectionMode,
   type EffectAction,
   type ParserContext,
   type ZoneOwner,
@@ -35,20 +36,39 @@ const NEGATION_RE =
  * English voice is a reliable discriminator in PSCT.
  */
 const PASSIVE_RE =
-  /\b(?:is|are|was|were|being|gets?|becomes?)\s+(?:successfully\s+)?(?:Special\s+|Normal\s+|Flip\s+)?(?:Summoned|added|sent|banished|Set|returned|revealed|excavated|destroyed|negated)\b/i;
+  /\b(?:is|are|was|were|being|gets?|becomes?)\s+(?:successfully\s+)?(?:Special\s+|Normal\s+|Flip\s+|Fusion\s+|Synchro\s+|Xyz\s+|Link\s+|Ritual\s+|Pendulum\s+)?(?:Summoned|added|sent|banished|Set|returned|revealed|excavated|destroyed|negated)\b/i;
 
 /** Ordered so multi-word verbs win over any prefix of themselves. */
 const VERB_PATTERNS: { verb: EffectVerb; re: RegExp }[] = [
   { verb: EffectVerb.SPECIAL_SUMMON, re: /\bSpecial Summon\b/i },
+  // Every Fusion, Synchro, Xyz, Link, Ritual and Pendulum Summon IS a Special
+  // Summon by the rulebook, so they collapse onto the same verb rather than
+  // each getting one of their own. Only Normal Summon and Flip Summon are not.
+  //
+  // "Fusion Summon 1 "Burning Abyss" Fusion Monster from your Extra Deck" is a
+  // search by any useful definition, and without this it produced no action.
+  {
+    verb: EffectVerb.SPECIAL_SUMMON,
+    re: /\b(?:Fusion|Synchro|Xyz|Link|Ritual|Pendulum) Summon\b/i,
+  },
   { verb: EffectVerb.NORMAL_SUMMON, re: /\bNormal Summon\b/i },
   { verb: EffectVerb.ADD, re: /\bAdd\b/i },
   // "Set" is also an adjective ("1 Set card in your opponent's S/T Zone"), so
-  // require a count or "this card" after it to read it as a verb.
-  { verb: EffectVerb.SET, re: /\bSet\s+(?=\d|this\b|an?\b)/i },
+  // require a count, "this card" or a pronoun after it to read it as a verb.
+  // The pronoun case is load-bearing: "choose 1 Spell Card from your Deck,
+  // then Set it" states the noun phrase in the PRECEDING segment.
+  {
+    verb: EffectVerb.SET,
+    re: /\bSet\s+(?=\d|this\b|an?\b|it\b|them\b|those\b|that\b)/i,
+  },
   { verb: EffectVerb.SEND, re: /\bSend\b/i },
   { verb: EffectVerb.BANISH, re: /\bBanish\b/i },
   { verb: EffectVerb.EXCAVATE, re: /\bExcavate\b/i },
+  // Pre-2011 spelling of Excavate: "pick up and see the card".
+  { verb: EffectVerb.EXCAVATE, re: /\bpick up (?:and see )?/i },
   { verb: EffectVerb.REVEAL, re: /\bReveal\b/i },
+  // Pre-2011 spelling of Reveal: "show up to 2 Normal Monster Cards".
+  { verb: EffectVerb.REVEAL, re: /\bshow\s+(?=\d|up to\b|an?\b)/i },
   { verb: EffectVerb.RETURN, re: /\bReturn\b/i },
   { verb: EffectVerb.SHUFFLE, re: /\bShuffle\b/i },
   { verb: EffectVerb.DESTROY, re: /\bDestroy\b/i },
@@ -61,9 +81,15 @@ const VERB_PATTERNS: { verb: EffectVerb; re: RegExp }[] = [
   { verb: EffectVerb.TRIBUTE, re: /\bTribute\b/i },
 ];
 
-/** Longer zone names must precede their own suffixes ("Extra Deck" vs "Deck"). */
+/**
+ * Longer zone names must precede their own suffixes ("Extra Deck" vs "Deck").
+ *
+ * The optional "Card" covers the pre-2011 spelling — "Spell & Trap Card Zone",
+ * "Monster Card Zone" — which is still printed on thousands of cards and which
+ * `toZone` folds back onto the modern name.
+ */
 const ZONE_WORDS =
-  '(Extra Deck|Main Deck|Deck|hand|GY|field|Extra Monster Zone|Monster Zone|Pendulum Zone|Spell & Trap Zone)';
+  '(Extra Deck|Main Deck|Deck|hand|GY|field|Extra Monster Zone|Monster(?: Card)? Zone|Pendulum(?: Card)? Zone|Spell & Trap(?: Card)? Zone)';
 
 const SOURCE_RE = new RegExp(
   `\\bfrom\\s+(your opponent's|your|its owner's|the|either)?\\s*${ZONE_WORDS}\\b`,
@@ -83,6 +109,54 @@ const IN_ZONE_RE = new RegExp(
 );
 
 const BANISHED_RE = /\b(?:your |your opponent's )?banished\b/i;
+
+/**
+ * The field stated as control rather than as a zone: "1 monster your opponent
+ * controls". Checked last, after every explicit zone, because a phrase can
+ * name both ("1 monster in your GY ... you control").
+ */
+const CONTROLS_RE = /\b(you|your opponent|either player)\s+controls?\b/i;
+
+/**
+ * Selection language, most explicit first.
+ *
+ * "target" is the only one of these that is a game action with its own rules;
+ * see SelectionMode for why legacy "select" is reported as its own value
+ * rather than folded into either side.
+ */
+const SELECTION_PATTERNS: { mode: SelectionMode; re: RegExp }[] = [
+  { mode: SelectionMode.TARGET, re: /\btarget(?:s|ing|ed)?\b/i },
+  { mode: SelectionMode.CHOOSE, re: /\bchoose[sn]?\b/i },
+  { mode: SelectionMode.LEGACY_SELECT, re: /\bselect(?:s|ed)?\b/i },
+];
+
+/**
+ * Where a selection clause's noun phrase begins.
+ *
+ * PSCT states what an effect acts on in the COST half — "You can target 1
+ * monster in your GY; Special Summon it" — so 2,099 cards in the pool describe
+ * their noun phrase in a clause the resolution only refers back to by pronoun.
+ * The same shape appears across chained resolutions: Alchemic Magician's
+ * "choose 1 Spell Card from your Deck, then Set it".
+ *
+ * Matched GLOBALLY and the LAST hit used, because the nearest antecedent is
+ * the right one when a clause contains more than one.
+ */
+const SELECTION_CLAUSE_RE =
+  /\b(?:target(?:s|ing)?|choose[sn]?|select(?:s|ed)?)\s+/gi;
+
+/**
+ * A resolution that points back at the targeting clause instead of describing
+ * its own noun phrase. Without resolving these, every one of those 2,099 cards
+ * yields an `unresolved` target and no edge.
+ */
+/**
+ * Anchored at the START rather than matched whole, because the pronoun is
+ * often followed by trailing detail the resolution adds: Alchemic Magician's
+ * "Set it in your Spell & Trap Card Zone" is still a pronoun resolution.
+ */
+const PRONOUN_RE =
+  /^(?:it|them|those|that card|that monster|that target|the target(?:ed)? (?:card|monster)|those cards|those monsters)\b/i;
 
 const DEST_RE = new RegExp(
   `\\bto\\s+(?:your\\s+|the\\s+|its owner's\\s+)?${ZONE_WORDS}\\b`,
@@ -124,8 +198,16 @@ function toOwner(raw?: string): ZoneOwner {
   return 'SELF';
 }
 
+/** Fold the legacy "... Card Zone" spelling onto the modern zone name. */
+function zoneKey(raw: string): string {
+  return raw
+    .toLowerCase()
+    .replace(/\s+card\s+zone$/, ' zone')
+    .trim();
+}
+
 function toZone(raw: string): EffectZone | undefined {
-  return ZONE_MAP[raw.toLowerCase().trim()];
+  return ZONE_MAP[zoneKey(raw)];
 }
 
 interface ZoneScan {
@@ -178,12 +260,64 @@ function scanSourceZones(tail: string): ZoneScan {
     }
   }
 
+  // "1 monster your opponent controls" names the field without naming a zone.
+  if (!zones.length) {
+    const controls = CONTROLS_RE.exec(tail);
+    if (controls) {
+      const who = controls[1].toLowerCase();
+      zones.push({
+        zone: EffectZone.FIELD,
+        owner:
+          who === 'your opponent'
+            ? 'OPPONENT'
+            : who === 'either player'
+              ? 'EITHER'
+              : 'SELF',
+      });
+      firstAt = Math.min(firstAt, controls.index);
+    }
+  }
+
   return { zones, firstAt };
+}
+
+/**
+ * Why a segment yields no actions, when the reason is a deliberate rejection
+ * rather than a parse failure.
+ *
+ * The review queue needs this distinction: 922 of the 1,354 sentences the
+ * previous version queued were negations the parser rejected ON PURPOSE
+ * ("Cannot be Normal Summoned", "You cannot Special Summon monsters"). Queuing
+ * them made the needsReview signal ~70% noise and hid the real gaps.
+ */
+export function segmentRejection(
+  segment: string,
+): 'NEGATION' | 'PASSIVE' | undefined {
+  if (NEGATION_RE.test(segment)) return 'NEGATION';
+  if (PASSIVE_RE.test(segment)) return 'PASSIVE';
+  return undefined;
+}
+
+/** The selection language used anywhere in a clause. */
+export function parseSelection(text: string): SelectionMode {
+  for (const { mode, re } of SELECTION_PATTERNS) {
+    if (re.test(text)) return mode;
+  }
+  return SelectionMode.NONE;
 }
 
 export interface ParseActionOptions {
   /** Exclusions found elsewhere in the segment (usually after the destination). */
   inheritedExcept?: string[];
+  /**
+   * Everything in the same PSCT clause that precedes this segment: the cost
+   * half, then any earlier resolution segments, joined in order.
+   *
+   * Carries the selection clause a pronoun resolution refers back to, and the
+   * selection language itself — modern text states both before the segment
+   * that acts on them.
+   */
+  clauseContext?: string;
 }
 
 /**
@@ -201,8 +335,7 @@ export function parseActions(
   ctx: ParserContext,
   options: ParseActionOptions = {},
 ): EffectAction[] {
-  if (NEGATION_RE.test(segment)) return [];
-  if (PASSIVE_RE.test(segment)) return [];
+  if (segmentRejection(segment)) return [];
 
   // The first verb in the segment wins.
   let best: { verb: EffectVerb; at: number; length: number } | undefined;
@@ -216,21 +349,53 @@ export function parseActions(
   if (!best) return [];
 
   const tail = segment.slice(best.at + best.length);
-  const { zones, firstAt } = scanSourceZones(tail);
 
   const destMatch = DEST_RE.exec(tail);
-  const npEnd = Math.min(
-    firstAt,
-    destMatch ? destMatch.index : tail.length,
-    tail.length,
-  );
-  const np = tail.slice(0, npEnd).trim();
+
+  /** Cut the noun phrase at whichever comes first: a source zone or the destination. */
+  const nounPhrase = (text: string, firstZoneAt: number, destAt: number) =>
+    text.slice(0, Math.min(firstZoneAt, destAt, text.length)).trim();
+
+  let { zones, firstAt } = scanSourceZones(tail);
+  let np = nounPhrase(tail, firstAt, destMatch ? destMatch.index : tail.length);
+
+  // A pronoun resolution ("Special Summon it") describes nothing on its own —
+  // the noun phrase and its zone live in the targeting clause before the
+  // semicolon. Re-run the scan there rather than returning `unresolved`.
+  const context = options.clauseContext ?? '';
+  if (PRONOUN_RE.test(np.trim())) {
+    const antecedents = [...context.matchAll(SELECTION_CLAUSE_RE)];
+    const clause = antecedents[antecedents.length - 1];
+    if (clause) {
+      const after = context.slice(clause.index + clause[0].length);
+      const scan = scanSourceZones(after);
+      const afterDest = DEST_RE.exec(after);
+      const borrowed = nounPhrase(
+        after,
+        scan.firstAt,
+        afterDest ? afterDest.index : after.length,
+      );
+      if (borrowed) {
+        np = borrowed;
+        // The noun phrase and the zone it comes from are stated together, so
+        // take both from the antecedent. A zone named in the resolution
+        // instead describes where the card GOES: Alchemic Magician's "choose 1
+        // Spell Card from your Deck, then Set it in your Spell & Trap Card
+        // Zone" searches the Deck and places into the S/T Zone.
+        if (scan.zones.length) {
+          zones = scan.zones;
+          firstAt = scan.firstAt;
+        }
+      }
+    }
+  }
 
   const targets = parseTargets(np, names, ctx, options.inheritedExcept);
+  const selection = parseSelection(`${context} ${segment}`);
 
   // --- destination ---------------------------------------------------------
   let destination: EffectDestination | undefined;
-  if (destMatch) destination = DEST_MAP[destMatch[1].toLowerCase().trim()];
+  if (destMatch) destination = DEST_MAP[zoneKey(destMatch[1])];
 
   let verb = best.verb;
 
@@ -279,6 +444,7 @@ export function parseActions(
     destination,
     target,
     quantity,
+    selection,
     resolved: isResolvedTarget(target) && (!needsZone || zones.length > 0),
     sourceText,
   }));

@@ -1,4 +1,5 @@
-import { splitClause, splitResolutions } from './clauses';
+import { TriggerTiming } from './card-effect.types';
+import { parseTiming, splitClause, splitResolutions } from './clauses';
 
 describe('clauses', () => {
   describe('splitClause — shapes', () => {
@@ -159,6 +160,159 @@ describe('clauses', () => {
           'While this card is face-up on the field, you can Normal Summon it: Draw 1 card.',
         ).optional,
       ).toBe(false);
+    });
+  });
+
+  describe('trigger timing — the ruling distinction', () => {
+    it('reads "When" and marks it as such', () => {
+      const c = splitClause(
+        'When this card is sent to the GY: You can add 1 monster from your Deck to your hand.',
+      );
+      expect(c.timing).toBe(TriggerTiming.WHEN);
+    });
+
+    it('reads "If"', () => {
+      const c = splitClause(
+        'If this card is sent to the GY: You can add 1 monster from your Deck to your hand.',
+      );
+      expect(c.timing).toBe(TriggerTiming.IF);
+    });
+
+    it('reads a bare window as DURING, not as an event', () => {
+      const c = splitClause(
+        'During your Main Phase: You can Special Summon 1 monster from your hand.',
+      );
+      expect(c.timing).toBe(TriggerTiming.DURING);
+    });
+
+    it('leaves timing undefined when there is no trigger', () => {
+      expect(
+        splitClause('Add 1 Field Spell from your Deck to your hand.').timing,
+      ).toBeUndefined();
+    });
+
+    describe('parseTiming — which word governs', () => {
+      it('lets "When" outrank a window it is nested in', () => {
+        // Gladiator Beast Heraklinos: the window is DURING but the EVENT is
+        // "when ... is activated", and the event decides timing-missing.
+        expect(
+          parseTiming(
+            "During either player's turn, when a Spell/Trap Card is activated",
+          ),
+        ).toBe(TriggerTiming.WHEN);
+      });
+
+      it('keeps DURING when no event word is present', () => {
+        expect(
+          parseTiming(
+            'During the End Phase of the turn that a monster was destroyed',
+          ),
+        ).toBe(TriggerTiming.DURING);
+      });
+
+      it('takes the earliest word otherwise', () => {
+        expect(
+          parseTiming('If you control no monsters, during your Main Phase'),
+        ).toBe(TriggerTiming.IF);
+      });
+
+      it('reads "Each time"', () => {
+        expect(parseTiming('Each time a monster is Normal Summoned')).toBe(
+          TriggerTiming.EACH_TIME,
+        );
+      });
+    });
+  });
+
+  describe('Quick Effect and activation windows', () => {
+    it('flags a Quick Effect', () => {
+      const c = splitClause(
+        '(Quick Effect): You can discard this card; negate that effect.',
+      );
+      expect(c.quickEffect).toBe(true);
+    });
+
+    it('does not flag an ordinary clause', () => {
+      expect(
+        splitClause('Add 1 Field Spell from your Deck to your hand.')
+          .quickEffect,
+      ).toBe(false);
+    });
+
+    it('keeps an excluded window verbatim', () => {
+      const c = splitClause(
+        'If a monster is Normal Summoned (except during the Damage Step): You can draw 1 card.',
+      );
+      expect(c.exclusions).toEqual(['(except during the Damage Step)']);
+    });
+  });
+
+  describe('legacy (pre-PSCT) sentences', () => {
+    it('splits a comma-delimited condition from its resolution', () => {
+      // Botanical Girl. No colon, no semicolon: before this rule the whole
+      // sentence was one resolution and the passive-voice guard killed it.
+      const c = splitClause(
+        'When this card is sent from the field to the GY, you can add 1 Plant-Type monster with 1000 or less DEF from your Deck to your hand.',
+      );
+      expect(c.legacy).toBe(true);
+      expect(c.trigger).toBe('When this card is sent from the field to the GY');
+      expect(c.resolutions).toEqual([
+        'you can add 1 Plant-Type monster with 1000 or less DEF from your Deck to your hand.',
+      ]);
+      expect(c.timing).toBe(TriggerTiming.WHEN);
+    });
+
+    it('lifts a legacy "pay X to <verb>" cost out of the resolution', () => {
+      // Pandaborg. PSCT would print this as "pay 800 LP; Special Summon ...".
+      const c = splitClause(
+        'When this card is destroyed by battle and sent to the GY, you can pay 800 Life Points to Special Summon 1 Level 4 Psychic-Type monster from your Deck.',
+      );
+      expect(c.cost).toBe('pay 800 Life Points');
+      expect(c.resolutions).toEqual([
+        'Special Summon 1 Level 4 Psychic-Type monster from your Deck.',
+      ]);
+    });
+
+    it('splits before a bare imperative verb, not only before "you can"', () => {
+      const c = splitClause(
+        'When this card is destroyed by battle, destroy all monsters on the field.',
+      );
+      expect(c.trigger).toBe('When this card is destroyed by battle');
+      expect(c.resolutions).toEqual(['destroy all monsters on the field.']);
+    });
+
+    it('ignores commas inside the condition', () => {
+      const c = splitClause(
+        'During the End Phase of the turn that a B.E.S. monster, or a Big Core, is destroyed and sent to the GY, you can Special Summon 1 B.E.S. monster from your Deck.',
+      );
+      expect(c.trigger).toBe(
+        'During the End Phase of the turn that a B.E.S. monster, or a Big Core, is destroyed and sent to the GY',
+      );
+    });
+
+    it('does not fire on a sentence that is all resolution', () => {
+      const c = splitClause(
+        'Add 1 Level 4 or lower Warrior monster from your Deck to your hand.',
+      );
+      expect(c.legacy).toBe(false);
+      expect(c.trigger).toBeUndefined();
+    });
+
+    it('never fires on modern text, even when it has commas', () => {
+      // The guard: a colon or semicolon anywhere means PSCT, so the comma
+      // before ", but you cannot activate" must not become a trigger.
+      const c = splitClause(
+        'If this card is sent from the field to the GY: Add 1 monster with 1500 or less ATK from your Deck to your hand, but you cannot activate cards with that name.',
+      );
+      expect(c.legacy).toBe(false);
+      expect(c.trigger).toBe('If this card is sent from the field to the GY');
+    });
+
+    it('does not split a legacy sentence with no resolution marker', () => {
+      const c = splitClause(
+        'While this card is face-up on the field, its ATK is 2000.',
+      );
+      expect(c.legacy).toBe(false);
     });
   });
 });

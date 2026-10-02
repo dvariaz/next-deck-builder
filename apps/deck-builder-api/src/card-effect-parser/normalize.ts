@@ -113,9 +113,24 @@ export function normalizeRest(text: string): string {
       .replace(/[\u2022\u00B7\u25E6]/g, '\u25CF')
       // Older printings spell out "Graveyard"; modern PSCT uses "GY".
       .replace(/\bGraveyard\b/g, 'GY')
-      // Collapse all whitespace, including the newlines around bullet lines and
-      // [ Pendulum Effect ] headers. Segmentation splits on those explicit
-      // markers, never on newlines, so this loses no structure.
+      // A line that does not end in sentence punctuation is still a sentence
+      // boundary, so give it one before the newlines are collapsed.
+      //
+      // This is the Extra Deck materials line: "2 Level 4 monsters", "1 Tuner
+      // + 1+ non-Tuner monsters", '"Robolady" + "Roboyarou"'. 2,563 cards in
+      // the pool have one, and it is never a mid-sentence wrap — verified
+      // across the whole pool, where every unpunctuated newline is either this
+      // line or a bracketed block header.
+      //
+      // Without the boundary the materials line merges into the card's first
+      // effect sentence, which is actively harmful rather than merely untidy:
+      // "2 Level 4 monsters Cannot attack unless it has Xyz Material" would
+      // let a predicate parsed from that sentence pick up Level 4 from the
+      // material requirement.
+      .replace(/([^.?!\]\u25cf\s])[ \t]*\r?\n+[ \t]*(?!\u25cf)/g, '$1. ')
+      // Collapse the remaining whitespace, including the newlines around
+      // bullet lines and [ Pendulum Effect ] headers, which segmentation
+      // splits on as explicit markers rather than on newlines.
       .replace(/\s+/g, ' ')
       .trim()
   );

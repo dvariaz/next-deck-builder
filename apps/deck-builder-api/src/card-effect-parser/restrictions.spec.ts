@@ -3,11 +3,17 @@ import {
   extractLabels,
   parseHardOncePerTurn,
   parseSoftOncePerTurn,
+  parseSummonConditions,
 } from './restrictions';
 
 const hardOpt = (raw: string) => {
   const { masked, names } = preprocess(raw);
   return parseHardOncePerTurn(masked, names);
+};
+
+const summonConditions = (raw: string) => {
+  const { masked, names } = preprocess(raw);
+  return parseSummonConditions(masked, names);
 };
 
 const labels = (raw: string) => {
@@ -166,6 +172,79 @@ describe('restrictions', () => {
 
     it('ignores undefined fragments', () => {
       expect(extractLabels([undefined, undefined], [])).toEqual([]);
+    });
+  });
+
+  describe('summon conditions', () => {
+    it('classifies a Nomi condition and keeps it verbatim', () => {
+      // Gladiator Beast Heraklinos. Critically this must NOT read as a Special
+      // Summon of the Gladiator Beasts it names — they are shuffled away to
+      // pay for this card's own arrival, not searched.
+      expect(
+        summonConditions(
+          'Must first be Special Summoned (from your Extra Deck) by shuffling the above cards you control into the Deck.',
+        ),
+      ).toEqual([
+        {
+          kind: 'NOMI',
+          text: 'Must first be Special Summoned (from your Extra Deck) by shuffling the above cards you control into the Deck',
+        },
+      ]);
+    });
+
+    it('classifies a bare "Cannot be Normal Summoned/Set"', () => {
+      expect(summonConditions('Cannot be Normal Summoned/Set.')).toMatchObject([
+        { kind: 'NOMI' },
+      ]);
+    });
+
+    it('classifies "without Tributing"', () => {
+      expect(
+        summonConditions('You can Normal Summon this card without Tributing.'),
+      ).toEqual([
+        {
+          kind: 'NO_TRIBUTE',
+          text: 'You can Normal Summon this card without Tributing',
+        },
+      ]);
+    });
+
+    it('classifies "without Tributing" behind a condition', () => {
+      expect(
+        summonConditions(
+          'If you control no monsters, you can Normal Summon this card without Tributing.',
+        ),
+      ).toMatchObject([{ kind: 'NO_TRIBUTE' }]);
+    });
+
+    it('classifies a Ritual Monster lead-in', () => {
+      expect(
+        summonConditions(
+          'You can Ritual Summon this card with "Black Luster Ritual".',
+        ),
+      ).toMatchObject([{ kind: 'RITUAL' }]);
+    });
+
+    it('classifies a Ritual Spell "Requires" line', () => {
+      expect(
+        summonConditions(
+          'Requires 1 "Black Luster Soldier" and Tributes whose total Levels equal 8 or more.',
+        ),
+      ).toMatchObject([{ kind: 'RITUAL' }]);
+    });
+
+    it('is anchored, so a mid-sentence "must be" is not a condition', () => {
+      expect(
+        summonConditions(
+          'Add 1 monster that must be Special Summoned from your Deck to your hand.',
+        ),
+      ).toEqual([]);
+    });
+
+    it('returns nothing for an ordinary effect', () => {
+      expect(
+        summonConditions('Add 1 Field Spell from your Deck to your hand.'),
+      ).toEqual([]);
     });
   });
 });

@@ -35,10 +35,16 @@ const QUOTED_EFFECTS_RE =
  * begin a sentence — a capital, a mask token (a quoted name), or an opening
  * parenthesis ("(Quick Effect):").
  *
+ * The lookbehind also accepts ".)", because a parenthetical sentence is a
+ * standard PSCT device that closes AFTER its period: Gladiator Beast
+ * Heraklinos' "(You do not use "Polymerization".) During either player's
+ * turn, ..." is two sentences, and without this its Summon condition and the
+ * trigger that follows it are read as a single clause.
+ *
  * Safe because every abbreviation in card text lives inside a card name, and
  * card names are masked before this runs.
  */
-const SENTENCE_SPLIT_RE = /(?<=\.)\s+(?=[A-Z(])/;
+const SENTENCE_SPLIT_RE = /(?<=\.|\.\))\s+(?=[A-Z(])/;
 
 export interface EffectBlock {
   /** Position among all blocks; used to build stable effect ids. */

@@ -4,17 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Monorepo | Yarn 1.x workspaces + Turborepo |
-| Language | TypeScript 5 (both apps) |
-| API runtime | NestJS 10, Node ≥20 |
-| ORM | Prisma 7 with `@prisma/adapter-pg` (pg driver adapter) |
-| Database | PostgreSQL 16 (Docker) |
-| Frontend | Next.js 15 (App Router) + React 19 + Turbopack |
-| Styling | Tailwind CSS 4 |
-| State | Zustand 5 |
-| API testing | Jest (API unit + e2e) |
+| Layer       | Technology                                              |
+| ----------- | ------------------------------------------------------- |
+| Monorepo    | Yarn 1.x workspaces + Turborepo                         |
+| Language    | TypeScript 5 (both apps)                                |
+| API runtime | NestJS 10, Node ≥20                                     |
+| ORM         | Prisma 7 with `@prisma/adapter-pg` (pg driver adapter)  |
+| Database    | PostgreSQL 16 (Docker)                                  |
+| Frontend    | Next.js 15 (App Router) + React 19 + Turbopack          |
+| Styling     | Tailwind CSS 4                                          |
+| State       | Zustand 5                                               |
+| API testing | Jest (API unit + e2e)                                   |
 | Web testing | Vitest + React Testing Library (unit), Playwright (e2e) |
 
 ## Monorepo Structure
@@ -59,6 +59,10 @@ yarn db:generate          # Regenerate Prisma client after schema changes
 yarn db:migrate           # Run migrations (dev)
 yarn db:push              # Push schema without migration file
 yarn db:seed              # Seed DB from YGOProDeck API
+
+yarn effects:parse        # Parse card effect text into Card.cardEffects
+yarn effects:parse:force  # Re-parse every card, including non-RULES rows
+yarn effects:audit        # False-positive audit of the effect parser
 ```
 
 ### Web-specific
@@ -105,12 +109,16 @@ The API requires `DATABASE_URL` in the environment. The web app requires `NEXT_P
 ### API (`deck-builder-api`)
 
 NestJS module structure under `src/`:
+
 - `prisma/` — `PrismaModule` (global) + `PrismaService` (wraps PrismaClient with `@prisma/adapter-pg`)
 - `cards/` — `CardsModule` with controller (`GET /cards`) and service
+- `card-effect-parser/` — pure, framework-free library that turns printed card effect text into a structured IR. Not a Nest module: no decorators and no Prisma client, so it also runs under `tsx` in the batch scripts. See `src/card-effect-parser/README.md`, and treat `card-effect.types.ts` as the contract with every consumer.
 
 Prisma schema lives in `prisma/schema.prisma`. The generated client is output to `generated/prisma/` (not `node_modules`), so import it as `'../../generated/prisma/client'`. The `PrismaPg` driver adapter is instantiated in `prisma/prisma-adapter.factory.ts` using `DATABASE_URL`.
 
 Database seeding (`prisma/seed.ts`) pulls card data from the YGOProDeck API via seeders in `prisma/seeds/`.
+
+`Card.cardEffects` holds the parsed effect IR, written by `yarn effects:parse`. Bump `PARSER_VERSION` (`src/card-effect-parser/card-effect.types.ts`) whenever a parser change makes persisted rows wrong; the column also carries an `origin` that the batch script will not overwrite unless `--force` is passed, so a manual or LLM pass cannot be clobbered by a re-parse. A reseed wipes the column, since the seeder deletes and recreates every row.
 
 ### Web (`deck-builder-web`)
 
@@ -130,10 +138,10 @@ Next.js App Router. Source is organized into:
 > **Array query params:** the generated URL builder serializes arrays with `String(value)`, producing a comma-joined value (`attribute=DARK,LIGHT`) rather than repeated params. `useFilterSync`, however, writes repeated params (`attribute=DARK&attribute=LIGHT`). So the API's `toArray` transform (`apps/deck-builder-api/src/common/transforms.ts`) accepts both: scalar, repeated, and comma-joined. New multi-value filters should pair `@Transform(toArray)` with `@IsEnum(X, { each: true })` / `@IsString({ each: true })`.
 
 ## Playwright / Visual Verification
-- Do NOT run Playwright or the Playwright MCP automatically when building or 
+
+- Do NOT run Playwright or the Playwright MCP automatically when building or
   modifying frontend components.
-- Only run Playwright when explicitly instructed (e.g. "verify with Playwright", 
+- Only run Playwright when explicitly instructed (e.g. "verify with Playwright",
   "run the visual test").
-- After building a component, just let me know it's ready for visual verification 
+- After building a component, just let me know it's ready for visual verification
   if applicable, instead of running it yourself.
-  

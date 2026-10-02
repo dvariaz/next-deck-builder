@@ -1,4 +1,8 @@
-import type { EffectRestrictions } from './card-effect.types';
+import {
+  SummonConditionKind,
+  type EffectRestrictions,
+  type SummonCondition,
+} from './card-effect.types';
 import { unmaskBare } from './normalize';
 
 /**
@@ -69,6 +73,79 @@ const LABEL_PATTERNS: { kind: string; re: RegExp }[] = [
     re: /during (?:your |the )?(?:Main Phase\s*\d?|Battle Phase|End Phase|Standby Phase|Damage Step)/i,
   },
 ];
+
+/**
+ * Printed overrides of how the card may be Summoned.
+ *
+ * These sentences are dense with Summon verbs and name specific monsters, so
+ * without classifying them they land in the review queue and — worse — a
+ * phrase like "Must first be Special Summoned by banishing 3 \"Gladiator
+ * Beast\" monsters" reads as a Special Summon of those monsters. It is not:
+ * it describes this card's own arrival on the field.
+ *
+ * Ordered most specific first; the first match for a sentence wins.
+ */
+const SUMMON_CONDITION_PATTERNS: {
+  kind: SummonConditionKind;
+  re: RegExp;
+}[] = [
+  // The Nomi / semi-Nomi pair. The "Must be" half carries the real condition,
+  // so match them together when both are present.
+  {
+    kind: SummonConditionKind.NOMI,
+    re: /^\s*(?:This card )?[Cc]annot be Normal Summoned(?:\/|\s+or\s+)?(?:Set)?\.?\s*Must (?:first )?be Special Summoned[^.]*/,
+  },
+  {
+    kind: SummonConditionKind.NOMI,
+    re: /^\s*Must (?:first )?be (?:Special |Fusion |Ritual )?Summoned[^.]*/i,
+  },
+  {
+    kind: SummonConditionKind.NOMI,
+    re: /^\s*(?:This card )?[Cc]annot be Normal Summoned(?:\/Set|\s+or\s+Set)?/,
+  },
+  {
+    kind: SummonConditionKind.NO_TRIBUTE,
+    re: /\byou can (?:Normal )?Summon this card without Tributing[^.]*/i,
+  },
+  {
+    kind: SummonConditionKind.NO_TRIBUTE,
+    re: /\byou can Normal Summon[^.]{0,60}without Tributing[^.]*/i,
+  },
+  {
+    kind: SummonConditionKind.RITUAL,
+    re: /^\s*Requires\b[^.]*/i,
+  },
+  {
+    kind: SummonConditionKind.RITUAL,
+    re: /\bYou can Ritual Summon this card with[^.]*/i,
+  },
+  {
+    kind: SummonConditionKind.RITUAL,
+    re: /\bThis card can only be Ritual Summoned[^.]*/i,
+  },
+  {
+    kind: SummonConditionKind.OTHER,
+    re: /^\s*(?:This card )?[Cc]annot be Special Summoned(?:\s+except[^.]*)?/,
+  },
+];
+
+/**
+ * Summon conditions stated in one sentence.
+ *
+ * Runs on the WHOLE sentence rather than on resolution segments, because the
+ * Nomi pair straddles a sentence break that stage 2 has already removed.
+ */
+export function parseSummonConditions(
+  sentence: string,
+  names: string[],
+): SummonCondition[] {
+  for (const { kind, re } of SUMMON_CONDITION_PATTERNS) {
+    const match = re.exec(sentence);
+    if (!match) continue;
+    return [{ kind, text: unmaskBare(match[0], names).trim() }];
+  }
+  return [];
+}
 
 /**
  * Card-scoped hard once-per-turn, read from the whole card text.

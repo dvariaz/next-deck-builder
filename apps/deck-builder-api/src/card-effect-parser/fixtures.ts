@@ -83,6 +83,55 @@ export const FIXTURES = {
     description:
       'This legendary dragon is a powerful engine of destruction. Virtually invincible, very few have faced this awesome creature and lived to tell the tale.',
   },
+  pandaborg: {
+    name: 'Pandaborg',
+    description:
+      'When this card is destroyed by battle and sent to the Graveyard, you can pay 800 Life Points to Special Summon 1 Level 4 Psychic-Type monster from your Deck.',
+  },
+  botanicalGirl: {
+    name: 'Botanical Girl',
+    description:
+      'When this card is sent from the field to the Graveyard, you can add 1 Plant-Type monster with 1000 or less DEF from your Deck to your hand.',
+  },
+  alchemicMagician: {
+    name: 'Alchemic Magician',
+    description:
+      '3 Level 4 Spellcaster-Type monsters\nThis card gains 200 ATK for each Spell Card in your Graveyard. Once per turn, during your End Phase: You can detach 1 Xyz Material from this card and send 1 card from your hand to the Graveyard; choose 1 Spell Card from your Deck, then Set it in your Spell & Trap Card Zone.',
+  },
+  gladiatorBeastHeraklinos: {
+    name: 'Gladiator Beast Heraklinos',
+    description:
+      '"Gladiator Beast Laquari" + 2 "Gladiator Beast" monsters\nMust first be Special Summoned (from your Extra Deck) by shuffling the above cards you control into the Deck. (You do not use "Polymerization".) During either player\'s turn, when a Spell/Trap Card is activated: You can discard 1 card; negate the activation and destroy it. This card must be face-up on the field to activate and to resolve this effect.',
+  },
+  qliphortCarrier: {
+    name: 'Qliphort Carrier',
+    description:
+      '[ Pendulum Effect ] \nYou cannot Special Summon monsters, except "Qli" monsters. This effect cannot be negated. All "Qli" monsters you control gain 300 ATK.\n\n[ Monster Effect ] \nYou can Normal Summon this card without Tributing. If this card is Normal Summoned without Tributing, or is Special Summoned, its Level becomes 4 and its original ATK becomes 1800. If this card is Normal Summoned/Set, it is unaffected by activated effects from any monster whose original Level/Rank is lower than this card\'s current Level. If this card is Tributed: You can target 1 monster on the field; return it to the hand.',
+  },
+  calledByTheGrave: {
+    name: 'Called by the Grave',
+    description:
+      "Target 1 monster in your opponent's GY; banish it, and if you do, until the end of the next turn, its effects are negated, as well as the activated effects and effects on the field of monsters with the same original name.",
+  },
+  labyrinthHeavyTank: {
+    name: 'Labyrinth Heavy Tank',
+    description:
+      'You can Normal Summon this card without Tributing. Cannot attack the turn it is Normal Summoned. During your Main Phase: You can place 1 of your "Sanga of the Thunder", "Kazejin", or "Suijin" that is banished, or in your hand or Deck, face-up in your Spell & Trap Zone as a Continuous Spell, then, if you control a "Labyrinth Wall" card, you can destroy 1 monster your opponent controls. You can only use this effect of "Labyrinth Heavy Tank" once per turn.',
+  },
+  blackLusterSoldierRitual: {
+    name: 'Black Luster Soldier',
+    description: 'You can Ritual Summon this card with "Black Luster Ritual".',
+  },
+  reaperOfTheCards: {
+    name: 'Reaper of the Cards',
+    description:
+      'FLIP: Select 1 Trap Card on the field and destroy it. If the selected card is Set, pick up and see the card. If it is a Trap Card, it is destroyed. If it is a Spell Card, return it to its original position.',
+  },
+  snakeEyeAsh: {
+    name: 'Snake-Eye Ash',
+    description:
+      'If this card is Normal or Special Summoned: You can add 1 Level 1 FIRE monster from your Deck to your hand. You can send 2 face-up cards you control to the GY, including this card; Special Summon 1 "Snake-Eye" monster from your hand or Deck, except "Snake-Eye Ash". You can only use each effect of "Snake-Eye Ash" once per turn.',
+  },
 } satisfies Record<string, CardFixture>;
 
 /** Vocabulary covering the fixtures, so specs never touch the database. */
@@ -105,6 +154,7 @@ export const FIXTURE_RACES = new Set([
   'Winged Beast',
   'Fiend',
   'Machine',
+  'Plant',
 ]);
 
 /**

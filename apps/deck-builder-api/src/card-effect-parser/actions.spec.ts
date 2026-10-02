@@ -1,4 +1,4 @@
-import { parseAction } from './actions';
+import { parseAction, parseSelection, segmentRejection } from './actions';
 import type { ParserContext } from './card-effect.types';
 import { preprocess } from './normalize';
 
@@ -15,6 +15,21 @@ const act = (
 ) => {
   const { masked, names } = preprocess(raw);
   return parseAction(masked, names, { ...ctx, cardName }, { inheritedExcept });
+};
+
+/**
+ * Parse a resolution segment together with the clause that precedes it, which
+ * is where modern text states the noun phrase a pronoun refers back to.
+ */
+const actInClause = (clauseContext: string, segment: string) => {
+  // Masked as one string so quoted names get the same indexes the real
+  // pipeline would give them, then split at the LAST separator — the context
+  // may contain separators of its own.
+  const { masked, names } = preprocess(`${clauseContext}; ${segment}`);
+  const at = masked.lastIndexOf('; ');
+  return parseAction(masked.slice(at + 2), names, ctx, {
+    clauseContext: masked.slice(0, at),
+  });
 };
 
 describe('actions', () => {
@@ -241,6 +256,191 @@ describe('actions', () => {
       expect(action?.sourceText).toBe(
         'Add 1 HERO monster from your Deck to your hand.',
       );
+    });
+  });
+
+  describe('selection mode — target vs choose vs select', () => {
+    it('reads explicit targeting', () => {
+      expect(parseSelection('Target 1 monster in either GY')).toBe('TARGET');
+      expect(
+        parseSelection('You can target 1 card your opponent controls'),
+      ).toBe('TARGET');
+    });
+
+    it('reads PSCT non-targeting selection', () => {
+      expect(parseSelection('choose 1 Spell Card from your Deck')).toBe(
+        'CHOOSE',
+      );
+    });
+
+    it('reports legacy "select" as its own, undetermined value', () => {
+      // Konami's errata programme rewrote pre-2011 "select" into either
+      // "target" or "choose" case by case, and the printed text of an
+      // un-errata'd card does not say which. Guessing would be wrong about
+      // half the time.
+      expect(parseSelection('Select 1 Trap Card on the field')).toBe(
+        'LEGACY_SELECT',
+      );
+    });
+
+    it('reports NONE when the text names no selection', () => {
+      expect(
+        parseSelection('Add 1 Field Spell from your Deck to your hand'),
+      ).toBe('NONE');
+    });
+
+    it('prefers "target" when a clause uses more than one word', () => {
+      expect(parseSelection('Target 1 monster; choose its position')).toBe(
+        'TARGET',
+      );
+    });
+
+    it('puts the mode on the action', () => {
+      expect(
+        act('Special Summon 1 Warrior monster from your Deck'),
+      ).toMatchObject({ selection: 'NONE' });
+    });
+  });
+
+  describe('pronoun resolutions — the noun phrase is in the preceding clause', () => {
+    it('resolves "Special Summon it" from the targeting clause', () => {
+      // Monster Reborn. 2,099 cards in the pool state what they act on before
+      // the semicolon and refer back to it by pronoun.
+      expect(
+        actInClause('Target 1 monster in either GY', 'Special Summon it.'),
+      ).toMatchObject({
+        verb: 'SPECIAL_SUMMON',
+        selection: 'TARGET',
+        resolved: true,
+        sourceZones: [{ zone: 'GY', owner: 'EITHER' }],
+        target: { kind: 'criteria', label: '1 monster' },
+      });
+    });
+
+    it('takes the zone from the clause that names the noun phrase', () => {
+      // Alchemic Magician: the Deck is the source, the S/T Zone is where the
+      // card goes. Reading "in your Spell & Trap Card Zone" as the source
+      // would make this card look like it searches its own backrow.
+      expect(
+        actInClause(
+          'choose 1 Spell Card from your Deck',
+          'then Set it in your Spell & Trap Card Zone.',
+        ),
+      ).toMatchObject({
+        verb: 'SET',
+        selection: 'CHOOSE',
+        resolved: true,
+        sourceZones: [{ zone: 'DECK', owner: 'SELF' }],
+        destination: 'FIELD_FACE_DOWN',
+        target: { kind: 'criteria', label: '1 Spell Card' },
+      });
+    });
+
+    it('uses the nearest antecedent when a clause has two', () => {
+      expect(
+        actInClause(
+          'target 1 monster you control; choose 1 Warrior monster from your Deck',
+          'Special Summon it.',
+        ),
+      ).toMatchObject({
+        sourceZones: [{ zone: 'DECK', owner: 'SELF' }],
+        target: { kind: 'criteria', label: '1 Warrior monster' },
+      });
+    });
+
+    it('leaves a pronoun unresolved when there is no antecedent', () => {
+      expect(
+        actInClause('You can discard 1 card', 'Special Summon it.'),
+      ).toMatchObject({ resolved: false, target: { kind: 'unresolved' } });
+    });
+
+    it('does not borrow when the resolution names its own noun phrase', () => {
+      expect(
+        actInClause(
+          'target 1 monster in your GY',
+          'Special Summon 1 Warrior monster from your Deck.',
+        ),
+      ).toMatchObject({
+        sourceZones: [{ zone: 'DECK', owner: 'SELF' }],
+        target: { kind: 'criteria', label: '1 Warrior monster' },
+      });
+    });
+  });
+
+  describe('legacy verb spellings', () => {
+    it('reads "pick up and see" as an excavate', () => {
+      expect(act('pick up and see the top card of your Deck')).toMatchObject({
+        verb: 'EXCAVATE',
+      });
+    });
+
+    it('reads "show" as a reveal', () => {
+      expect(
+        act('show up to 2 Normal Monster Cards from your hand'),
+      ).toMatchObject({ verb: 'REVEAL' });
+    });
+
+    it('does not read "show" without a count as a verb', () => {
+      expect(act('show your opponent')).toBeUndefined();
+    });
+
+    it('reads "Set it" as a Set, not as the adjective', () => {
+      expect(
+        actInClause('choose 1 Spell Card from your Deck', 'Set it.'),
+      ).toMatchObject({ verb: 'SET' });
+    });
+
+    it('still refuses "Set" as an adjective', () => {
+      expect(
+        act("1 Set card in your opponent's Spell & Trap Zone"),
+      ).toBeUndefined();
+    });
+  });
+
+  describe('the field stated as control', () => {
+    it('reads "your opponent controls" as their field', () => {
+      expect(
+        actInClause('target 1 monster your opponent controls', 'destroy it.'),
+      ).toMatchObject({
+        sourceZones: [{ zone: 'FIELD', owner: 'OPPONENT' }],
+      });
+    });
+
+    it('reads "you control" as your field', () => {
+      expect(
+        actInClause('target 1 monster you control', 'destroy it.'),
+      ).toMatchObject({ sourceZones: [{ zone: 'FIELD', owner: 'SELF' }] });
+    });
+  });
+
+  describe('legacy "Card Zone" spellings', () => {
+    it('folds "Spell & Trap Card Zone" onto the modern zone', () => {
+      expect(
+        actInClause(
+          'choose 1 Continuous Spell in your Spell & Trap Card Zone',
+          'destroy it.',
+        ),
+      ).toMatchObject({ sourceZones: [{ zone: 'ST_ZONE', owner: 'SELF' }] });
+    });
+  });
+
+  describe('segmentRejection — declined, not failed', () => {
+    it('reports a negation', () => {
+      expect(
+        segmentRejection('you cannot Special Summon monsters this turn'),
+      ).toBe('NEGATION');
+    });
+
+    it('reports a passive description', () => {
+      expect(
+        segmentRejection('a monster is Special Summoned from your Deck'),
+      ).toBe('PASSIVE');
+    });
+
+    it('reports nothing for a real action', () => {
+      expect(
+        segmentRejection('Add 1 Field Spell from your Deck to your hand'),
+      ).toBeUndefined();
     });
   });
 });

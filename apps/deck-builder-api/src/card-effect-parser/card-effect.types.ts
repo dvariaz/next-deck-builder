@@ -18,7 +18,57 @@ import type {
  * service compares it and re-parses live on mismatch, so a bump is safe but
  * costs a live parse until `yarn effects:parse` runs again.
  */
-export const PARSER_VERSION = 1;
+export const PARSER_VERSION = 2;
+
+/**
+ * The word a trigger condition opens with. This is not cosmetic — it decides
+ * whether the effect can MISS THE TIMING, which is one of the few places where
+ * Konami's wording maps directly onto a hard rule:
+ *
+ *   "When this card is sent to the GY: you can ..."  — misses the timing
+ *   "If this card is sent to the GY: you can ..."    — never misses the timing
+ *
+ * An optional "When" trigger effect may only activate if its trigger was the
+ * LAST thing to happen; if anything else resolved after it, the window is gone.
+ * "If" effects have no such restriction. Mandatory effects do not miss timing
+ * regardless of the word, so `missesTiming` needs the optional flag too.
+ *
+ * WHILE and DURING are continuous/ignition windows rather than trigger events,
+ * and never miss the timing.
+ */
+export const TriggerTiming = {
+  WHEN: 'WHEN',
+  IF: 'IF',
+  WHILE: 'WHILE',
+  DURING: 'DURING',
+  EACH_TIME: 'EACH_TIME',
+  AFTER: 'AFTER',
+} as const;
+export type TriggerTiming = (typeof TriggerTiming)[keyof typeof TriggerTiming];
+
+/**
+ * How the effect picks what it acts on. Targeting is a distinct game action
+ * with its own rules — a card that says "target" can be stopped by targeting
+ * protection, and the choice is locked in at activation rather than resolution.
+ *
+ * The three positive values are kept apart rather than collapsed to a boolean
+ * because legacy text genuinely is ambiguous: Konami's errata programme
+ * rewrote pre-2011 "select" into either "target" or "choose" case by case, and
+ * an un-errata'd card's printed text does not say which it became. Reporting
+ * LEGACY_SELECT is honest; guessing `targets: true` would be wrong about half
+ * the time.
+ */
+export const SelectionMode = {
+  /** "target 1 monster" — explicit targeting (PSCT). */
+  TARGET: 'TARGET',
+  /** "choose 1 monster" — explicitly non-targeting (PSCT). */
+  CHOOSE: 'CHOOSE',
+  /** Pre-errata "select" — targeting status not determined by the text. */
+  LEGACY_SELECT: 'LEGACY_SELECT',
+  /** No selection language: the effect applies to whatever it describes. */
+  NONE: 'NONE',
+} as const;
+export type SelectionMode = (typeof SelectionMode)[keyof typeof SelectionMode];
 
 /** What the player does. Only the first four are "search" verbs. */
 export const EffectVerb = {
@@ -147,6 +197,12 @@ export interface EffectAction {
   target: EffectTarget;
   quantity: EffectQuantity;
   /**
+   * Whether the action targets. Read from the whole PSCT clause, not just the
+   * resolution: modern text states the target in the cost half ("target 1
+   * monster in your GY; Special Summon it").
+   */
+  selection: SelectionMode;
+  /**
    * True only when the target is fully pinned down (`named`, `self`, or a
    * `criteria` with at least one constrained field). The search graph draws
    * edges for resolved actions only.
@@ -162,9 +218,63 @@ export interface EffectCost {
   banish?: number | 'ANY';
   /** Deck thinning paid as a cost, e.g. "send 1 card from your Deck to the GY". */
   sendDeckToGy?: number | 'ANY';
+  /** "Detach 1 Xyz Material from this card" — the Xyz activation cost. */
+  detach?: number | 'ANY';
   payLifePoints?: number;
   /** Verbatim cost clauses that were recognised but not modelled. */
   other?: string[];
+}
+
+/**
+ * A parsed activation condition — the PSCT text before the colon, or the
+ * comma-delimited lead of a legacy (pre-2011) sentence.
+ *
+ * Never yields actions. This is what stops "If this card is sent to the GY:"
+ * becoming an edge, while still recording the ruling-relevant properties of
+ * the window it opens.
+ */
+export interface EffectTrigger {
+  /** Konami's verbatim condition text. What the UI renders. */
+  text: string;
+  timing?: TriggerTiming;
+  /**
+   * True when this effect can miss the timing: an OPTIONAL trigger effect
+   * whose condition opens with "When". See TriggerTiming.
+   */
+  missesTiming: boolean;
+  /** "(Quick Effect)" — Spell Speed 2, activatable during the opponent's turn. */
+  quickEffect: boolean;
+  /**
+   * Windows the activation is barred from, verbatim: the near-universal
+   * "(except during the Damage Step)" and its variants.
+   */
+  exclusions: string[];
+}
+
+/**
+ * A printed override of how the card may be put onto the field. Not a
+ * restriction on an effect and never an edge — a Nomi monster's "Must be
+ * Special Summoned" line describes its own Summon, not something it searches.
+ *
+ * Kept verbatim and classified only coarsely: the graph needs to know "this
+ * card cannot simply be Normal Summoned", not a full model of Summon legality.
+ */
+export const SummonConditionKind = {
+  /** "Cannot be Normal Summoned/Set. Must be Special Summoned by ..." */
+  NOMI: 'NOMI',
+  /** "You can Normal Summon this card without Tributing." */
+  NO_TRIBUTE: 'NO_TRIBUTE',
+  /** A Ritual Monster's "Requires ..." / "You can Ritual Summon this card with ..." */
+  RITUAL: 'RITUAL',
+  /** Any other printed condition on Summoning this card. */
+  OTHER: 'OTHER',
+} as const;
+export type SummonConditionKind =
+  (typeof SummonConditionKind)[keyof typeof SummonConditionKind];
+
+export interface SummonCondition {
+  kind: SummonConditionKind;
+  text: string;
 }
 
 export interface EffectRestrictions {
@@ -183,6 +293,12 @@ export interface EffectRestrictions {
   exceptNames: string[];
   /** Verbatim display-only clauses: summon locks, phase locks, archetype locks. */
   labels: string[];
+  /**
+   * Printed overrides of how this card is Summoned. Present so these
+   * sentences are classified rather than dumped in the review queue — they
+   * are full of Summon verbs but describe no searchable action.
+   */
+  summonConditions: SummonCondition[];
 }
 
 /** Which part of the card text an effect came from. */
@@ -192,11 +308,7 @@ export interface CardEffect {
   /** Stable within a card: `${blockIndex}.${sentenceIndex}`. */
   id: string;
   blockKind: EffectBlockKind;
-  /**
-   * The PSCT activation condition (text before `:`). Never yields actions —
-   * this is what stops "If this card is sent to the GY:" becoming an edge.
-   */
-  trigger?: { text: string };
+  trigger?: EffectTrigger;
   cost: EffectCost;
   actions: EffectAction[];
   restrictions: EffectRestrictions;

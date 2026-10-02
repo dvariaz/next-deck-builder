@@ -79,4 +79,64 @@ describe('cost', () => {
     const parsed = cost('Pay 500 LP and discard 1 card');
     expect(parsed).toMatchObject({ payLifePoints: 500, discard: 1 });
   });
+
+  describe('detach — the Xyz activation cost', () => {
+    it('reads a numbered detach', () => {
+      expect(
+        cost('You can detach 1 Xyz Material from this card'),
+      ).toMatchObject({ detach: 1 });
+    });
+
+    it('reads a detach alongside another cost', () => {
+      // Alchemic Magician pays both halves in one clause. The send is from the
+      // HAND, so it is not deck thinning and must not set sendDeckToGy.
+      const c = cost(
+        'You can detach 1 Xyz Material from this card and send 1 card from your hand to the GY',
+      );
+      expect(c.detach).toBe(1);
+      expect(c.sendDeckToGy).toBeUndefined();
+    });
+
+    it('reads the bare "detach 2 materials" spelling', () => {
+      expect(cost('Detach 2 materials')).toMatchObject({ detach: 2 });
+    });
+
+    it('does not record a detach as an unmodelled cost', () => {
+      expect(
+        cost('You can detach 1 Xyz Material from this card').other,
+      ).toBeUndefined();
+    });
+  });
+
+  describe('a targeting clause is not a cost', () => {
+    it('records nothing for a bare target clause', () => {
+      // Monster Reborn: "Target 1 monster in either GY; Special Summon it."
+      // Targeting occupies the cost slot in PSCT but pays nothing, and the
+      // noun phrase is already on the action's target.
+      expect(cost('Target 1 monster in either GY')).toEqual({});
+    });
+
+    it('records nothing for "You can target ..."', () => {
+      expect(cost('You can target 1 monster on the field')).toEqual({});
+    });
+
+    it('records nothing for "choose"/"select" clauses', () => {
+      expect(cost('choose 1 Spell Card from your Deck')).toEqual({});
+      expect(cost('Select 1 Trap Card on the field')).toEqual({});
+    });
+
+    it('still records a real cost stated alongside a target', () => {
+      expect(
+        cost('You can discard 1 card and target 1 monster in your GY'),
+      ).toMatchObject({ discard: 1 });
+    });
+
+    it('keeps an unmodelled non-targeting cost verbatim', () => {
+      expect(
+        cost('You can send 2 face-up cards you control to the GY'),
+      ).toMatchObject({
+        other: ['You can send 2 face-up cards you control to the GY'],
+      });
+    });
+  });
 });

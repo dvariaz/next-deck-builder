@@ -42,7 +42,8 @@ describe('segment', () => {
     it('keeps a preamble before the first header as a MAIN block', () => {
       const blocks = blocksOf('2+ monsters\n[ Pendulum Effect ]\nDraw 1 card.');
       expect(blocks.map((b) => b.kind)).toEqual(['MAIN', 'PENDULUM']);
-      expect(blocks[0].text).toBe('2+ monsters');
+      // The materials line now carries the sentence boundary normalize gives it.
+      expect(blocks[0].text).toBe('2+ monsters.');
     });
   });
 
@@ -150,6 +151,29 @@ describe('segment', () => {
 
     it('drops empty fragments', () => {
       expect(splitSentences('  ')).toEqual([]);
+    });
+  });
+
+  describe('parenthetical sentences', () => {
+    it('splits after a sentence that closes with ".)"', () => {
+      // Gladiator Beast Heraklinos. Without this the parenthetical and the
+      // trigger that follows it are read as one clause, and the trigger text
+      // comes out wrong.
+      expect(
+        splitSentences(
+          "Must first be Special Summoned by shuffling the above cards you control into the Deck. (You do not use Polymerization.) During either player's turn, when a Spell/Trap Card is activated: You can discard 1 card.",
+        ),
+      ).toEqual([
+        'Must first be Special Summoned by shuffling the above cards you control into the Deck.',
+        '(You do not use Polymerization.)',
+        "During either player's turn, when a Spell/Trap Card is activated: You can discard 1 card.",
+      ]);
+    });
+
+    it('still does not split inside "(Quick Effect):"', () => {
+      expect(
+        splitSentences('(Quick Effect): You can discard this card; negate it.'),
+      ).toEqual(['(Quick Effect): You can discard this card; negate it.']);
     });
   });
 });

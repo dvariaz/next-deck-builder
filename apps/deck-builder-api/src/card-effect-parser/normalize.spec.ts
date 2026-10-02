@@ -104,8 +104,31 @@ describe('normalize', () => {
       );
     });
 
-    it('collapses newlines and runs of whitespace to single spaces', () => {
-      expect(normalizeRest('one\n\n  two\t three')).toBe('one two three');
+    it('collapses runs of whitespace to single spaces', () => {
+      expect(normalizeRest('one  two\t three')).toBe('one two three');
+    });
+
+    it('turns an unpunctuated line break into a sentence boundary', () => {
+      // The Extra Deck materials line. Merging it into the first effect
+      // sentence would let a predicate parsed from that sentence pick up the
+      // material requirement's Level.
+      expect(
+        normalizeRest(
+          '2 Level 4 monsters\nCannot attack unless it has material.',
+        ),
+      ).toBe('2 Level 4 monsters. Cannot attack unless it has material.');
+    });
+
+    it('does not add a boundary after a line that already ends one', () => {
+      expect(
+        normalizeRest('Draw 1 card.\n\n[ Monster Effect ] \nDraw 2.'),
+      ).toBe('Draw 1 card. [ Monster Effect ] Draw 2.');
+    });
+
+    it('does not add a boundary before a bullet', () => {
+      expect(
+        normalizeRest('Activate 1 of these effects\n\u25cf Draw 1 card.'),
+      ).toBe('Activate 1 of these effects \u25cf Draw 1 card.');
     });
 
     it('normalizes bullet variants to the canonical U+25CF', () => {

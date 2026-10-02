@@ -20,11 +20,32 @@ const TRIBUTE_RE = new RegExp(`\\bTribute\\s+(?:${COUNT}\\b\\s*)?`, 'i');
 const BANISH_RE = new RegExp(`\\bbanish\\s+(?:${COUNT}\\b\\s*)?`, 'i');
 const PAY_LP_RE = /\bPay\s+([\d,]+)\s*(?:LP|Life Points)\b/i;
 
+/**
+ * The Xyz activation cost, on 294 cards. "Detach" is unambiguous — it applies
+ * only to Xyz Materials — so it needs no guard beyond the count.
+ */
+const DETACH_RE = new RegExp(
+  `\\bdetach\\s+(?:${COUNT}\\b\\s*)?(?:Xyz )?Materials?`,
+  'i',
+);
+
 /** Deck thinning paid as a cost, rather than as part of the resolution. */
 const SEND_DECK_RE = new RegExp(
   `\\bsend\\s+(?:${COUNT}\\b\\s*)?[^;.]*?from\\s+(?:the top of\\s+)?your\\s+Deck\\s+to\\s+the\\s+GY`,
   'i',
 );
+
+/**
+ * A clause that only declares what the effect acts on.
+ *
+ * Targeting occupies the same slot as a cost in PSCT — "Target 1 monster in
+ * either GY; Special Summon it" — but it is not a price paid, and the noun
+ * phrase is already recorded on the action's `target`. Recording it as a cost
+ * too would double-represent it and make Monster Reborn look like it costs
+ * something.
+ */
+const SELECTION_ONLY_RE =
+  /^\s*(?:you can\s+)?(?:target|choose|select)\b[^;]*$/i;
 
 function toCount(raw?: string): number | 'ANY' {
   if (!raw) return 'ANY';
@@ -71,13 +92,19 @@ export function parseCost(
     }
   }
 
+  const detach = DETACH_RE.exec(costText);
+  if (detach) {
+    cost.detach = toCount(detach[1]);
+    recognised = true;
+  }
+
   const lp = PAY_LP_RE.exec(costText);
   if (lp) {
     cost.payLifePoints = Number(lp[1].replace(/,/g, ''));
     recognised = true;
   }
 
-  if (!recognised) {
+  if (!recognised && !SELECTION_ONLY_RE.test(costText)) {
     // Keep it verbatim rather than dropping it: the UI shows costs on the edge,
     // and an unmodelled cost is still information the player needs.
     cost.other = [unmaskBare(costText, names).trim()];
