@@ -24,6 +24,9 @@
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
+    "effects:parse": "tsx prisma/scripts/parse-card-effects.ts",
+    "effects:parse:force": "tsx prisma/scripts/parse-card-effects.ts --force",
+    "effects:audit": "tsx prisma/scripts/audit-effects.ts",
     "spec:export": "curl -s http://localhost:3001/api-docs-json -o openapi.json"
   },
   "prisma": {
