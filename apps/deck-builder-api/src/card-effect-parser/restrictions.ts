@@ -83,21 +83,38 @@ const LABEL_PATTERNS: { kind: string; re: RegExp }[] = [
  * Beast\" monsters" reads as a Special Summon of those monsters. It is not:
  * it describes this card's own arrival on the field.
  *
- * Ordered most specific first; the first match for a sentence wins.
+ * Ordered most specific first; the first match for a sentence wins. The
+ * Nomi / semi-Nomi order is load-bearing — see the comment at those patterns.
+ *
+ * The classification is deliberately coarse and the text is always kept
+ * verbatim: "Must be Special Summoned by a card effect" (Wulf, Lightsworn
+ * Beast) is permissive where "Must be Special Summoned by Tributing 3
+ * monsters" is restrictive, and both are NOMI here. What the kind reliably
+ * tells a consumer is that the normal Summon procedure does not apply.
  */
 const SUMMON_CONDITION_PATTERNS: {
   kind: SummonConditionKind;
   re: RegExp;
 }[] = [
-  // The Nomi / semi-Nomi pair. The "Must be" half carries the real condition,
-  // so match them together when both are present.
+  // The semi-Nomi pair MUST be tested before the Nomi pair: both read "Must
+  // ... be Special Summoned", and the only difference is the word "first".
+  // Checking Nomi first would swallow every semi-Nomi monster and wrongly
+  // report that no effect can ever revive it.
   {
-    kind: SummonConditionKind.NOMI,
-    re: /^\s*(?:This card )?[Cc]annot be Normal Summoned(?:\/|\s+or\s+)?(?:Set)?\.?\s*Must (?:first )?be Special Summoned[^.]*/,
+    kind: SummonConditionKind.SEMI_NOMI,
+    re: /^\s*(?:This card )?[Cc]annot be Normal Summoned(?:\/|\s+or\s+)?(?:Set)?\.?\s*Must first be Special Summoned[^.]*/,
+  },
+  {
+    kind: SummonConditionKind.SEMI_NOMI,
+    re: /^\s*Must first be (?:Special |Fusion |Ritual )?Summoned[^.]*/i,
   },
   {
     kind: SummonConditionKind.NOMI,
-    re: /^\s*Must (?:first )?be (?:Special |Fusion |Ritual )?Summoned[^.]*/i,
+    re: /^\s*(?:This card )?[Cc]annot be Normal Summoned(?:\/|\s+or\s+)?(?:Set)?\.?\s*Must be Special Summoned[^.]*/,
+  },
+  {
+    kind: SummonConditionKind.NOMI,
+    re: /^\s*Must be (?:Special |Fusion |Ritual )?Summoned[^.]*/i,
   },
   {
     kind: SummonConditionKind.NOMI,

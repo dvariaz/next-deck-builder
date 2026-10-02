@@ -70,6 +70,47 @@ export const SelectionMode = {
 } as const;
 export type SelectionMode = (typeof SelectionMode)[keyof typeof SelectionMode];
 
+/**
+ * The conjunction that introduced a resolution segment.
+ *
+ * Konami's conjunctions are a defined vocabulary, not prose, and they say
+ * whether a later part still happens when an earlier part fails:
+ *
+ *   "then"            sequential;   the first is REQUIRED for the second
+ *   "and if you do"   simultaneous; the first is REQUIRED for the second
+ *   "also"            simultaneous; independent — do as much as possible
+ *   "and"             simultaneous; all-or-nothing, both strictly required
+ *
+ * That difference is why the IR records it: an action behind "then" does not
+ * happen at all if the clause before it failed, so it is a weaker claim about
+ * what the card can reach than one behind "also".
+ */
+export const Conjunction = {
+  /** The first segment of a resolution. Depends on nothing. */
+  NONE: 'NONE',
+  THEN: 'THEN',
+  AND_IF_YOU_DO: 'AND_IF_YOU_DO',
+  ALSO: 'ALSO',
+  AFTER_THAT: 'AFTER_THAT',
+  /** ", but ..." — a qualification on what precedes, not a further action. */
+  BUT: 'BUT',
+} as const;
+export type Conjunction = (typeof Conjunction)[keyof typeof Conjunction];
+
+/**
+ * Conjunctions whose segment does not happen at all if the preceding clause
+ * failed.
+ *
+ * "then" and "and if you do" are stated as such by Konami. "after that" is
+ * not covered there; it is included because it is purely sequential, and the
+ * same reasoning applies.
+ */
+export const DEPENDENT_CONJUNCTIONS: readonly Conjunction[] = [
+  Conjunction.THEN,
+  Conjunction.AND_IF_YOU_DO,
+  Conjunction.AFTER_THAT,
+];
+
 /** What the player does. Only the first four are "search" verbs. */
 export const EffectVerb = {
   ADD: 'ADD',
@@ -202,6 +243,13 @@ export interface EffectAction {
    * monster in your GY; Special Summon it").
    */
   selection: SelectionMode;
+  /** The conjunction that introduced this action's segment. */
+  conjunction: Conjunction;
+  /**
+   * True when this action does not happen at all if the preceding clause
+   * failed — derived from `conjunction` via DEPENDENT_CONJUNCTIONS.
+   */
+  dependsOnPrevious: boolean;
   /**
    * True only when the target is fully pinned down (`named`, `self`, or a
    * `criteria` with at least one constrained field). The search graph draws
@@ -240,6 +288,9 @@ export interface EffectTrigger {
   /**
    * True when this effect can miss the timing: an OPTIONAL trigger effect
    * whose condition opens with "When". See TriggerTiming.
+   *
+   * Never true for an effect that does not activate at all — a continuous
+   * effect has no activation window to miss.
    */
   missesTiming: boolean;
   /** "(Quick Effect)" — Spell Speed 2, activatable during the opponent's turn. */
@@ -260,8 +311,19 @@ export interface EffectTrigger {
  * card cannot simply be Normal Summoned", not a full model of Summon legality.
  */
 export const SummonConditionKind = {
-  /** "Cannot be Normal Summoned/Set. Must be Special Summoned by ..." */
+  /**
+   * "Must be Special Summoned by ..." — only ever by that method, so no other
+   * card's effect can bring it back. A Nomi monster is NOT a legal target for
+   * "Special Summon 1 monster from your GY".
+   */
   NOMI: 'NOMI',
+  /**
+   * "Must FIRST be Special Summoned by ..." — once it has been Summoned
+   * properly, other effects MAY revive it, so it IS a legal target for a
+   * generic revival. The word "first" is the whole difference, and collapsing
+   * it into NOMI would wrongly exclude 160 cards from every GY revival.
+   */
+  SEMI_NOMI: 'SEMI_NOMI',
   /** "You can Normal Summon this card without Tributing." */
   NO_TRIBUTE: 'NO_TRIBUTE',
   /** A Ritual Monster's "Requires ..." / "You can Ritual Summon this card with ..." */
@@ -309,6 +371,19 @@ export interface CardEffect {
   id: string;
   blockKind: EffectBlockKind;
   trigger?: EffectTrigger;
+  /**
+   * Whether this effect starts a chain, read from the one punctuation clue
+   * Konami guarantees: a colon or a semicolon marks an activated effect, and a
+   * monster effect with neither is a continuous effect that cannot be chained
+   * to (so Divine Wrath cannot negate it).
+   *
+   * `undefined` rather than `false` when the printing predates PSCT, because
+   * the clue is then simply absent: Botanical Girl's "When this card is sent
+   * from the field to the GY, you can add ..." is a genuine chainable trigger
+   * effect that merely predates the colon. Reporting `false` there would be a
+   * wrong fact rather than a missing one.
+   */
+  startsChain?: boolean;
   cost: EffectCost;
   actions: EffectAction[];
   restrictions: EffectRestrictions;

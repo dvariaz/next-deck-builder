@@ -478,7 +478,9 @@ describe('parseCardEffects', () => {
       const conditions = parsed.effects.flatMap(
         (effect) => effect.restrictions.summonConditions,
       );
-      expect(conditions).toMatchObject([{ kind: 'NOMI' }]);
+      // "Must FIRST be" — semi-Nomi, so a GY revival of it is legal once it
+      // has been Fusion Summoned properly.
+      expect(conditions).toMatchObject([{ kind: 'SEMI_NOMI' }]);
     });
 
     it('reads the trigger that follows the parenthetical', () => {
@@ -586,6 +588,102 @@ describe('parseCardEffects', () => {
         target: { kind: 'unresolved' },
       });
       expect(searches(parsed)).toEqual([]);
+    });
+  });
+
+  describe('startsChain — the colon/semicolon chain clue', () => {
+    it('marks a colon effect as chainable', () => {
+      // Sangan: "If this card is sent from the field to the GY: Add 1 ...".
+      expect(parse(FIXTURES.sangan).effects[0].startsChain).toBe(true);
+    });
+
+    it('marks a semicolon effect as chainable', () => {
+      // Monster Reborn: "Target 1 monster in either GY; Special Summon it."
+      expect(parse(FIXTURES.monsterReborn).effects[0].startsChain).toBe(true);
+    });
+
+    it('marks modern text with neither punctuation as not chainable', () => {
+      // A continuous effect. Divine Wrath cannot negate one of these, because
+      // there is nothing to chain to.
+      const parsed = parseCardEffects(
+        'This card gains 500 ATK for each Dragon monster you control.',
+        ctxFor('Continuous'),
+        PARSED_AT,
+      );
+      expect(parsed.effects[0]?.startsChain ?? false).toBe(false);
+    });
+
+    it('leaves the clue undefined on a pre-PSCT printing', () => {
+      // Botanical Girl is a genuine chainable trigger effect that simply
+      // predates the colon. Reporting `false` here would be a wrong fact
+      // rather than a missing one.
+      const effect = parse(FIXTURES.botanicalGirl).effects[0];
+      expect(effect.startsChain).toBeUndefined();
+      expect(effect.trigger?.timing).toBe('WHEN');
+    });
+
+    it('lets a bullet inherit the clue from its lead-in', () => {
+      // A.I. Connect states "... activate 1 of these effects;" once.
+      const parsed = parse(FIXTURES.aIConnect);
+      const bullets = parsed.effects.filter((e) => e.blockKind === 'BULLET');
+      expect(bullets.length).toBeGreaterThan(0);
+      expect(bullets.every((e) => e.startsChain === true)).toBe(true);
+    });
+
+    it('never reports missesTiming for an effect that does not activate', () => {
+      // No activation window means no window to miss, whatever the wording.
+      const parsed = parseCardEffects(
+        'When this card is face-up on the field, you can look at the top card of your Deck.',
+        ctxFor('Continuous'),
+        PARSED_AT,
+      );
+      for (const effect of parsed.effects) {
+        if (effect.startsChain === false) {
+          expect(effect.trigger?.missesTiming ?? false).toBe(false);
+        }
+      }
+    });
+  });
+
+  describe('conjunctions — which actions depend on the one before', () => {
+    it('marks an "and if you do" search as dependent', () => {
+      // A.I. Connect's DARK bullet: "Special Summon the revealed monster, and
+      // if you do, add 1 Level 4 or lower non-DARK Cyberse monster from your
+      // Deck to your hand." The add only happens if the Summon succeeded, so
+      // it is a weaker claim about what this card reaches than a bare search.
+      const parsed = parse(FIXTURES.aIConnect);
+      const add = parsed.effects
+        .flatMap((effect) => effect.actions)
+        .find(
+          (action) =>
+            action.verb === 'ADD' && action.target.kind === 'criteria',
+        );
+
+      expect(add).toMatchObject({
+        conjunction: 'AND_IF_YOU_DO',
+        dependsOnPrevious: true,
+      });
+    });
+
+    it('leaves the first action of a resolution independent', () => {
+      const action = parse(FIXTURES.reinforcementOfTheArmy).effects[0]
+        .actions[0];
+      expect(action).toMatchObject({
+        conjunction: 'NONE',
+        dependsOnPrevious: false,
+      });
+    });
+
+    it('does not mark an "also" action as dependent', () => {
+      // "also" leaves the two halves independent — do as much as possible.
+      const parsed = parse(FIXTURES.instantFusion);
+      for (const effect of parsed.effects) {
+        for (const action of effect.actions) {
+          if (action.conjunction === 'ALSO') {
+            expect(action.dependsOnPrevious).toBe(false);
+          }
+        }
+      }
     });
   });
 });

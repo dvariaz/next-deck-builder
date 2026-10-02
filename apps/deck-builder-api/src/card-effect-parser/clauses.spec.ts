@@ -1,5 +1,13 @@
 import { TriggerTiming } from './card-effect.types';
-import { parseTiming, splitClause, splitResolutions } from './clauses';
+import {
+  parseTiming,
+  splitClause,
+  splitResolutions,
+  type ResolutionSegment,
+} from './clauses';
+
+/** The segment bodies, for assertions that do not care about conjunctions. */
+const texts = (segments: ResolutionSegment[]) => segments.map((s) => s.text);
 
 describe('clauses', () => {
   describe('splitClause — shapes', () => {
@@ -9,7 +17,7 @@ describe('clauses', () => {
       );
       expect(c.trigger).toBeUndefined();
       expect(c.cost).toBeUndefined();
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'Add 1 Level 4 or lower Warrior monster from your Deck to your hand.',
       ]);
     });
@@ -20,7 +28,7 @@ describe('clauses', () => {
       );
       expect(c.trigger).toBe('If this card is sent from the field to the GY');
       expect(c.cost).toBeUndefined();
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'Add 1 monster from your Deck to your hand.',
       ]);
     });
@@ -31,7 +39,7 @@ describe('clauses', () => {
       );
       expect(c.trigger).toBeUndefined();
       expect(c.cost).toBe('Pay 1000 LP');
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'Special Summon 1 Level 5 or lower Fusion Monster from your Extra Deck.',
       ]);
     });
@@ -42,7 +50,7 @@ describe('clauses', () => {
       );
       expect(c.trigger).toBe('(Quick Effect)');
       expect(c.cost).toBe('You can Tribute this card');
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'Special Summon 1 monster from your Extra Deck.',
       ]);
     });
@@ -59,7 +67,7 @@ describe('clauses', () => {
       const c = splitClause(
         'If this card is sent from the field to the GY: Add 1 monster with 1500 or less ATK from your Deck to your hand, but you cannot activate cards, or the effects of cards, with that name for the rest of this turn.',
       );
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'Add 1 monster with 1500 or less ATK from your Deck to your hand',
         'you cannot activate cards, or the effects of cards, with that name for the rest of this turn.',
       ]);
@@ -69,7 +77,7 @@ describe('clauses', () => {
       const c = splitClause(
         'Pay 1000 LP; Special Summon 1 Level 5 or lower Fusion Monster from your Extra Deck, but it cannot attack, also it is destroyed during the End Phase.',
       );
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'Special Summon 1 Level 5 or lower Fusion Monster from your Extra Deck',
         'it cannot attack',
         'it is destroyed during the End Phase.',
@@ -81,7 +89,7 @@ describe('clauses', () => {
         'You can discard 1 other card; add 1 Level 1 FIRE monster from your Deck to your hand, also you cannot Special Summon monsters for the rest of this turn, except FIRE monsters.',
       );
       expect(c.cost).toBe('You can discard 1 other card');
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'add 1 Level 1 FIRE monster from your Deck to your hand',
         'you cannot Special Summon monsters for the rest of this turn, except FIRE monsters.',
       ]);
@@ -91,8 +99,10 @@ describe('clauses', () => {
   describe('splitResolutions — chaining', () => {
     it('splits ", and if you do," into two real actions', () => {
       expect(
-        splitResolutions(
-          'Special Summon the revealed monster, and if you do, add 1 Cyberse monster from your Deck to your hand.',
+        texts(
+          splitResolutions(
+            'Special Summon the revealed monster, and if you do, add 1 Cyberse monster from your Deck to your hand.',
+          ),
         ),
       ).toEqual([
         'Special Summon the revealed monster',
@@ -102,8 +112,10 @@ describe('clauses', () => {
 
     it('splits ", then" into two real actions', () => {
       expect(
-        splitResolutions(
-          'Send 1 card from your Deck to the GY, then add 1 monster from your Deck to your hand.',
+        texts(
+          splitResolutions(
+            'Send 1 card from your Deck to the GY, then add 1 monster from your Deck to your hand.',
+          ),
         ),
       ).toEqual([
         'Send 1 card from your Deck to the GY',
@@ -113,7 +125,7 @@ describe('clauses', () => {
 
     it('splits ", after that"', () => {
       expect(
-        splitResolutions('Draw 2 cards, after that, discard 1 card.'),
+        texts(splitResolutions('Draw 2 cards, after that, discard 1 card.')),
       ).toEqual(['Draw 2 cards', 'discard 1 card.']);
     });
 
@@ -129,6 +141,59 @@ describe('clauses', () => {
       expect(
         splitResolutions('Destroy 1 monster and 1 Spell on the field.'),
       ).toHaveLength(1);
+    });
+  });
+
+  describe('splitResolutions — which conjunction split it', () => {
+    // Konami's conjunctions are a defined vocabulary: "then" and "and if you
+    // do" make the later part conditional on the earlier one succeeding,
+    // while "also" leaves the two independent.
+    it('leaves the first segment with no conjunction', () => {
+      expect(splitResolutions('Draw 2 cards, then discard 1 card.')[0]).toEqual(
+        { text: 'Draw 2 cards', conjunction: 'NONE' },
+      );
+    });
+
+    it('records "then"', () => {
+      expect(
+        splitResolutions('Draw 2 cards, then discard 1 card.')[1].conjunction,
+      ).toBe('THEN');
+    });
+
+    it('records "and if you do"', () => {
+      expect(
+        splitResolutions('Draw 1 card, and if you do, discard 1 card.')[1]
+          .conjunction,
+      ).toBe('AND_IF_YOU_DO');
+    });
+
+    it('records "also"', () => {
+      expect(
+        splitResolutions('Draw 1 card, also gain 500 LP.')[1].conjunction,
+      ).toBe('ALSO');
+    });
+
+    it('records "after that"', () => {
+      expect(
+        splitResolutions('Draw 2 cards, after that, discard 1 card.')[1]
+          .conjunction,
+      ).toBe('AFTER_THAT');
+    });
+
+    it('records "but"', () => {
+      expect(
+        splitResolutions(
+          'Special Summon it, but it cannot attack this turn.',
+        )[1].conjunction,
+      ).toBe('BUT');
+    });
+
+    it('records each conjunction in a three-part chain', () => {
+      expect(
+        splitResolutions(
+          'Draw 1 card, then discard 1 card, also gain 500 LP.',
+        ).map((s) => s.conjunction),
+      ).toEqual(['NONE', 'THEN', 'ALSO']);
     });
   });
 
@@ -256,7 +321,7 @@ describe('clauses', () => {
       );
       expect(c.legacy).toBe(true);
       expect(c.trigger).toBe('When this card is sent from the field to the GY');
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'you can add 1 Plant-Type monster with 1000 or less DEF from your Deck to your hand.',
       ]);
       expect(c.timing).toBe(TriggerTiming.WHEN);
@@ -268,7 +333,7 @@ describe('clauses', () => {
         'When this card is destroyed by battle and sent to the GY, you can pay 800 Life Points to Special Summon 1 Level 4 Psychic-Type monster from your Deck.',
       );
       expect(c.cost).toBe('pay 800 Life Points');
-      expect(c.resolutions).toEqual([
+      expect(c.resolutions.map((r) => r.text)).toEqual([
         'Special Summon 1 Level 4 Psychic-Type monster from your Deck.',
       ]);
     });
@@ -278,7 +343,9 @@ describe('clauses', () => {
         'When this card is destroyed by battle, destroy all monsters on the field.',
       );
       expect(c.trigger).toBe('When this card is destroyed by battle');
-      expect(c.resolutions).toEqual(['destroy all monsters on the field.']);
+      expect(c.resolutions.map((r) => r.text)).toEqual([
+        'destroy all monsters on the field.',
+      ]);
     });
 
     it('ignores commas inside the condition', () => {

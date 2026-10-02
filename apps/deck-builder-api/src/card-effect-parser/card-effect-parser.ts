@@ -65,10 +65,29 @@ function shouldQueue(
   summonConditions: SummonCondition[],
 ): boolean {
   if (summonConditions.length) return false;
-  if (!clause.resolutions.some((segment) => SEARCH_VERB_RE.test(segment))) {
+  if (!clause.resolutions.some(({ text }) => SEARCH_VERB_RE.test(text))) {
     return false;
   }
-  return !clause.resolutions.some((segment) => segmentRejection(segment));
+  return !clause.resolutions.some(({ text }) => segmentRejection(text));
+}
+
+/**
+ * Whether the effect starts a chain, from the PSCT punctuation clue.
+ *
+ * A bullet inherits its lead-in's punctuation, so the clue may sit there:
+ * A.I. Connect states "... activate 1 of these effects;" once, and each bullet
+ * under it is an activated effect.
+ *
+ * Returns undefined for a pre-PSCT printing, where the clue is absent rather
+ * than negative. See CardEffect.startsChain.
+ */
+function startsChain(
+  clause: PsctClause,
+  leadIn: PsctClause | undefined,
+): boolean | undefined {
+  if (clause.psct || leadIn?.psct) return true;
+  if (clause.legacy) return undefined;
+  return false;
 }
 
 /** Assemble the trigger, preferring the sentence's own over an inherited lead-in. */
@@ -76,6 +95,7 @@ function buildTrigger(
   clause: PsctClause,
   leadIn: PsctClause | undefined,
   optional: boolean,
+  chains: boolean | undefined,
   names: string[],
 ): EffectTrigger | undefined {
   const own = clause.trigger ? clause : leadIn?.trigger ? leadIn : undefined;
@@ -90,7 +110,9 @@ function buildTrigger(
     timing: own.timing,
     // Only an OPTIONAL "When" trigger effect can miss the timing. See
     // TriggerTiming for why this is the one wording distinction with teeth.
-    missesTiming: own.timing === TriggerTiming.WHEN && optional,
+    // An effect that does not activate has no window to miss.
+    missesTiming:
+      own.timing === TriggerTiming.WHEN && optional && chains !== false,
     quickEffect: clause.quickEffect || leadIn?.quickEffect || false,
     exclusions,
   };
@@ -134,14 +156,15 @@ export function parseCardEffects(
         // the same clause, so the context grows as the chain is walked.
         const context: string[] = [clause.cost ?? leadIn?.cost ?? ''];
 
-        for (const segment of clause.resolutions) {
+        for (const { text, conjunction } of clause.resolutions) {
           actions.push(
-            ...parseActions(segment, names, ctx, {
+            ...parseActions(text, names, ctx, {
               inheritedExcept,
+              conjunction,
               clauseContext: context.filter(Boolean).join('; '),
             }),
           );
-          context.push(segment);
+          context.push(text);
         }
       }
 
@@ -154,11 +177,13 @@ export function parseCardEffects(
 
       const costText = [leadIn?.cost, clause.cost].filter(Boolean).join('; ');
       const optional = clause.optional || leadIn?.optional || false;
+      const chains = startsChain(clause, leadIn);
 
       effects.push({
         id: `${block.index}.${sentenceIndex}`,
         blockKind: block.kind,
-        trigger: buildTrigger(clause, leadIn, optional, names),
+        trigger: buildTrigger(clause, leadIn, optional, chains, names),
+        ...(chains === undefined ? {} : { startsChain: chains }),
         cost: parseCost(costText, names),
         actions,
         restrictions: {
@@ -168,7 +193,11 @@ export function parseCardEffects(
           ...(parseSoftOncePerTurn(sentence) ? { softOncePerTurn: true } : {}),
           exceptNames: extractExceptNames(sentence, names),
           labels: extractLabels(
-            [...clause.resolutions, clause.trigger, block.leadIn],
+            [
+              ...clause.resolutions.map(({ text }) => text),
+              clause.trigger,
+              block.leadIn,
+            ],
             names,
           ),
           summonConditions,

@@ -176,7 +176,7 @@ describe('restrictions', () => {
   });
 
   describe('summon conditions', () => {
-    it('classifies a Nomi condition and keeps it verbatim', () => {
+    it('classifies a semi-Nomi condition and keeps it verbatim', () => {
       // Gladiator Beast Heraklinos. Critically this must NOT read as a Special
       // Summon of the Gladiator Beasts it names — they are shuffled away to
       // pay for this card's own arrival, not searched.
@@ -186,9 +186,35 @@ describe('restrictions', () => {
         ),
       ).toEqual([
         {
-          kind: 'NOMI',
+          kind: 'SEMI_NOMI',
           text: 'Must first be Special Summoned (from your Extra Deck) by shuffling the above cards you control into the Deck',
         },
+      ]);
+    });
+
+    it('separates Nomi from semi-Nomi on the word "first"', () => {
+      // The difference is revival legality, so it cannot be collapsed: a
+      // semi-Nomi monster IS a legal target for "Special Summon 1 monster
+      // from your GY" once it has been Summoned properly, and a Nomi monster
+      // never is.
+      expect(
+        summonConditions(
+          'Must be Special Summoned (from your hand) by Tributing 3 monsters, and cannot be Special Summoned by other ways.',
+        ),
+      ).toMatchObject([{ kind: 'NOMI' }]);
+
+      expect(
+        summonConditions('Must first be Special Summoned (from your hand).'),
+      ).toMatchObject([{ kind: 'SEMI_NOMI' }]);
+    });
+
+    it('classifies the bare Extra Deck method restriction as Nomi', () => {
+      // "Must be Fusion Summoned." — no other effect can bring it back.
+      expect(summonConditions('Must be Fusion Summoned.')).toMatchObject([
+        { kind: 'NOMI' },
+      ]);
+      expect(summonConditions('Must be Ritual Summoned.')).toMatchObject([
+        { kind: 'NOMI' },
       ]);
     });
 

@@ -1,4 +1,6 @@
 import {
+  Conjunction,
+  DEPENDENT_CONJUNCTIONS,
   EffectDestination,
   EffectVerb,
   EffectZone,
@@ -309,6 +311,8 @@ export function parseSelection(text: string): SelectionMode {
 export interface ParseActionOptions {
   /** Exclusions found elsewhere in the segment (usually after the destination). */
   inheritedExcept?: string[];
+  /** The conjunction that introduced this segment. See Conjunction. */
+  conjunction?: Conjunction;
   /**
    * Everything in the same PSCT clause that precedes this segment: the cost
    * half, then any earlier resolution segments, joined in order.
@@ -438,6 +442,8 @@ export function parseActions(
 
   const sourceText = unmaskBare(segment, names).trim();
 
+  const conjunction = options.conjunction ?? Conjunction.NONE;
+
   return targets.map(({ target, quantity }) => ({
     verb,
     sourceZones: zones,
@@ -445,6 +451,8 @@ export function parseActions(
     target,
     quantity,
     selection,
+    conjunction,
+    dependsOnPrevious: DEPENDENT_CONJUNCTIONS.includes(conjunction),
     resolved: isResolvedTarget(target) && (!needsZone || zones.length > 0),
     sourceText,
   }));

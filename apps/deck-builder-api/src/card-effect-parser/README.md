@@ -131,15 +131,73 @@ cards you control into the Deck` names "Gladiator Beast" monsters, but it
 describes _this card's own arrival on the field_. Read as an action it makes
 those monsters look searchable, which they are not.
 
-These sentences are classified as `restrictions.summonConditions`
-(`NOMI` / `NO_TRIBUTE` / `RITUAL` / `OTHER`), kept verbatim, and yield **no
-actions**.
+These sentences are classified as `restrictions.summonConditions`, kept
+verbatim, and yield **no actions**.
+
+`NOMI` and `SEMI_NOMI` are kept apart because they differ in revival legality,
+and the whole difference is the word **"first"**:
+
+| Printed as                                  | Kind        | Can another effect revive it?           |
+| ------------------------------------------- | ----------- | --------------------------------------- |
+| "Must **be** Special Summoned by ..."       | `NOMI`      | No — only ever by that method           |
+| "Must **first** be Special Summoned by ..." | `SEMI_NOMI` | Yes, once it has been Summoned properly |
+
+So a semi-Nomi monster _is_ a legal target for "Special Summon 1 monster from
+your GY" and a Nomi monster never is. Collapsing the two would wrongly exclude
+160 cards from every generic revival. The remaining kinds are `NO_TRIBUTE`,
+`RITUAL` and `OTHER`.
+
+The classification is deliberately coarse and the text is always preserved
+verbatim: "Must be Special Summoned by a card effect" (Wulf, Lightsworn Beast)
+is permissive where "Must be Special Summoned by Tributing 3 monsters" is
+restrictive, and both are `NOMI`. What the kind reliably tells a consumer is
+that the normal Summon procedure does not apply.
 
 ### Class Summons are Special Summons
 
 Every Fusion, Synchro, Xyz, Link, Ritual and Pendulum Summon _is_ a Special
 Summon, so they all map to `SPECIAL_SUMMON` rather than each getting a verb of
 its own. Only Normal Summon and Flip Summon are not Special Summons.
+
+### Does the effect start a chain?
+
+The colon and the semicolon are not only separators — their _presence_ is the
+clue that an effect is an activated one. A monster effect with neither is a
+continuous effect, and nothing can chain to it (Divine Wrath cannot negate it).
+
+`CardEffect.startsChain` records that, and is `undefined` rather than `false`
+when the printing predates PSCT, because the clue is then simply absent.
+Botanical Girl's "When this card is sent from the field to the GY, you can
+add ..." is a genuine chainable trigger effect that merely predates the colon;
+reporting `false` there would be a wrong fact rather than a missing one.
+
+Across the pool: 13,575 effects chain, 4,061 do not, and 1,745 come from
+pre-PSCT printings where the clue cannot be read.
+
+### Conjunctions, and which actions are conditional
+
+Konami's conjunctions are a defined vocabulary, and they say whether a later
+part still happens when an earlier part fails:
+
+| Conjunction     | Timing       | First part required for the second? | If the first fails            |
+| --------------- | ------------ | ----------------------------------- | ----------------------------- |
+| `then`          | sequential   | yes                                 | stop — second does not happen |
+| `and if you do` | simultaneous | yes                                 | stop                          |
+| `also`          | simultaneous | no                                  | do as much as possible        |
+| `and`           | simultaneous | both strictly required              | all-or-nothing                |
+
+`EffectAction.conjunction` records which word introduced the segment, and
+`dependsOnPrevious` derives from it. That matters for a search graph: **905 of
+the 7,950 resolved search actions (11%) sit behind a dependent conjunction**, so
+they are a weaker claim about what the card reaches than a bare search is.
+A.I. Connect only adds a monster to the hand _if_ the Special Summon before it
+succeeded.
+
+Bare `and` and bare `or` are deliberately **not** split on. Both are real clause
+conjunctions, but in card text they join noun phrases ("1 Warrior **or**
+Spellcaster monster") far more often than clauses. The consequence is that only
+the first half of "Special Summon X **and** attach Y as material" becomes an
+action — which for a search graph is the half that matters.
 
 ### Pronoun resolutions
 
@@ -294,5 +352,31 @@ stale against the pool.
 5. **Bump `PARSER_VERSION`** if persisted rows are now wrong.
 
 ```bash
-yarn test --testPathPattern card-effect-parser   # 341 tests
+yarn test --testPathPattern card-effect-parser   # 359 tests
 ```
+
+## Sources
+
+The grammar and the ruling semantics above are taken from Konami's official
+"Understanding Card Text" series, which is the authority on Problem-Solving
+Card Text:
+
+- [Part 2: New Words & Phrases](https://www.yugioh-card.com/eu/play/understanding-card-text/part-2-new-words-phrases/)
+  — "banish", "leaves the field", "targeted for an attack".
+- [Part 3: Conditions, Activations, and Effects](https://www.yugioh-card.com/eu/play/understanding-card-text/part-3-conditions-activations-and-effects/)
+  — the `CONDITIONS : ACTIVATION ; RESOLUTION` structure, and that the
+  activation slot holds both costs **and** targeting.
+- [Part 4: The Clues on Your Cards](https://www.yugioh-card.com/eu/play/understanding-card-text/part-4-the-clues-on-your-cards/)
+  — a colon or semicolon marks an effect that starts a chain; costs are paid at
+  activation; "target" vs a pronoun in the resolution.
+- [Part 5: Special Summons](https://www.yugioh-card.com/eu/play/understanding-card-text/part-5-special-summons/)
+  — Nomi vs semi-Nomi, and "cannot be Special Summoned by other ways".
+- [Part 7: Conjunction Functions](https://www.yugioh-card.com/eu/play/understanding-card-text/part-7-conjunction-functions/)
+  — the exact semantics of "then", "also", "and if you do" and "and".
+
+One rule here is **not** from that series: the "When" vs "If" timing-missing
+distinction. The series does not cover it, and the parser's treatment follows
+the standard formulation — an _optional_ "When" trigger effect may only
+activate if its trigger was the last thing to happen, and "If" effects are
+never subject to that. It is worth re-checking against the current official
+rulebook before anything depends on it heavily.

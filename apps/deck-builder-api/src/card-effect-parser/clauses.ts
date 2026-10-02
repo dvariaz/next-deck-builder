@@ -1,4 +1,4 @@
-import { TriggerTiming } from './card-effect.types';
+import { Conjunction, TriggerTiming } from './card-effect.types';
 
 /**
  * Stage 3 — Problem-Solving Card Text (PSCT) clause splitting.
@@ -38,12 +38,34 @@ import { TriggerTiming } from './card-effect.types';
  */
 
 /**
- * Resolution chaining. Deliberately excludes bare "or" and bare "and", which
- * join noun phrases ("1 Warrior or Spellcaster monster") far more often than
- * they join clauses.
+ * Resolution chaining, capturing WHICH conjunction split the segment — the
+ * word decides whether the segment still happens when the clause before it
+ * fails. See Conjunction.
+ *
+ * Deliberately excludes bare "or" and bare "and". Both are real clause
+ * conjunctions in Konami's vocabulary ("and" being all-or-nothing), but in
+ * card text they join noun phrases ("1 Warrior or Spellcaster monster") far
+ * more often than clauses, and splitting on them costs more than it buys.
+ * The consequence is that only the first half of "Special Summon X and attach
+ * Y as material" becomes an action — which for a search graph is the half
+ * that matters.
  */
 const RESOLUTION_SPLIT_RE =
-  /,\s*(?:also|then|but|after that|and if you do)\b,?\s*/gi;
+  /,\s*(also|then|but|after that|and if you do)\b,?\s*/gi;
+
+const CONJUNCTIONS: Record<string, Conjunction> = {
+  also: Conjunction.ALSO,
+  then: Conjunction.THEN,
+  but: Conjunction.BUT,
+  'after that': Conjunction.AFTER_THAT,
+  'and if you do': Conjunction.AND_IF_YOU_DO,
+};
+
+/** One resolution segment, with the conjunction that introduced it. */
+export interface ResolutionSegment {
+  text: string;
+  conjunction: Conjunction;
+}
 
 /** "You can ..." marks an optional effect rather than a mandatory one. */
 const OPTIONAL_RE = /\byou can\b/i;
@@ -123,7 +145,7 @@ export interface PsctClause {
   /** Text between the colon and the semicolon — paid, not performed. */
   cost?: string;
   /** Text after the semicolon, split into chained segments. */
-  resolutions: string[];
+  resolutions: ResolutionSegment[];
   optional: boolean;
   /** The trigger's opening word, when there is a trigger. */
   timing?: TriggerTiming;
@@ -132,15 +154,42 @@ export interface PsctClause {
   exclusions: string[];
   /** True when the trigger came from a legacy comma split, not a colon. */
   legacy: boolean;
+  /**
+   * True when the sentence carries PSCT punctuation (a colon or a semicolon).
+   *
+   * This is the official chain clue: a colon or semicolon marks an activated
+   * effect that starts a chain, and a monster effect with neither is a
+   * continuous effect. Recorded here so the entry point can tell "no clue
+   * present" (legacy printing) apart from "clue present and says no".
+   */
+  psct: boolean;
   sourceText: string;
 }
 
-/** Split a resolution body into its chained segments. */
-export function splitResolutions(text: string): string[] {
-  return text
-    .split(RESOLUTION_SPLIT_RE)
-    .map((s) => s.trim())
-    .filter(Boolean);
+/**
+ * Split a resolution body into its chained segments.
+ *
+ * `String.split` with a capturing group interleaves the captures, so the
+ * result reads [segment, conjunction, segment, conjunction, segment, ...] and
+ * each segment can be paired with the word that introduced it.
+ */
+export function splitResolutions(text: string): ResolutionSegment[] {
+  const parts = text.split(RESOLUTION_SPLIT_RE);
+  const segments: ResolutionSegment[] = [];
+
+  for (let i = 0; i < parts.length; i += 2) {
+    const body = parts[i]?.trim();
+    if (!body) continue;
+    const word = i === 0 ? undefined : parts[i - 1]?.toLowerCase();
+    segments.push({
+      text: body,
+      conjunction: word
+        ? (CONJUNCTIONS[word] ?? Conjunction.NONE)
+        : Conjunction.NONE,
+    });
+  }
+
+  return segments;
 }
 
 /**
@@ -243,6 +292,7 @@ export function splitClause(sentence: string): PsctClause {
         quickEffect,
         exclusions,
         legacy: true,
+        psct: false,
         sourceText: text,
       };
     }
@@ -269,6 +319,7 @@ export function splitClause(sentence: string): PsctClause {
     quickEffect,
     exclusions,
     legacy: false,
+    psct: colon !== -1 || semicolon !== -1,
     sourceText: text,
   };
 }
