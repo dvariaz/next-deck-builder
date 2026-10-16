@@ -102,6 +102,25 @@ model Card {
   aiTags             Json?
   aiLabeledAt        DateTime?
 
+  // Structured effect IR (a `ParsedCard`), denormalized onto the card row so
+  // reads are pure reads: no join, and no change to the cost of /cards. Written
+  // by a batch script at seed time and after a parser upgrade — never computed
+  // at read time.
+  //
+  // Parser-AGNOSTIC by design. The stored object carries its own metadata, so
+  // this column does not need renaming when a second parser arrives:
+  //   - `format`        what the TEXT is: "psct" or "legacy". This is what a
+  //                     future LLM pass would select on, since pre-PSCT wording
+  //                     is the text a rule-based grammar handles worst.
+  //   - `origin`        which parser produced it: "rules" | "llm" | "manual".
+  //   - `parserVersion` which revision of that parser.
+  //   - `parsedAt`      when.
+  //
+  // `CardEffectParse` / `CardEffectDiagnostic` remain the version-keyed history
+  // and the queryable review queue; this column is the current parse for
+  // serving.
+  parsedEffects      Json?
+
   // Extended metadata (YGOProDeck misc=yes)
   betaName           String?
   treatedAs          String?
@@ -115,6 +134,12 @@ model Card {
 
   cardSets           CardSet[]
   cardImages         CardImage[]
+  effectParses       CardEffectParse[]
+
+  @@index([archetype])
+  @@index([cardType])
+  @@index([level])
+  @@index([cardType, archetype])
 }
 
 model CardSet {
@@ -134,4 +159,76 @@ model CardImage {
   imageUrlCropped   String
   card              Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
   cardId            Int
+}
+
+/// A structured parse of one card's effect text, produced by src/psct-parser.
+///
+/// Separate from `Card.parsedEffects` on purpose. That column holds a single
+/// current IR blob for serving; this table keeps one row PER PARSER VERSION, so
+/// a grammar improvement can be generated, compared against the previous
+/// version and rolled back without destroying what consumers are reading.
+model CardEffectParse {
+  id             String   @id @default(uuid()) @db.Uuid
+  card           Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  cardId         Int
+
+  /// The printed text this parse was produced from. Stored alongside the AST
+  /// because a reseed can change a card's text, and a parse of text that no
+  /// longer exists must be detectable rather than silently wrong.
+  sourceText     String
+
+  /// The dominant effect kind, denormalized out of the AST for filtering.
+  effectKind     String
+
+  /// The full ParsedCard AST. JSONB so the shape can evolve without a
+  /// migration, and so Postgres can index into it.
+  ast            Json
+
+  /// Minimum of the per-effect confidences. Numeric rather than float so stored
+  /// values compare exactly across runs.
+  confidence     Decimal  @db.Decimal(4, 3)
+
+  parserVersion  Int
+
+  /// How this row was produced. The batch script must never overwrite a row
+  /// whose origin is not `rules` unless forced — that is what stops a future
+  /// LLM or manual pass from being clobbered by a re-parse.
+  origin         String   @default("rules")
+
+  createdAt      DateTime @default(now()) @db.Timestamptz(6)
+
+  diagnostics    CardEffectDiagnostic[]
+
+  /// One parse per card per parser version, which is what makes the batch
+  /// script idempotent: re-running it finds the existing row instead of
+  /// appending a duplicate.
+  @@unique([cardId, parserVersion])
+  @@index([parserVersion])
+  @@index([effectKind])
+  @@index([confidence])
+}
+
+/// One recorded uncertainty from a parse.
+///
+/// A table rather than a JSON array inside the parse, because these are the
+/// review queue: they have to be filtered by code and severity, counted per
+/// parser version, and worked through one at a time.
+model CardEffectDiagnostic {
+  id        String          @id @default(uuid()) @db.Uuid
+  parse     CardEffectParse @relation(fields: [parseId], references: [id], onDelete: Cascade)
+  parseId   String          @db.Uuid
+
+  severity  String
+  code      String
+  message   String
+
+  /// The span of ORIGINAL card text this concerns, as { start, end, text }.
+  /// Null for a diagnostic about the card as a whole.
+  span      Json?
+
+  createdAt DateTime        @default(now()) @db.Timestamptz(6)
+
+  @@index([parseId])
+  @@index([code])
+  @@index([severity])
 }

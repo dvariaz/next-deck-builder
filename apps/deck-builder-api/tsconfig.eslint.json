@@ -1,0 +1,16 @@
+{
+  // Lint-only project. `tsconfig.json` deliberately EXCLUDES `test/` so that
+  // `nest build` does not emit specs into `dist/`, but the lint glob in
+  // package.json does cover `test/**/*.ts`. Without a project that includes
+  // them, typescript-eslint cannot parse those files and reports a fatal error
+  // instead of linting them.
+  //
+  // This file exists only to widen the set of files the parser knows about; it
+  // changes nothing about the build.
+  "extends": "./tsconfig.json",
+  "include": ["src/**/*.ts", "test/**/*.ts", "prisma/**/*.ts", "*.ts"],
+  // `exclude` must be restated, not inherited: the base config excludes
+  // `test`, and an inherited `exclude` filters this file's `include` back down
+  // — so widening `include` alone leaves the e2e specs unparseable.
+  "exclude": ["node_modules", "dist"]
+}

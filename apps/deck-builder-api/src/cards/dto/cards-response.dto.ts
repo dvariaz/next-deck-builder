@@ -4,5 +4,6 @@ import { PaginationResponseDto } from './pagination.response.dto';
 
 export class CardsResponseDto {
   @ApiProperty({ type: () => [CardResponseDto] }) results: CardResponseDto[];
-  @ApiProperty({ type: () => PaginationResponseDto }) pagination: PaginationResponseDto;
+  @ApiProperty({ type: () => PaginationResponseDto })
+  pagination: PaginationResponseDto;
 }

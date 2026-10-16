@@ -1,0 +1,31 @@
+[
+  {
+    "name": "One for One",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Send 1 monster from your hand to the GY; Special Summon 1 Level 1 monster from your hand or Deck."
+  },
+  {
+    "name": "Foolish Burial",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Send 1 monster from your Deck to the GY."
+  },
+  {
+    "name": "Pot of Greed",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Draw 2 cards."
+  },
+  {
+    "name": "Pot of Desires",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Banish 10 cards from the top of your Deck, face-down; draw 2 cards."
+  },
+  {
+    "name": "D.D. Crow",
+    "cardType": "MONSTER",
+    "text": "You can discard this card to the GY; banish 1 card from your opponent's GY."
+  }
+]

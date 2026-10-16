@@ -28,8 +28,10 @@ export class CardResponseDto {
   @ApiPropertyOptional() attribute?: string;
   @ApiPropertyOptional() race?: string;
   @ApiPropertyOptional({ enum: SummonType }) summonType?: SummonType;
-  @ApiPropertyOptional({ enum: MonsterEffectType }) monsterEffectType?: MonsterEffectType;
-  @ApiPropertyOptional({ enum: SpellTrapSubType }) spellTrapSubType?: SpellTrapSubType;
+  @ApiPropertyOptional({ enum: MonsterEffectType })
+  monsterEffectType?: MonsterEffectType;
+  @ApiPropertyOptional({ enum: SpellTrapSubType })
+  spellTrapSubType?: SpellTrapSubType;
   @ApiProperty() isEffect: boolean;
   @ApiProperty() isFlip: boolean;
   @ApiProperty() isTuner: boolean;
@@ -53,5 +55,34 @@ export class CardResponseDto {
   @ApiPropertyOptional({ type: String, format: 'date-time' }) tcgDate?: string;
   @ApiPropertyOptional({ type: String, format: 'date-time' }) ocgDate?: string;
 
-  @ApiProperty({ type: () => [CardImageResponseDto] }) cardImages: CardImageResponseDto[];
+  @ApiProperty({ type: () => [CardImageResponseDto] })
+  cardImages: CardImageResponseDto[];
+
+  /**
+   * Structured effect IR (a `ParsedCard`).
+   *
+   * A stored column, written by a batch script at seed time and after a parser
+   * upgrade — never computed on a request, and no join, so including it does
+   * not change the cost of this query. ~1.6 KB per card.
+   *
+   * Parser-agnostic: the object carries its own metadata, so a second parser
+   * needs no new field here.
+   *
+   *   format        "psct" | "legacy" — what the TEXT is. Select on this to
+   *                 route cards to a different parser.
+   *   origin        "rules" | "llm" | "manual" — which parser produced it.
+   *   parserVersion which revision of that parser.
+   *   parsedAt      when.
+   *
+   * Typed loosely here on purpose — the authoritative contract is
+   * `psct-parser/ast.ts`, and duplicating that tree into Swagger DTOs would
+   * create a second definition to keep in sync.
+   */
+  @ApiPropertyOptional({
+    type: 'object',
+    additionalProperties: true,
+    description:
+      'Parsed effect IR. Carries format/origin/parserVersion/parsedAt. See psct-parser/ast.ts.',
+  })
+  parsedEffects?: Record<string, unknown>;
 }

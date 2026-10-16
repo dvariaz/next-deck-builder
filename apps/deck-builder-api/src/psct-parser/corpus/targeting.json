@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Monster Reborn",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Target 1 monster in either player's GY; Special Summon it."
+  },
+  {
+    "name": "Book of Moon",
+    "cardType": "SPELL",
+    "spellTrapSubType": "QUICK_PLAY",
+    "text": "Target 1 face-up monster on the field; change that target to face-down Defense Position."
+  },
+  {
+    "name": "Raigeki",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Destroy all monsters your opponent controls."
+  },
+  {
+    "name": "Mystical Space Typhoon",
+    "cardType": "SPELL",
+    "spellTrapSubType": "QUICK_PLAY",
+    "text": "Target 1 Spell/Trap on the field; destroy that target."
+  },
+  {
+    "name": "Reinforcement of the Army",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Add 1 Level 4 or lower Warrior monster from your Deck to your hand."
+  }
+]

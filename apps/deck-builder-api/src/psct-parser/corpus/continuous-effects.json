@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Continuous — ATK buff",
+    "cardType": "MONSTER",
+    "text": "All \"Qli\" monsters you control gain 300 ATK."
+  },
+  {
+    "name": "Continuous — battle protection",
+    "cardType": "MONSTER",
+    "text": "This card cannot be destroyed by battle."
+  },
+  {
+    "name": "Continuous — attack lock",
+    "cardType": "TRAP",
+    "spellTrapSubType": "CONTINUOUS",
+    "text": "Monsters your opponent controls cannot attack."
+  },
+  {
+    "name": "Continuous — unaffected",
+    "cardType": "MONSTER",
+    "text": "This card is unaffected by card effects."
+  }
+]
