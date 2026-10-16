@@ -26,7 +26,10 @@ export class CardsService {
       }),
       this.prisma.card.count({ where }),
     ]);
-    return { results, pagination: { total, skip: dto.skip ?? 0, take: dto.take ?? 20 } };
+    return {
+      results,
+      pagination: { total, skip: dto.skip ?? 0, take: dto.take ?? 20 },
+    };
   }
 
   private buildWhere(dto: FindCardsDto): Prisma.CardWhereInput {

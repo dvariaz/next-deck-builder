@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Sangan",
+    "cardType": "MONSTER",
+    "text": "If this card is sent from the field to the GY: Add 1 monster with 1500 or less ATK from your Deck to your hand. You can only use this effect of \"Sangan\" once per turn."
+  },
+  {
+    "name": "Trigger — when summoned",
+    "cardType": "MONSTER",
+    "text": "When this card is Normal or Special Summoned: You can target 1 card your opponent controls; destroy it."
+  },
+  {
+    "name": "Trigger — once per turn ignition",
+    "cardType": "MONSTER",
+    "text": "Once per turn: You can target 1 monster you control; it gains 500 ATK until the End Phase."
+  },
+  {
+    "name": "Quick Effect",
+    "cardType": "MONSTER",
+    "text": "(Quick Effect): You can discard 1 card; negate that effect."
+  }
+]

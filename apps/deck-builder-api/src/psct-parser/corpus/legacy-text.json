@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Botanical Girl",
+    "cardType": "MONSTER",
+    "text": "When this card is sent from the field to the Graveyard, you can add 1 Plant monster with 1000 or less DEF from your Deck to your hand."
+  },
+  {
+    "name": "Legacy select",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Select 1 monster on the field. Destroy it."
+  },
+  {
+    "name": "Legacy comma trigger",
+    "cardType": "MONSTER",
+    "text": "When this card is flipped face-up, destroy 1 monster on the field."
+  }
+]

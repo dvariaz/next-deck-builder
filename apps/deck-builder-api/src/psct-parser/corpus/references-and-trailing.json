@@ -1,0 +1,59 @@
+[
+  {
+    "name": "Superdreadnought Rail Cannon Gustav Max",
+    "cardType": "MONSTER",
+    "text": "2 Level 10 monsters\r\nOnce per turn: You can detach 1 material from this card; inflict 2000 damage to your opponent."
+  },
+  {
+    "name": "Tornado Dragon",
+    "cardType": "MONSTER",
+    "text": "2 Level 4 monsters\nOnce per turn (Quick Effect): You can detach 1 material from this card, then target 1 Spell/Trap on the field; destroy it."
+  },
+  {
+    "name": "Thunder End Dragon",
+    "cardType": "MONSTER",
+    "text": "2 Level 8 Normal Monsters\nOnce per turn: You can detach 1 Xyz Material from this card; destroy all other monsters on the field."
+  },
+  {
+    "name": "Dotedotengu",
+    "cardType": "MONSTER",
+    "text": "If this card in your possession is sent to your Graveyard by an opponent's card effect: You can target 1 card your opponent controls; return it to the hand."
+  },
+  {
+    "name": "Golden Dragon Summoner",
+    "cardType": "MONSTER",
+    "text": "You can Tribute 1 monster, then target 1 monster on the field; return it to the hand. You can only use this effect of \"Golden Dragon Summoner\" once per turn."
+  },
+  {
+    "name": "Worm Gulse",
+    "cardType": "MONSTER",
+    "text": "Each time a face-down Defense Position monster is flipped face-up, place 1 Worm Counter on this card. This card gains 300 ATK for each Worm Counter on it."
+  },
+  {
+    "name": "Dark-Eyes Illusionist",
+    "cardType": "MONSTER",
+    "text": "FLIP: Target 1 monster on the field; it cannot attack while this card is face-up on the field."
+  },
+  {
+    "name": "Lyna the Light Charmer",
+    "cardType": "MONSTER",
+    "text": "FLIP: Take control of 1 LIGHT monster your opponent controls, while this card is face-up on the field."
+  },
+  {
+    "name": "Electromagnetic Shield",
+    "cardType": "SPELL",
+    "spellTrapSubType": "CONTINUOUS",
+    "text": "Level 3 or lower Defense Position Thunder-Type monsters you control cannot be destroyed by battle. Destroy this card if you control a face-up Attack Position monster."
+  },
+  {
+    "name": "Inherited Fortune",
+    "cardType": "TRAP",
+    "spellTrapSubType": "NORMAL",
+    "text": "Activate during the turn a face-up \"Fortune Lady\" monster you control was destroyed. Special Summon up to 2 \"Fortune Lady\" monsters from your hand during your next Standby Phase."
+  },
+  {
+    "name": "Wind-Up Snail",
+    "cardType": "MONSTER",
+    "text": "During your Main Phase: You can target 1 Set card on the field; return that target to the hand. This effect can be used only once while this card is face-up on the field."
+  }
+]

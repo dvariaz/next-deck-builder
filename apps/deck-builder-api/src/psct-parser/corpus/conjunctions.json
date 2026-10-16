@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Upstart Goblin",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Draw 1 card, then your opponent gains 1000 LP."
+  },
+  {
+    "name": "Guide example — then",
+    "cardType": "MONSTER",
+    "text": "Special Summon 1 monster from your hand, then end the Battle Phase."
+  },
+  {
+    "name": "Guide example — also",
+    "cardType": "TRAP",
+    "spellTrapSubType": "NORMAL",
+    "text": "Return 1 Spell/Trap on the field to the hand, also draw 1 card."
+  },
+  {
+    "name": "Guide example — and if you do",
+    "cardType": "TRAP",
+    "spellTrapSubType": "NORMAL",
+    "text": "Take 1000 damage, and if you do, destroy 1 card on the field."
+  },
+  {
+    "name": "Guide example — and",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Draw 2 cards and discard 1 card."
+  }
+]

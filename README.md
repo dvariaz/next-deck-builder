@@ -12,35 +12,74 @@ Existing YGO card search tools are too generic or too slow for the needs of a co
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node ≥ 20
+- Yarn 1.x (this is a Yarn workspaces monorepo)
+- Docker, for PostgreSQL 16
+
+### First-time setup
+
+Run these in order. Steps 4 and 5 are both required — seeding only loads card
+data, it does not parse it.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. Install dependencies for both apps
+yarn install
+
+# 2. Configure the environment — THREE files, one per consumer.
+#    Each app resolves .env relative to its own directory, so a single
+#    root-level file is not enough.
+cp .env.example .env                                   # POSTGRES_USER / PASSWORD (docker-compose)
+cp apps/deck-builder-api/.env.example apps/deck-builder-api/.env   # DATABASE_URL
+cp apps/deck-builder-web/.env.example apps/deck-builder-web/.env   # NEXT_PUBLIC_API_URL
+#    Then edit the credentials. The user/password in the API's DATABASE_URL
+#    must match the POSTGRES_* values in the root .env, because those are what
+#    create the database user.
+
+# 3. Start PostgreSQL (postgres:16 on port 5432, database "deckbuilder")
+docker-compose up -d
+
+# 4. Create the schema, then load the card catalogue from the YGOProDeck API.
+#    The seed fetches ~14,500 cards over the network, so give it a few minutes.
+cd apps/deck-builder-api
+npx prisma migrate deploy
+yarn db:seed
+
+# 5. Parse every card's effect text into its structured form.
+#    REQUIRED: `db:seed` deletes and recreates every Card row, which leaves
+#    `Card.parsedEffects` empty. Until this runs, cards have no effects and
+#    GET /cards/:id/effects returns 404.
+yarn psct:parse
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Running it
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+yarn dev          # from the repo root: starts both apps via Turborepo
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Web: http://localhost:3000
+- API: http://localhost:3001
+- API docs (Swagger): http://localhost:3001/api-docs
+
+### Things that will bite you
+
+- **Re-seeding wipes the parsed effects.** Any time you run `yarn db:seed`, run
+  `yarn psct:parse` after it.
+- **If every API route returns 500**, check the database is up
+  (`docker-compose up -d`) before suspecting the code. The API keeps listening
+  when Postgres goes away, so the failure looks like an application bug.
+- **After a schema change**, run `yarn db:generate` and restart the API dev
+  server. A long-running `nest start --watch` can keep serving a stale compiled
+  Prisma client, which surfaces as 500s on routes that select all columns while
+  routes with an explicit `select` keep working.
+
+See `CLAUDE.md` for the full command reference and architecture notes.
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `CLAUDE.md` — architecture, command reference, and the conventions this repo
+  follows.
+- `apps/deck-builder-api/src/psct-parser/README.md` — how card effect text is
+  turned into structured data, and the traps involved.

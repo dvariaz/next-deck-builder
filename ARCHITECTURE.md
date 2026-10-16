@@ -62,12 +62,31 @@ Card data originates from the external **YGOProDeck API** and is pulled into
 Postgres once by the API's seeder (`prisma/seed.ts` → `prisma/seeds/`). At request
 time the API reads only from its own database — it does not call YGOProDeck live.
 
+There is a **second, offline stage** after seeding: each card's printed effect
+text is parsed into a structured form.
+
+```
+YGOProDeck ──yarn db:seed──▶ Card rows ──yarn psct:parse──▶ Card.parsedEffects
+                                                            + CardEffectParse
+                                                              (history + review queue)
+```
+
+Both stages are batch, never request-time, and both are **required** — a reseed
+deletes and recreates every `Card` row, which empties `parsedEffects`, so cards
+have no effects until `yarn psct:parse` runs again.
+
+The parser lives in `apps/deck-builder-api/src/psct-parser/` and is the most
+involved part of this codebase; it has its own
+[README](apps/deck-builder-api/src/psct-parser/README.md) covering the pipeline
+stages, the card rulings the output models, and the traps worth knowing before
+changing it.
+
 ## Runtime / env
 
-| Service   | Port | Needs                                        |
-|-----------|------|----------------------------------------------|
-| Postgres  | 5432 | `docker-compose up -d`                        |
-| API       | 3001 | `DATABASE_URL`                                |
-| Web       | 3000 | `NEXT_PUBLIC_API_URL` (default `:3001`)       |
+| Service  | Port | Needs                                   |
+| -------- | ---- | --------------------------------------- |
+| Postgres | 5432 | `docker-compose up -d`                  |
+| API      | 3001 | `DATABASE_URL`                          |
+| Web      | 3000 | `NEXT_PUBLIC_API_URL` (default `:3001`) |
 
 `yarn dev` at the root starts everything via Turborepo.

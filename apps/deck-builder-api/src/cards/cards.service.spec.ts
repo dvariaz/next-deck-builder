@@ -40,7 +40,7 @@ describe('CardsService', () => {
       expect(mockFindMany).toHaveBeenCalledWith(
         expect.objectContaining({
           include: { cardImages: true },
-          orderBy: { name: 'asc' },
+          orderBy: [{ name: 'asc' }],
           skip: 0,
           take: 20,
         }),
@@ -74,7 +74,10 @@ describe('CardsService', () => {
         service.findAll({ archetype: 'Blue-Eyes', skip: 0, take: 20 });
 
         const { where } = mockFindMany.mock.calls[0][0];
-        expect(where.archetype).toEqual({ contains: 'Blue-Eyes', mode: 'insensitive' });
+        expect(where.archetype).toEqual({
+          contains: 'Blue-Eyes',
+          mode: 'insensitive',
+        });
       });
 
       it('omits the q filter when q is not provided', () => {
@@ -168,13 +171,25 @@ describe('CardsService', () => {
         expect(where.linkMarkers).toEqual({ hasEvery: ['top', 'bottom'] });
         expect(where.NOT).toEqual({
           linkMarkers: {
-            hasSome: ['right', 'left', 'top-left', 'top-right', 'bottom-right', 'bottom-left'],
+            hasSome: [
+              'right',
+              'left',
+              'top-left',
+              'top-right',
+              'bottom-right',
+              'bottom-left',
+            ],
           },
         });
       });
 
       it('omits the link marker filter when an empty array is provided', () => {
-        service.findAll({ linkMarker: [], linkMarkerStrict: true, skip: 0, take: 20 });
+        service.findAll({
+          linkMarker: [],
+          linkMarkerStrict: true,
+          skip: 0,
+          take: 20,
+        });
 
         const { where } = mockFindMany.mock.calls[0][0];
         expect(where).not.toHaveProperty('linkMarkers');
@@ -190,7 +205,11 @@ describe('CardsService', () => {
       });
 
       it('filters by multiple frameTypes', () => {
-        service.findAll({ frameType: ['FUSION', 'SYNCHRO'], skip: 0, take: 20 });
+        service.findAll({
+          frameType: ['FUSION', 'SYNCHRO'],
+          skip: 0,
+          take: 20,
+        });
         const { where } = mockFindMany.mock.calls[0][0];
         expect(where.frameType).toEqual({ in: ['FUSION', 'SYNCHRO'] });
       });
@@ -208,7 +227,11 @@ describe('CardsService', () => {
       });
 
       it('filters by spellTrapSubType', () => {
-        service.findAll({ spellTrapSubType: ['QUICK_PLAY'], skip: 0, take: 20 });
+        service.findAll({
+          spellTrapSubType: ['QUICK_PLAY'],
+          skip: 0,
+          take: 20,
+        });
         const { where } = mockFindMany.mock.calls[0][0];
         expect(where.spellTrapSubType).toEqual({ in: ['QUICK_PLAY'] });
       });
@@ -263,7 +286,12 @@ describe('CardsService', () => {
         service.findAll({ levelMin: 4, levelMax: 8, skip: 0, take: 20 });
         const { where } = mockFindMany.mock.calls[0][0];
         expect(where.AND).toEqual([
-          { OR: [{ level: { gte: 4, lte: 8 } }, { linkVal: { gte: 4, lte: 8 } }] },
+          {
+            OR: [
+              { level: { gte: 4, lte: 8 } },
+              { linkVal: { gte: 4, lte: 8 } },
+            ],
+          },
         ]);
         expect(where.level).toBeUndefined();
       });
@@ -298,7 +326,14 @@ describe('CardsService', () => {
       });
 
       it('filters all boolean flags independently', () => {
-        service.findAll({ isEffect: true, isFlip: false, isPendulum: true, isToken: false, skip: 0, take: 20 });
+        service.findAll({
+          isEffect: true,
+          isFlip: false,
+          isPendulum: true,
+          isToken: false,
+          skip: 0,
+          take: 20,
+        });
         const { where } = mockFindMany.mock.calls[0][0];
         expect(where.isEffect).toBe(true);
         expect(where.isFlip).toBe(false);

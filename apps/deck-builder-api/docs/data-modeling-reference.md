@@ -1,8 +1,8 @@
 # Yu-Gi-Oh! Card Database: Data Modeling Reference
 
-This document defines the data modeling decisions for the Yu-Gi-Oh! card database web application. Its purpose is to serve as a reference for any AI assistant or developer working on this codebase, explaining not just *what* the schema looks like, but *why* each decision was made.
+This document defines the data modeling decisions for the Yu-Gi-Oh! card database web application. Its purpose is to serve as a reference for any AI assistant or developer working on this codebase, explaining not just _what_ the schema looks like, but _why_ each decision was made.
 
-***
+---
 
 ## Data Source
 
@@ -10,7 +10,7 @@ All card data is sourced from the **YGOProDeck public API** (`https://db.ygoprod
 
 The seeding script fetches this endpoint and parses each card into the structured schema described below. The script uses **upsert operations** (not plain inserts) to remain idempotent and safely re-executable when new card sets are released.
 
-***
+---
 
 ## Core Design Principles
 
@@ -26,7 +26,7 @@ The rule applied throughout this schema is:
 
 > If a property can coexist with other properties, it must be a **Boolean**. Only use an enum when values are genuinely mutually exclusive.
 
-***
+---
 
 ## Card Type Classification
 
@@ -42,7 +42,7 @@ Every card belongs to exactly one of three categories. This is the only truly ex
 
 Monster cards are described across four independent axes:
 
-#### Axis 1: Summon Type (`summonType`) — *Enum, mutually exclusive*
+#### Axis 1: Summon Type (`summonType`) — _Enum, mutually exclusive_
 
 Describes how the monster is brought to the field. A card cannot be both Fusion and Synchro at the same time, so this is safely represented as an enum:
 
@@ -53,7 +53,7 @@ Describes how the monster is brought to the field. A card cannot be both Fusion 
 - `XYZ`
 - `LINK`
 
-#### Axis 2: Effect Behavior — *Booleans, combinable*
+#### Axis 2: Effect Behavior — _Booleans, combinable_
 
 These two properties are independent and can coexist on the same card:
 
@@ -62,18 +62,18 @@ These two properties are independent and can coexist on the same card:
 
 Both can be `true` simultaneously. A Flip Effect Monster (e.g., Ryko, Lightsworn Hunter) has `isEffect: true` and `isFlip: true`. A vanilla Flip monster has `isEffect: false` and `isFlip: true`.
 
-#### Axis 3: Zone Mechanics — *Boolean*
+#### Axis 3: Zone Mechanics — _Boolean_
 
 - `isPendulum` — The card has a Pendulum Zone effect and a scale value. This is orthogonal to `summonType`; a Pendulum card can also be Fusion, Synchro, Xyz, etc.
 
-#### Axis 4: Special Roles — *Booleans*
+#### Axis 4: Special Roles — _Booleans_
 
 - `isTuner` — Required for Synchro Summons; relevant for deck building
 - `isToken` — Token cards are never placed in the Main Deck
 
-Properties like `isToon`, `isSpirit`, `isGemini`, and `isUnion` were deliberately excluded from the schema at this stage. These mechanics are obsolete in the current competitive meta and are not relevant for deck building searches. If needed in the future, they can be captured in the `aiTags` JSON field.
+`isToon`, `isSpirit`, `isGemini` and `isUnion` were originally left out as obsolete in the current competitive meta. They were later added to the schema as booleans anyway, alongside the other orthogonal flags, so this section records the original reasoning rather than the current state.
 
-### Spell and Trap Subtype (`spellTrapSubType`) — *Enum, mutually exclusive*
+### Spell and Trap Subtype (`spellTrapSubType`) — _Enum, mutually exclusive_
 
 Unlike monsters, Spell and Trap cards have a single, exclusive subtype classification. This field is `NULL` for Monster cards.
 
@@ -81,7 +81,7 @@ Unlike monsters, Spell and Trap cards have a single, exclusive subtype classific
 
 **Trap subtypes:** `NORMAL`, `CONTINUOUS`, `COUNTER`
 
-***
+---
 
 ## Frame Type (`frameType`)
 
@@ -89,23 +89,23 @@ The visual frame type of the card as defined by Konami. This is distinct from `s
 
 `NORMAL`, `EFFECT`, `RITUAL`, `FUSION`, `SYNCHRO`, `XYZ`, `PENDULUM`, `LINK`, `TOKEN`
 
-***
+---
 
 ## Monster-Specific Attributes
 
 The following columns are populated for Monster cards and left as `NULL` for Spell and Trap cards:
 
-| Column | Description |
-|--------|-------------|
-| `atk` | Attack points |
-| `def` | Defense points (`NULL` for Link monsters) |
-| `level` | Level or Rank (used for both Level monsters and Xyz Rank) |
-| `linkVal` | Link rating (only for Link monsters) |
-| `scale` | Pendulum scale (only for Pendulum monsters) |
+| Column      | Description                                                                    |
+| ----------- | ------------------------------------------------------------------------------ |
+| `atk`       | Attack points                                                                  |
+| `def`       | Defense points (`NULL` for Link monsters)                                      |
+| `level`     | Level or Rank (used for both Level monsters and Xyz Rank)                      |
+| `linkVal`   | Link rating (only for Link monsters)                                           |
+| `scale`     | Pendulum scale (only for Pendulum monsters)                                    |
 | `attribute` | Monster attribute: `DARK`, `LIGHT`, `FIRE`, `WATER`, `EARTH`, `WIND`, `DIVINE` |
-| `race` | Monster type: `Warrior`, `Spellcaster`, `Dragon`, etc. |
+| `race`      | Monster type: `Warrior`, `Spellcaster`, `Dragon`, etc.                         |
 
-***
+---
 
 ## Ban Status
 
@@ -116,7 +116,7 @@ Banlist status is stored separately for TCG and OCG formats, as they maintain in
 
 Both use the enum: `FORBIDDEN`, `LIMITED`, `SEMI_LIMITED`, `UNLIMITED` (or `NULL` if not on the list).
 
-***
+---
 
 ## Competitive Classification (Deferred)
 
@@ -125,12 +125,13 @@ Competitive role tags (`isHandtrap`, `isFloodgate`, `isBoardbreaker`, `isExtende
 These tags are derived data — generated by an AI pipeline that reads the card's `description` field and infers its competitive role. They do not exist in the YGOProDeck source and cannot be populated during the initial seed.
 
 Adding them prematurely would:
+
 1. Pollute the schema with columns that cannot be filled at ingestion time
 2. Commit to a fixed set of categories before the AI pipeline has been designed and validated
 
 The `aiTags` JSON column serves as a flexible placeholder for this data. Once the AI labeling pipeline is built and the category set is finalized, the competitive classification columns will be added in a dedicated migration with real data available to validate them immediately.
 
-***
+---
 
 ## Relationships
 
@@ -142,7 +143,13 @@ Each card can have multiple images (alternate artworks). The `CardImage` model s
 
 Each card can belong to multiple sets (it may have been printed in many booster packs across its history). The `CardSet` model stores set name, set code, rarity name, and rarity code. Linked to `Card` via a foreign key.
 
-***
+### CardEffectParse / CardEffectDiagnostic
+
+Produced by the effect-text parser, not by the seeder. `CardEffectParse` holds one row per `(cardId, parserVersion)` so a parser change can be generated and compared before anything depends on it; `CardEffectDiagnostic` holds the per-parse uncertainties and is the review queue (indexed by `code` and `severity`).
+
+The _current_ parse is additionally denormalized onto `Card.parsedEffects` so reads need no join. That column is parser-agnostic — the stored object carries `format` (`psct` | `legacy`, what the text is), `origin` (`rules` | `llm` | `manual`, which parser produced it), `parserVersion` and `parsedAt`. See `src/psct-parser/README.md`.
+
+---
 
 ## Validation Rules (Enforced at Parse Time)
 
@@ -155,7 +162,7 @@ The following integrity rules should be enforced in the seeding parser before an
 - Spell and Trap cards must have a non-null `spellTrapSubType` and null monster-specific fields
 - Token cards must have `isToken: true`
 
-***
+---
 
 ## Schema Extensibility
 

@@ -1,0 +1,4151 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`corpus group — conjunctions snapshots every parse in the group 1`] = `
+[
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "children": [
+            {
+              "amount": 1,
+              "conjunction": "none",
+              "dependsOnPrevious": false,
+              "kind": "action",
+              "modifiers": [],
+              "object": {
+                "id": "t0",
+                "kind": "target",
+                "quantity": {
+                  "max": 1,
+                  "min": 1,
+                },
+                "selection": "none",
+                "sourceZones": [],
+                "span": {
+                  "end": 11,
+                  "start": 5,
+                  "text": "1 card",
+                },
+                "subject": {
+                  "kind": "unresolved",
+                  "text": "1 card",
+                },
+              },
+              "resolved": true,
+              "span": {
+                "end": 11,
+                "start": 0,
+                "text": "Draw 1 card",
+              },
+              "verb": "draw",
+            },
+            {
+              "amount": 1000,
+              "conjunction": "then",
+              "dependsOnPrevious": true,
+              "kind": "action",
+              "modifiers": [],
+              "object": null,
+              "resolved": true,
+              "span": {
+                "end": 45,
+                "start": 18,
+                "text": "your opponent gains 1000 LP",
+              },
+              "verb": "gain_lp",
+            },
+          ],
+          "kind": "sequence",
+          "simultaneous": false,
+          "span": {
+            "end": 45,
+            "start": 0,
+            "text": "Draw 1 card, then your opponent gains 1000 LP",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Upstart Goblin",
+    "normalizedText": "Draw 1 card, then your opponent gains 1000 LP.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "static",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "children": [
+            {
+              "amount": null,
+              "conjunction": "none",
+              "dependsOnPrevious": false,
+              "kind": "action",
+              "modifiers": [],
+              "object": {
+                "id": "t0",
+                "kind": "target",
+                "quantity": {
+                  "max": 1,
+                  "min": 1,
+                },
+                "selection": "none",
+                "sourceZones": [
+                  {
+                    "owner": "self",
+                    "zone": "hand",
+                  },
+                ],
+                "span": {
+                  "end": 24,
+                  "start": 15,
+                  "text": "1 monster",
+                },
+                "subject": {
+                  "filter": {
+                    "cardType": [
+                      "MONSTER",
+                    ],
+                  },
+                  "kind": "criteria",
+                  "label": "1 monster",
+                },
+              },
+              "resolved": true,
+              "span": {
+                "end": 39,
+                "start": 0,
+                "text": "Special Summon 1 monster from your hand",
+              },
+              "verb": "special_summon",
+            },
+            {
+              "amount": null,
+              "conjunction": "then",
+              "dependsOnPrevious": true,
+              "kind": "action",
+              "modifiers": [],
+              "object": null,
+              "resolved": true,
+              "span": {
+                "end": 66,
+                "start": 46,
+                "text": "end the Battle Phase",
+              },
+              "verb": "end_battle_phase",
+            },
+          ],
+          "kind": "sequence",
+          "simultaneous": false,
+          "span": {
+            "end": 66,
+            "start": 0,
+            "text": "Special Summon 1 monster from your hand, then end the Battle Phase",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": undefined,
+      },
+    ],
+    "name": "Guide example — then",
+    "normalizedText": "Special Summon 1 monster from your hand, then end the Battle Phase.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "children": [
+            {
+              "amount": null,
+              "conjunction": "none",
+              "dependsOnPrevious": false,
+              "destination": "hand",
+              "kind": "action",
+              "modifiers": [],
+              "object": {
+                "id": "t0",
+                "kind": "target",
+                "quantity": {
+                  "max": 1,
+                  "min": 1,
+                },
+                "selection": "none",
+                "sourceZones": [
+                  {
+                    "owner": "self",
+                    "zone": "field",
+                  },
+                ],
+                "span": {
+                  "end": 19,
+                  "start": 7,
+                  "text": "1 Spell/Trap",
+                },
+                "subject": {
+                  "filter": {
+                    "cardType": [
+                      "TRAP",
+                    ],
+                  },
+                  "kind": "criteria",
+                  "label": "1 Spell / Trap",
+                },
+              },
+              "resolved": true,
+              "span": {
+                "end": 44,
+                "start": 0,
+                "text": "Return 1 Spell/Trap on the field to the hand",
+              },
+              "verb": "return",
+            },
+            {
+              "amount": 1,
+              "conjunction": "also",
+              "dependsOnPrevious": false,
+              "kind": "action",
+              "modifiers": [],
+              "object": {
+                "id": "t1",
+                "kind": "target",
+                "quantity": {
+                  "max": 1,
+                  "min": 1,
+                },
+                "selection": "none",
+                "sourceZones": [],
+                "span": {
+                  "end": 62,
+                  "start": 56,
+                  "text": "1 card",
+                },
+                "subject": {
+                  "kind": "unresolved",
+                  "text": "1 card",
+                },
+              },
+              "resolved": true,
+              "span": {
+                "end": 62,
+                "start": 51,
+                "text": "draw 1 card",
+              },
+              "verb": "draw",
+            },
+          ],
+          "kind": "parallel",
+          "simultaneous": true,
+          "span": {
+            "end": 62,
+            "start": 0,
+            "text": "Return 1 Spell/Trap on the field to the hand, also draw 1 card",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Guide example — also",
+    "normalizedText": "Return 1 Spell/Trap on the field to the hand, also draw 1 card.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 0.9,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 0.9,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "children": [
+            {
+              "amount": 1000,
+              "conjunction": "none",
+              "dependsOnPrevious": false,
+              "kind": "action",
+              "modifiers": [],
+              "object": {
+                "id": "t0",
+                "kind": "target",
+                "quantity": {
+                  "max": 1000,
+                  "min": 1000,
+                },
+                "selection": "none",
+                "sourceZones": [],
+                "span": {
+                  "end": 16,
+                  "start": 5,
+                  "text": "1000 damage",
+                },
+                "subject": {
+                  "kind": "unresolved",
+                  "text": "1000 damage",
+                },
+              },
+              "resolved": true,
+              "span": {
+                "end": 16,
+                "start": 0,
+                "text": "Take 1000 damage",
+              },
+              "verb": "take_damage",
+            },
+            {
+              "condition": {
+                "amount": 1000,
+                "conjunction": "none",
+                "dependsOnPrevious": false,
+                "kind": "action",
+                "modifiers": [],
+                "object": {
+                  "id": "t0",
+                  "kind": "target",
+                  "quantity": {
+                    "max": 1000,
+                    "min": 1000,
+                  },
+                  "selection": "none",
+                  "sourceZones": [],
+                  "span": {
+                    "end": 16,
+                    "start": 5,
+                    "text": "1000 damage",
+                  },
+                  "subject": {
+                    "kind": "unresolved",
+                    "text": "1000 damage",
+                  },
+                },
+                "resolved": true,
+                "span": {
+                  "end": 16,
+                  "start": 0,
+                  "text": "Take 1000 damage",
+                },
+                "verb": "take_damage",
+              },
+              "kind": "conditional",
+              "span": {
+                "end": 60,
+                "start": 33,
+                "text": "destroy 1 card on the field",
+              },
+              "then": {
+                "amount": null,
+                "conjunction": "and_if_you_do",
+                "dependsOnPrevious": true,
+                "kind": "action",
+                "modifiers": [],
+                "object": {
+                  "id": "t1",
+                  "kind": "target",
+                  "quantity": {
+                    "max": 1,
+                    "min": 1,
+                  },
+                  "selection": "none",
+                  "sourceZones": [
+                    {
+                      "owner": "self",
+                      "zone": "field",
+                    },
+                  ],
+                  "span": {
+                    "end": 47,
+                    "start": 41,
+                    "text": "1 card",
+                  },
+                  "subject": {
+                    "kind": "unresolved",
+                    "text": "1 card",
+                  },
+                },
+                "resolved": false,
+                "span": {
+                  "end": 60,
+                  "start": 33,
+                  "text": "destroy 1 card on the field",
+                },
+                "verb": "destroy",
+              },
+            },
+          ],
+          "kind": "parallel",
+          "simultaneous": true,
+          "span": {
+            "end": 60,
+            "start": 0,
+            "text": "Take 1000 damage, and if you do, destroy 1 card on the field",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Guide example — and if you do",
+    "normalizedText": "Take 1000 damage, and if you do, destroy 1 card on the field.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 0.9,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 0.9,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "children": [
+            {
+              "amount": 2,
+              "conjunction": "none",
+              "dependsOnPrevious": false,
+              "kind": "action",
+              "modifiers": [],
+              "object": {
+                "id": "t0",
+                "kind": "target",
+                "quantity": {
+                  "max": 2,
+                  "min": 2,
+                },
+                "selection": "none",
+                "sourceZones": [],
+                "span": {
+                  "end": 12,
+                  "start": 5,
+                  "text": "2 cards",
+                },
+                "subject": {
+                  "kind": "unresolved",
+                  "text": "2 cards",
+                },
+              },
+              "resolved": true,
+              "span": {
+                "end": 12,
+                "start": 0,
+                "text": "Draw 2 cards",
+              },
+              "verb": "draw",
+            },
+            {
+              "amount": null,
+              "conjunction": "and",
+              "dependsOnPrevious": true,
+              "kind": "action",
+              "modifiers": [],
+              "object": {
+                "id": "t1",
+                "kind": "target",
+                "quantity": {
+                  "max": 1,
+                  "min": 1,
+                },
+                "selection": "none",
+                "sourceZones": [],
+                "span": {
+                  "end": 31,
+                  "start": 25,
+                  "text": "1 card",
+                },
+                "subject": {
+                  "kind": "unresolved",
+                  "text": "1 card",
+                },
+              },
+              "resolved": false,
+              "span": {
+                "end": 31,
+                "start": 17,
+                "text": "discard 1 card",
+              },
+              "verb": "discard",
+            },
+          ],
+          "kind": "parallel",
+          "simultaneous": true,
+          "span": {
+            "end": 31,
+            "start": 0,
+            "text": "Draw 2 cards and discard 1 card",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Guide example — and",
+    "normalizedText": "Draw 2 cards and discard 1 card.",
+    "parserVersion": 3,
+  },
+]
+`;
+
+exports[`corpus group — continuous-effects snapshots every parse in the group 1`] = `
+[
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "continuous",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": 300,
+          "kind": "modifier",
+          "mode": "gain",
+          "modifier": "stat",
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": "any",
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 30,
+              "start": 0,
+              "text": "All "Qli" monsters you control",
+            },
+            "subject": {
+              "filter": {
+                "archetype": "Qli",
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "All "Qli" monsters you control",
+            },
+          },
+          "span": {
+            "end": 43,
+            "start": 0,
+            "text": "All "Qli" monsters you control gain 300 ATK",
+          },
+          "stat": "atk",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": false,
+      },
+    ],
+    "name": "Continuous — ATK buff",
+    "normalizedText": "All "Qli" monsters you control gain 300 ATK.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "continuous",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "kind": "modifier",
+          "modifier": "indestructible",
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 9,
+              "start": 0,
+              "text": "This card",
+            },
+            "subject": {
+              "kind": "self",
+            },
+          },
+          "span": {
+            "end": 39,
+            "start": 0,
+            "text": "This card cannot be destroyed by battle",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": false,
+      },
+    ],
+    "name": "Continuous — battle protection",
+    "normalizedText": "This card cannot be destroyed by battle.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "continuous",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "kind": "modifier",
+          "modifier": "cannot_attack",
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "opponent",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 31,
+              "start": 0,
+              "text": "Monsters your opponent controls",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "Monsters your opponent controls",
+            },
+          },
+          "span": {
+            "end": 45,
+            "start": 0,
+            "text": "Monsters your opponent controls cannot attack",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Continuous — attack lock",
+    "normalizedText": "Monsters your opponent controls cannot attack.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "continuous",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "kind": "modifier",
+          "modifier": "unaffected",
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 9,
+              "start": 0,
+              "text": "This card",
+            },
+            "subject": {
+              "kind": "self",
+            },
+          },
+          "span": {
+            "end": 39,
+            "start": 0,
+            "text": "This card is unaffected by card effects",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": false,
+      },
+    ],
+    "name": "Continuous — unaffected",
+    "normalizedText": "This card is unaffected by card effects.",
+    "parserVersion": 3,
+  },
+]
+`;
+
+exports[`corpus group — known-problem-cases snapshots every parse in the group 1`] = `
+[
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 1,
+            "cost": "discard",
+            "kind": "cost",
+            "sourceZones": [],
+            "span": {
+              "end": 96,
+              "start": 79,
+              "text": "discard this card",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "this card",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "trigger",
+            "missesTiming": true,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 69,
+              "start": 0,
+              "text": "When a card or effect is activated that includes any of these effects",
+            },
+            "text": "When a card or effect is activated that includes any of these effects",
+            "timing": "when",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "trigger",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 116,
+              "start": 105,
+              "text": "that effect",
+            },
+            "subject": {
+              "filter": {
+                "isEffect": true,
+              },
+              "kind": "criteria",
+              "label": "that effect",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 116,
+            "start": 98,
+            "text": "negate that effect",
+          },
+          "verb": "negate",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Ash Blossom & Joyous Spring",
+    "normalizedText": "When a card or effect is activated that includes any of these effects: You can discard this card; negate that effect.●Add a card from the Deck to the hand.●Special Summon a monster from the Deck.●Send a card from the Deck to the GY.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 0.8,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 0.8,
+        "diagnostics": [],
+        "effectKind": "static",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "children": [
+            {
+              "kind": "modifier",
+              "modifier": "other",
+              "object": null,
+              "span": {
+                "end": 26,
+                "start": 0,
+                "text": "Cannot be Normal Summoned/",
+              },
+            },
+            {
+              "amount": null,
+              "conjunction": "none",
+              "dependsOnPrevious": false,
+              "kind": "action",
+              "modifiers": [],
+              "object": null,
+              "resolved": false,
+              "span": {
+                "end": 29,
+                "start": 26,
+                "text": "Set",
+              },
+              "verb": "set",
+            },
+          ],
+          "kind": "parallel",
+          "simultaneous": true,
+          "span": {
+            "end": 29,
+            "start": 0,
+            "text": "Cannot be Normal Summoned/Set",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": undefined,
+      },
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "summon_condition",
+        "id": "0.1",
+        "optional": false,
+        "resolution": null,
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [
+            {
+              "kind": "semi_nomi",
+              "span": {
+                "end": 92,
+                "start": 31,
+                "text": "Must first be Special Summoned by Tributing 3 Fiend monsters.",
+              },
+              "text": "Must first be Special Summoned by Tributing 3 Fiend monsters",
+            },
+          ],
+        },
+        "startsChain": false,
+      },
+    ],
+    "name": "Nomi summon condition",
+    "normalizedText": "Cannot be Normal Summoned/Set. Must first be Special Summoned by Tributing 3 Fiend monsters.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "hand",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "extra_deck",
+              },
+            ],
+            "span": {
+              "end": 25,
+              "start": 4,
+              "text": "1 "Number 39: Utopia"",
+            },
+            "subject": {
+              "filter": {
+                "archetype": "Number 39: Utopia",
+              },
+              "kind": "criteria",
+              "label": "1 "Number 39: Utopia"",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 59,
+            "start": 0,
+            "text": "Add 1 "Number 39: Utopia" from your Extra Deck to your hand",
+          },
+          "verb": "add",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Name with a colon",
+    "normalizedText": "Add 1 "Number 39: Utopia" from your Extra Deck to your hand.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "pendulum",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "frequency",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 33,
+              "start": 20,
+              "text": "Once per turn",
+            },
+            "text": "Once per turn",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": 1,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 54,
+              "start": 48,
+              "text": "1 card",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1 card",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 54,
+            "start": 43,
+            "text": "draw 1 card",
+          },
+          "verb": "draw",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "softOncePerTurn": true,
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+      {
+        "activation": [],
+        "blockKind": "monster",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "trigger",
+            "missesTiming": true,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 112,
+              "start": 75,
+              "text": "When this card is destroyed by battle",
+            },
+            "text": "When this card is destroyed by battle",
+            "timing": "when",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "trigger",
+        "id": "1.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "hand",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "deck",
+              },
+            ],
+            "span": {
+              "end": 147,
+              "start": 126,
+              "text": "1 Spellcaster monster",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+                "race": [
+                  "Spellcaster",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 Spellcaster monster",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 175,
+            "start": 122,
+            "text": "add 1 Spellcaster monster from your Deck to your hand",
+          },
+          "verb": "add",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Pendulum halves",
+    "normalizedText": "[ Pendulum Effect ] Once per turn: You can draw 1 card. [ Monster Effect ] When this card is destroyed by battle: You can add 1 Spellcaster monster from your Deck to your hand.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [],
+    "name": "Materials line only",
+    "normalizedText": "2 Level 4 monsters",
+    "parserVersion": 3,
+  },
+]
+`;
+
+exports[`corpus group — legacy-text snapshots every parse in the group 1`] = `
+[
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "trigger",
+            "missesTiming": true,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 54,
+              "start": 0,
+              "text": "When this card is sent from the field to the Graveyard",
+            },
+            "text": "When this card is sent from the field to the Graveyard",
+            "timing": "when",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [
+          {
+            "code": "LEGACY_TEXT",
+            "message": "Condition recovered from a comma; this printing predates PSCT punctuation.",
+            "severity": "info",
+            "span": {
+              "end": 134,
+              "start": 0,
+              "text": "When this card is sent from the field to the Graveyard, you can add 1 Plant monster with 1000 or less DEF from your Deck to your hand.",
+            },
+          },
+        ],
+        "effectKind": "trigger",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "hand",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "deck",
+              },
+            ],
+            "span": {
+              "end": 83,
+              "start": 68,
+              "text": "1 Plant monster",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+                "defMax": 1000,
+                "race": [
+                  "Plant",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 Plant monster with 1000 or less DEF",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 133,
+            "start": 64,
+            "text": "add 1 Plant monster with 1000 or less DEF from your Deck to your hand",
+          },
+          "verb": "add",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": undefined,
+      },
+    ],
+    "name": "Botanical Girl",
+    "normalizedText": "When this card is sent from the field to the Graveyard, you can add 1 Plant monster with 1000 or less DEF from your Deck to your hand.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "legacy_select",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 29,
+              "start": 0,
+              "text": "Select 1 monster on the field",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": null,
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.1",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "legacy_select",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 41,
+              "start": 39,
+              "text": "it",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "it",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 41,
+                  "start": 39,
+                  "text": "it",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 41,
+            "start": 31,
+            "text": "Destroy it",
+          },
+          "verb": "destroy",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Legacy select",
+    "normalizedText": "Select 1 monster on the field. Destroy it.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "trigger",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 33,
+              "start": 0,
+              "text": "When this card is flipped face-up",
+            },
+            "text": "When this card is flipped face-up",
+            "timing": "when",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [
+          {
+            "code": "LEGACY_TEXT",
+            "message": "Condition recovered from a comma; this printing predates PSCT punctuation.",
+            "severity": "info",
+            "span": {
+              "end": 66,
+              "start": 0,
+              "text": "When this card is flipped face-up, destroy 1 monster on the field.",
+            },
+          },
+        ],
+        "effectKind": "trigger",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 52,
+              "start": 43,
+              "text": "1 monster",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 65,
+            "start": 35,
+            "text": "destroy 1 monster on the field",
+          },
+          "verb": "destroy",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": undefined,
+      },
+    ],
+    "name": "Legacy comma trigger",
+    "normalizedText": "When this card is flipped face-up, destroy 1 monster on the field.",
+    "parserVersion": 3,
+  },
+]
+`;
+
+exports[`corpus group — references-and-trailing snapshots every parse in the group 1`] = `
+[
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 1,
+            "cost": "detach",
+            "kind": "cost",
+            "sourceZones": [],
+            "span": {
+              "end": 76,
+              "start": 44,
+              "text": "detach 1 material from this card",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1 material",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "frequency",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 34,
+              "start": 21,
+              "text": "Once per turn",
+            },
+            "text": "Once per turn",
+          },
+          {
+            "exclusions": [],
+            "kind": "restriction",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 34,
+              "start": 0,
+              "text": "2 Level 10 monsters
+Once per turn",
+            },
+            "text": "2 Level 10 monsters Once per turn",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": 2000,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [
+            "to your opponent",
+          ],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 2000,
+              "min": 2000,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 97,
+              "start": 86,
+              "text": "2000 damage",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "2000 damage",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 114,
+            "start": 78,
+            "text": "inflict 2000 damage to your opponent",
+          },
+          "verb": "inflict_damage",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "softOncePerTurn": true,
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Superdreadnought Rail Cannon Gustav Max",
+    "normalizedText": "2 Level 10 monsters
+Once per turn: You can detach 1 material from this card; inflict 2000 damage to your opponent.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 1,
+            "cost": "detach",
+            "kind": "cost",
+            "sourceZones": [],
+            "span": {
+              "end": 89,
+              "start": 57,
+              "text": "detach 1 material from this card",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1 material",
+            },
+          },
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 128,
+              "start": 96,
+              "text": "target 1 Spell/Trap on the field",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "TRAP",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 Spell / Trap",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "frequency",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 32,
+              "start": 19,
+              "text": "Once per turn",
+            },
+            "text": "Once per turn",
+          },
+          {
+            "exclusions": [],
+            "kind": "restriction",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": true,
+            "span": {
+              "end": 47,
+              "start": 0,
+              "text": "2 Level 4 monsters
+Once per turn (Quick Effect)",
+            },
+            "text": "2 Level 4 monsters Once per turn (Quick Effect)",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "quick",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 140,
+              "start": 138,
+              "text": "it",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "it",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 140,
+                  "start": 138,
+                  "text": "it",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 140,
+            "start": 130,
+            "text": "destroy it",
+          },
+          "verb": "destroy",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "softOncePerTurn": true,
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Tornado Dragon",
+    "normalizedText": "2 Level 4 monsters
+Once per turn (Quick Effect): You can detach 1 material from this card, then target 1 Spell/Trap on the field; destroy it.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 1,
+            "cost": "detach",
+            "kind": "cost",
+            "sourceZones": [],
+            "span": {
+              "end": 85,
+              "start": 49,
+              "text": "detach 1 Xyz Material from this card",
+            },
+            "subject": {
+              "filter": {
+                "summonType": [
+                  "XYZ",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 Xyz Material",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "frequency",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 39,
+              "start": 26,
+              "text": "Once per turn",
+            },
+            "text": "Once per turn",
+          },
+          {
+            "exclusions": [],
+            "kind": "restriction",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 39,
+              "start": 0,
+              "text": "2 Level 8 Normal Monsters
+Once per turn",
+            },
+            "text": "2 Level 8 Normal Monsters Once per turn",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": "any",
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 113,
+              "start": 95,
+              "text": "all other monsters",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "all other monsters",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 126,
+            "start": 87,
+            "text": "destroy all other monsters on the field",
+          },
+          "verb": "destroy",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "softOncePerTurn": true,
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Thunder End Dragon",
+    "normalizedText": "2 Level 8 Normal Monsters
+Once per turn: You can detach 1 Xyz Material from this card; destroy all other monsters on the field.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "opponent",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 132,
+              "start": 96,
+              "text": "target 1 card your opponent controls",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1 card your opponent controls",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "trigger",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 86,
+              "start": 0,
+              "text": "If this card in your possession is sent to your Graveyard by an opponent's card effect",
+            },
+            "text": "If this card in your possession is sent to your Graveyard by an opponent's card effect",
+            "timing": "if",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "trigger",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "hand",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "opponent",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 143,
+              "start": 141,
+              "text": "it",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "it",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 143,
+                  "start": 141,
+                  "text": "it",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 155,
+            "start": 134,
+            "text": "return it to the hand",
+          },
+          "verb": "return",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Dotedotengu",
+    "normalizedText": "If this card in your possession is sent to your Graveyard by an opponent's card effect: You can target 1 card your opponent controls; return it to the hand.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 1,
+            "cost": "tribute",
+            "kind": "cost",
+            "sourceZones": [],
+            "span": {
+              "end": 25,
+              "start": 8,
+              "text": "Tribute 1 monster",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster",
+            },
+          },
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 61,
+              "start": 32,
+              "text": "target 1 monster on the field",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "hand",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 72,
+              "start": 70,
+              "text": "it",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "it",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 72,
+                  "start": 70,
+                  "text": "it",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 84,
+            "start": 63,
+            "text": "return it to the hand",
+          },
+          "verb": "return",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "hardOncePerTurn": {
+            "name": "Golden Dragon Summoner",
+            "scope": "effect",
+          },
+          "labels": [],
+          "softOncePerTurn": undefined,
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Golden Dragon Summoner",
+    "normalizedText": "You can Tribute 1 monster, then target 1 monster on the field; return it to the hand. You can only use this effect of "Golden Dragon Summoner" once per turn.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 0.8,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "trigger",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 65,
+              "start": 0,
+              "text": "Each time a face-down Defense Position monster is flipped face-up",
+            },
+            "text": "Each time a face-down Defense Position monster is flipped face-up",
+            "timing": "each_time",
+          },
+        ],
+        "confidence": 0.8,
+        "diagnostics": [
+          {
+            "code": "LEGACY_TEXT",
+            "message": "Condition recovered from a comma; this printing predates PSCT punctuation.",
+            "severity": "info",
+            "span": {
+              "end": 101,
+              "start": 0,
+              "text": "Each time a face-down Defense Position monster is flipped face-up, place 1 Worm Counter on this card.",
+            },
+          },
+        ],
+        "effectKind": "trigger",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [
+            "on this card",
+          ],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 87,
+              "start": 73,
+              "text": "1 Worm Counter",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1 Worm Counter",
+            },
+          },
+          "resolved": false,
+          "span": {
+            "end": 100,
+            "start": 67,
+            "text": "place 1 Worm Counter on this card",
+          },
+          "verb": "place",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": undefined,
+      },
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "continuous",
+        "id": "0.1",
+        "optional": false,
+        "resolution": {
+          "amount": 300,
+          "kind": "modifier",
+          "mode": "gain",
+          "modifier": "stat",
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 111,
+              "start": 102,
+              "text": "This card",
+            },
+            "subject": {
+              "kind": "self",
+            },
+          },
+          "span": {
+            "end": 153,
+            "start": 102,
+            "text": "This card gains 300 ATK for each Worm Counter on it",
+          },
+          "stat": "atk",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": false,
+      },
+    ],
+    "name": "Worm Gulse",
+    "normalizedText": "Each time a face-down Defense Position monster is flipped face-up, place 1 Worm Counter on this card. This card gains 300 ATK for each Worm Counter on it.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 35,
+              "start": 6,
+              "text": "Target 1 monster on the field",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "restriction",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 4,
+              "start": 0,
+              "text": "FLIP",
+            },
+            "text": "FLIP",
+          },
+          {
+            "exclusions": [],
+            "kind": "timing",
+            "missesTiming": false,
+            "position": "trailing",
+            "quickEffect": false,
+            "span": {
+              "end": 93,
+              "start": 54,
+              "text": "while this card is face-up on the field",
+            },
+            "text": "while this card is face-up on the field",
+            "timing": "while",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "flip",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "kind": "modifier",
+          "modifier": "cannot_attack",
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 39,
+              "start": 37,
+              "text": "it",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "it",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 39,
+                  "start": 37,
+                  "text": "it",
+                },
+              },
+            },
+          },
+          "span": {
+            "end": 53,
+            "start": 37,
+            "text": "it cannot attack",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Dark-Eyes Illusionist",
+    "normalizedText": "FLIP: Target 1 monster on the field; it cannot attack while this card is face-up on the field.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 0.8,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "restriction",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 4,
+              "start": 0,
+              "text": "FLIP",
+            },
+            "text": "FLIP",
+          },
+          {
+            "exclusions": [],
+            "kind": "timing",
+            "missesTiming": false,
+            "position": "trailing",
+            "quickEffect": false,
+            "span": {
+              "end": 101,
+              "start": 62,
+              "text": "while this card is face-up on the field",
+            },
+            "text": "while this card is face-up on the field",
+            "timing": "while",
+          },
+        ],
+        "confidence": 0.8,
+        "diagnostics": [],
+        "effectKind": "flip",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [
+            "of 1 LIGHT monster your opponent controls",
+          ],
+          "object": null,
+          "resolved": false,
+          "span": {
+            "end": 60,
+            "start": 6,
+            "text": "Take control of 1 LIGHT monster your opponent controls",
+          },
+          "verb": "take_control",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Lyna the Light Charmer",
+    "normalizedText": "FLIP: Take control of 1 LIGHT monster your opponent controls, while this card is face-up on the field.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "continuous",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "kind": "modifier",
+          "modifier": "indestructible",
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 67,
+              "start": 0,
+              "text": "Level 3 or lower Defense Position Thunder-Type monsters you control",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+                "levelMax": 3,
+              },
+              "kind": "criteria",
+              "label": "Level 3 or lower Defense Position Thunder-Type monsters you control",
+            },
+          },
+          "span": {
+            "end": 97,
+            "start": 0,
+            "text": "Level 3 or lower Defense Position Thunder-Type monsters you control cannot be destroyed by battle",
+          },
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "restriction",
+            "missesTiming": false,
+            "position": "trailing",
+            "quickEffect": false,
+            "span": {
+              "end": 165,
+              "start": 117,
+              "text": "if you control a face-up Attack Position monster",
+            },
+            "text": "if you control a face-up Attack Position monster",
+            "timing": "if",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.1",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 116,
+              "start": 107,
+              "text": "this card",
+            },
+            "subject": {
+              "kind": "self",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 116,
+            "start": 99,
+            "text": "Destroy this card",
+          },
+          "verb": "destroy",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Electromagnetic Shield",
+    "normalizedText": "Level 3 or lower Defense Position Thunder-Type monsters you control cannot be destroyed by battle. Destroy this card if you control a face-up Attack Position monster.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 0.8,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "timing",
+            "missesTiming": false,
+            "position": "trailing",
+            "quickEffect": false,
+            "span": {
+              "end": 83,
+              "start": 9,
+              "text": "during the turn a face-up "Fortune Lady" monster you control was destroyed",
+            },
+            "text": "during the turn a face-up "Fortune Lady" monster you control was destroyed",
+            "timing": "during",
+          },
+        ],
+        "confidence": 0.8,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": null,
+          "resolved": false,
+          "span": {
+            "end": 8,
+            "start": 0,
+            "text": "Activate",
+          },
+          "verb": "activate",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "timing",
+            "missesTiming": false,
+            "position": "trailing",
+            "quickEffect": false,
+            "span": {
+              "end": 177,
+              "start": 147,
+              "text": "during your next Standby Phase",
+            },
+            "text": "during your next Standby Phase",
+            "timing": "during",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.1",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 2,
+              "min": 0,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "hand",
+              },
+            ],
+            "span": {
+              "end": 131,
+              "start": 100,
+              "text": "up to 2 "Fortune Lady" monsters",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+                "nameContains": "Fortune Lady",
+              },
+              "kind": "criteria",
+              "label": "up to 2 "Fortune Lady" monsters",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 146,
+            "start": 85,
+            "text": "Special Summon up to 2 "Fortune Lady" monsters from your hand",
+          },
+          "verb": "special_summon",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Inherited Fortune",
+    "normalizedText": "Activate during the turn a face-up "Fortune Lady" monster you control was destroyed. Special Summon up to 2 "Fortune Lady" monsters from your hand during your next Standby Phase.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 0.85,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [],
+            "span": {
+              "end": 40,
+              "start": 32,
+              "text": "target 1",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1",
+            },
+          },
+          {
+            "amount": 1,
+            "cost": "other",
+            "kind": "cost",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 62,
+              "start": 41,
+              "text": "Set card on the field",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "card",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "timing",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 22,
+              "start": 0,
+              "text": "During your Main Phase",
+            },
+            "text": "During your Main Phase",
+            "timing": "during",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "ignition",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "hand",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [],
+            "span": {
+              "end": 82,
+              "start": 71,
+              "text": "that target",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "that_target",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 82,
+                  "start": 71,
+                  "text": "that target",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 94,
+            "start": 64,
+            "text": "return that target to the hand",
+          },
+          "verb": "return",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "timing",
+            "missesTiming": false,
+            "position": "trailing",
+            "quickEffect": false,
+            "span": {
+              "end": 169,
+              "start": 130,
+              "text": "while this card is face-up on the field",
+            },
+            "text": "while this card is face-up on the field",
+            "timing": "while",
+          },
+        ],
+        "confidence": 0.85,
+        "diagnostics": [
+          {
+            "code": "GRAMMAR_PARSE_ERROR",
+            "message": "Resolution clause: Expecting token of type --> Modifier <-- but found --> '' <--",
+            "severity": "warning",
+            "span": {
+              "end": 170,
+              "start": 170,
+              "text": "",
+            },
+          },
+        ],
+        "effectKind": "continuous",
+        "id": "0.1",
+        "optional": false,
+        "resolution": null,
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": false,
+      },
+    ],
+    "name": "Wind-Up Snail",
+    "normalizedText": "During your Main Phase: You can target 1 Set card on the field; return that target to the hand. This effect can be used only once while this card is face-up on the field.",
+    "parserVersion": 3,
+  },
+]
+`;
+
+exports[`corpus group — simple-costs snapshots every parse in the group 1`] = `
+[
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 1,
+            "cost": "send_to_gy",
+            "kind": "cost",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "hand",
+              },
+            ],
+            "span": {
+              "end": 39,
+              "start": 0,
+              "text": "Send 1 monster from your hand to the GY",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "hand",
+              },
+              {
+                "owner": "self",
+                "zone": "deck",
+              },
+            ],
+            "span": {
+              "end": 73,
+              "start": 56,
+              "text": "1 Level 1 monster",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+                "levelMax": 1,
+                "levelMin": 1,
+              },
+              "kind": "criteria",
+              "label": "1 Level 1 monster",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 96,
+            "start": 41,
+            "text": "Special Summon 1 Level 1 monster from your hand or Deck",
+          },
+          "verb": "special_summon",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "One for One",
+    "normalizedText": "Send 1 monster from your hand to the GY; Special Summon 1 Level 1 monster from your hand or Deck.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "gy",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "deck",
+              },
+            ],
+            "span": {
+              "end": 14,
+              "start": 5,
+              "text": "1 monster",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 39,
+            "start": 0,
+            "text": "Send 1 monster from your Deck to the GY",
+          },
+          "verb": "send",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Foolish Burial",
+    "normalizedText": "Send 1 monster from your Deck to the GY.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": 2,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 2,
+              "min": 2,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 12,
+              "start": 5,
+              "text": "2 cards",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "2 cards",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 12,
+            "start": 0,
+            "text": "Draw 2 cards",
+          },
+          "verb": "draw",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Pot of Greed",
+    "normalizedText": "Draw 2 cards.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 10,
+            "cost": "banish",
+            "kind": "cost",
+            "sourceZones": [],
+            "span": {
+              "end": 52,
+              "start": 0,
+              "text": "Banish 10 cards from the top of your Deck, face-down",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "10 cards",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": 2,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 2,
+              "min": 2,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 66,
+              "start": 59,
+              "text": "2 cards",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "2 cards",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 66,
+            "start": 54,
+            "text": "draw 2 cards",
+          },
+          "verb": "draw",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Pot of Desires",
+    "normalizedText": "Banish 10 cards from the top of your Deck, face-down; draw 2 cards.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 0.8,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 1,
+            "cost": "discard",
+            "kind": "cost",
+            "sourceZones": [],
+            "span": {
+              "end": 35,
+              "start": 8,
+              "text": "discard this card to the GY",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "this card",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 0.8,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "opponent",
+                "zone": "gy",
+              },
+            ],
+            "span": {
+              "end": 50,
+              "start": 44,
+              "text": "1 card",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1 card",
+            },
+          },
+          "resolved": false,
+          "span": {
+            "end": 74,
+            "start": 37,
+            "text": "banish 1 card from your opponent's GY",
+          },
+          "verb": "banish",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "D.D. Crow",
+    "normalizedText": "You can discard this card to the GY; banish 1 card from your opponent's GY.",
+    "parserVersion": 3,
+  },
+]
+`;
+
+exports[`corpus group — targeting snapshots every parse in the group 1`] = `
+[
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "either",
+                "zone": "gy",
+              },
+            ],
+            "span": {
+              "end": 38,
+              "start": 0,
+              "text": "Target 1 monster in either player's GY",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "either",
+                "zone": "gy",
+              },
+            ],
+            "span": {
+              "end": 57,
+              "start": 55,
+              "text": "it",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "it",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 57,
+                  "start": 55,
+                  "text": "it",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 57,
+            "start": 40,
+            "text": "Special Summon it",
+          },
+          "verb": "special_summon",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Monster Reborn",
+    "normalizedText": "Target 1 monster in either player's GY; Special Summon it.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 37,
+              "start": 0,
+              "text": "Target 1 face-up monster on the field",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+                "position": "face-up",
+              },
+              "kind": "criteria",
+              "label": "1 face-up monster",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [
+            "to face-down Defense Position",
+          ],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 57,
+              "start": 46,
+              "text": "that target",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "that_target",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 57,
+                  "start": 46,
+                  "text": "that target",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 87,
+            "start": 39,
+            "text": "change that target to face-down Defense Position",
+          },
+          "verb": "change_position",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Book of Moon",
+    "normalizedText": "Target 1 face-up monster on the field; change that target to face-down Defense Position.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": "any",
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "opponent",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 43,
+              "start": 8,
+              "text": "all monsters your opponent controls",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "all monsters your opponent controls",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 43,
+            "start": 0,
+            "text": "Destroy all monsters your opponent controls",
+          },
+          "verb": "destroy",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Raigeki",
+    "normalizedText": "Destroy all monsters your opponent controls.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 32,
+              "start": 0,
+              "text": "Target 1 Spell/Trap on the field",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "TRAP",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 Spell / Trap",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 53,
+              "start": 42,
+              "text": "that target",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "that_target",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 53,
+                  "start": 42,
+                  "text": "that target",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 53,
+            "start": 34,
+            "text": "destroy that target",
+          },
+          "verb": "destroy",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Mystical Space Typhoon",
+    "normalizedText": "Target 1 Spell/Trap on the field; destroy that target.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "hand",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "deck",
+              },
+            ],
+            "span": {
+              "end": 38,
+              "start": 4,
+              "text": "1 Level 4 or lower Warrior monster",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+                "levelMax": 4,
+                "race": [
+                  "Warrior",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 Level 4 or lower Warrior monster",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 66,
+            "start": 0,
+            "text": "Add 1 Level 4 or lower Warrior monster from your Deck to your hand",
+          },
+          "verb": "add",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Reinforcement of the Army",
+    "normalizedText": "Add 1 Level 4 or lower Warrior monster from your Deck to your hand.",
+    "parserVersion": 3,
+  },
+]
+`;
+
+exports[`corpus group — trigger-effects snapshots every parse in the group 1`] = `
+[
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "trigger",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 45,
+              "start": 0,
+              "text": "If this card is sent from the field to the GY",
+            },
+            "text": "If this card is sent from the field to the GY",
+            "timing": "if",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "trigger",
+        "id": "0.0",
+        "optional": false,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "destination": "hand",
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "deck",
+              },
+            ],
+            "span": {
+              "end": 60,
+              "start": 51,
+              "text": "1 monster",
+            },
+            "subject": {
+              "filter": {
+                "atkMax": 1500,
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster with 1500 or less ATK",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 110,
+            "start": 47,
+            "text": "Add 1 monster with 1500 or less ATK from your Deck to your hand",
+          },
+          "verb": "add",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "hardOncePerTurn": {
+            "name": "Sangan",
+            "scope": "effect",
+          },
+          "labels": [],
+          "softOncePerTurn": undefined,
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Sangan",
+    "normalizedText": "If this card is sent from the field to the GY: Add 1 monster with 1500 or less ATK from your Deck to your hand. You can only use this effect of "Sangan" once per turn.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "opponent",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 90,
+              "start": 54,
+              "text": "target 1 card your opponent controls",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1 card your opponent controls",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "trigger",
+            "missesTiming": true,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 44,
+              "start": 0,
+              "text": "When this card is Normal or Special Summoned",
+            },
+            "text": "When this card is Normal or Special Summoned",
+            "timing": "when",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "trigger",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "opponent",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 102,
+              "start": 100,
+              "text": "it",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "it",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 102,
+                  "start": 100,
+                  "text": "it",
+                },
+              },
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 102,
+            "start": 92,
+            "text": "destroy it",
+          },
+          "verb": "destroy",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Trigger — when summoned",
+    "normalizedText": "When this card is Normal or Special Summoned: You can target 1 card your opponent controls; destroy it.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 51,
+              "start": 23,
+              "text": "target 1 monster you control",
+            },
+            "subject": {
+              "filter": {
+                "cardType": [
+                  "MONSTER",
+                ],
+              },
+              "kind": "criteria",
+              "label": "1 monster you control",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "frequency",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": false,
+            "span": {
+              "end": 13,
+              "start": 0,
+              "text": "Once per turn",
+            },
+            "text": "Once per turn",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "activated",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": 500,
+          "duration": "until the End Phase",
+          "kind": "modifier",
+          "mode": "gain",
+          "modifier": "stat",
+          "object": {
+            "id": "t1",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "target",
+            "sourceZones": [
+              {
+                "owner": "self",
+                "zone": "field",
+              },
+            ],
+            "span": {
+              "end": 55,
+              "start": 53,
+              "text": "it",
+            },
+            "subject": {
+              "kind": "reference",
+              "reference": {
+                "confidence": 1,
+                "expression": "it",
+                "kind": "reference",
+                "resolvedTo": "t0",
+                "span": {
+                  "end": 55,
+                  "start": 53,
+                  "text": "it",
+                },
+              },
+            },
+          },
+          "span": {
+            "end": 89,
+            "start": 53,
+            "text": "it gains 500 ATK until the End Phase",
+          },
+          "stat": "atk",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "softOncePerTurn": true,
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Trigger — once per turn ignition",
+    "normalizedText": "Once per turn: You can target 1 monster you control; it gains 500 ATK until the End Phase.",
+    "parserVersion": 3,
+  },
+  {
+    "confidence": 1,
+    "diagnostics": [],
+    "effects": [
+      {
+        "activation": [
+          {
+            "amount": 1,
+            "cost": "discard",
+            "kind": "cost",
+            "sourceZones": [],
+            "span": {
+              "end": 38,
+              "start": 24,
+              "text": "discard 1 card",
+            },
+            "subject": {
+              "kind": "unresolved",
+              "text": "1 card",
+            },
+          },
+        ],
+        "blockKind": "main",
+        "condition": [
+          {
+            "exclusions": [],
+            "kind": "restriction",
+            "missesTiming": false,
+            "position": "leading",
+            "quickEffect": true,
+            "span": {
+              "end": 14,
+              "start": 0,
+              "text": "(Quick Effect)",
+            },
+            "text": "(Quick Effect)",
+          },
+        ],
+        "confidence": 1,
+        "diagnostics": [],
+        "effectKind": "quick",
+        "id": "0.0",
+        "optional": true,
+        "resolution": {
+          "amount": null,
+          "conjunction": "none",
+          "dependsOnPrevious": false,
+          "kind": "action",
+          "modifiers": [],
+          "object": {
+            "id": "t0",
+            "kind": "target",
+            "quantity": {
+              "max": 1,
+              "min": 1,
+            },
+            "selection": "none",
+            "sourceZones": [],
+            "span": {
+              "end": 58,
+              "start": 47,
+              "text": "that effect",
+            },
+            "subject": {
+              "filter": {
+                "isEffect": true,
+              },
+              "kind": "criteria",
+              "label": "that effect",
+            },
+          },
+          "resolved": true,
+          "span": {
+            "end": 58,
+            "start": 40,
+            "text": "negate that effect",
+          },
+          "verb": "negate",
+        },
+        "restrictions": {
+          "exceptNames": [],
+          "labels": [],
+          "summonConditions": [],
+        },
+        "startsChain": true,
+      },
+    ],
+    "name": "Quick Effect",
+    "normalizedText": "(Quick Effect): You can discard 1 card; negate that effect.",
+    "parserVersion": 3,
+  },
+]
+`;
+
+exports[`corpus — metrics matches the recorded diagnostic profile 1`] = `
+{
+  "diagnosticCounts": {
+    "GRAMMAR_PARSE_ERROR": 1,
+    "LEGACY_TEXT": 3,
+  },
+  "failed": 0,
+  "parsedWithWarnings": 1,
+  "parsedWithoutErrors": 41,
+  "total": 42,
+}
+`;

@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Ash Blossom & Joyous Spring",
+    "cardType": "MONSTER",
+    "text": "When a card or effect is activated that includes any of these effects: You can discard this card; negate that effect.●Add a card from the Deck to the hand.●Special Summon a monster from the Deck.●Send a card from the Deck to the GY."
+  },
+  {
+    "name": "Nomi summon condition",
+    "cardType": "MONSTER",
+    "text": "Cannot be Normal Summoned/Set. Must first be Special Summoned by Tributing 3 Fiend monsters."
+  },
+  {
+    "name": "Name with a colon",
+    "cardType": "SPELL",
+    "spellTrapSubType": "NORMAL",
+    "text": "Add 1 \"Number 39: Utopia\" from your Extra Deck to your hand."
+  },
+  {
+    "name": "Pendulum halves",
+    "cardType": "MONSTER",
+    "text": "[ Pendulum Effect ] Once per turn: You can draw 1 card. [ Monster Effect ] When this card is destroyed by battle: You can add 1 Spellcaster monster from your Deck to your hand."
+  },
+  {
+    "name": "Materials line only",
+    "cardType": "MONSTER",
+    "text": "2 Level 4 monsters"
+  }
+]
